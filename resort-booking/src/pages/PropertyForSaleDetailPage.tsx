@@ -17,6 +17,7 @@ import {
   getStatusLabel,
 } from '../data/propertiesForSale';
 import { useSiteData } from '../context/SiteDataContext';
+import { normalizeImageUrl } from '../lib/imageUrl';
 
 const PropertyForSaleDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,7 +74,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
             <AnimatedSection variant="fade-in">
               <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 <img
-                  src={property.images[imageIndex]}
+                  src={normalizeImageUrl(property.images[imageIndex])}
                   alt={property.title}
                   className="w-full h-80 md:h-[28rem] object-cover"
                 />
@@ -108,7 +109,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
                       idx === imageIndex ? 'border-airbnb-red' : 'border-transparent opacity-70'
                     }`}
                   >
-                    <img src={img} alt="" className="h-16 w-24 object-cover" />
+                    <img src={normalizeImageUrl(img)} alt="" className="h-16 w-24 object-cover" />
                   </button>
                 ))}
               </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import { useSiteData } from '../../context/SiteDataContext';
+import { getPrimaryImage } from '../../lib/imageUrl';
 import type { Room } from '../../types/site';
 
 const emptyRoom = (): Omit<Room, 'id'> => ({
@@ -18,6 +19,11 @@ const emptyRoom = (): Omit<Room, 'id'> => ({
   status: 'available',
   amenities: [],
   images: [''],
+  check_in_time: '',
+  check_out_time: '',
+  refundable_security_deposit: 0,
+  extra_guest_limit: 0,
+  extra_guest_cost: 0,
   mapEmbedUrl: '',
 });
 
@@ -63,11 +69,12 @@ const AdminRoomsPage: React.FC = () => {
       amenities: draft.amenities.filter(Boolean),
       images: draft.images.filter((img) => img.trim()),
       mapEmbedUrl: draft.mapEmbedUrl?.trim() || undefined,
+      check_in_time: draft.check_in_time?.trim() || undefined,
+      check_out_time: draft.check_out_time?.trim() || undefined,
+      refundable_security_deposit: draft.refundable_security_deposit || 0,
+      extra_guest_limit: draft.extra_guest_limit || 0,
+      extra_guest_cost: draft.extra_guest_cost || 0,
     };
-    if (payload.images.length === 0) {
-      window.alert('Add at least one image URL.');
-      return;
-    }
     if (isNew) addRoom(payload);
     else if (editing) updateRoom(editing.id, payload);
     setIsNew(false);
@@ -102,7 +109,7 @@ const AdminRoomsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rooms.map((room) => (
           <div key={room.id} className="bg-white rounded-xl overflow-hidden shadow-md">
-            <img src={room.images[0] || 'https://via.placeholder.com/400x300?text=Villa'} alt={room.name} className="w-full h-48 object-cover" />
+            <img src={getPrimaryImage(room.images, 'https://via.placeholder.com/400x300?text=Villa')} alt={room.name} className="w-full h-48 object-cover" />
             <div className="p-4">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-bold text-gray-900">{room.name}</h3>
@@ -136,25 +143,40 @@ const AdminRoomsPage: React.FC = () => {
           <h2 className="text-lg font-bold">{isNew ? 'New villa' : `Edit: ${editing?.name}`}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AdminFormField label="Villa name">
-              <input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={adminInputClass} />
+              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Villa type" hint="e.g. Deluxe Villa, Family Villa">
-              <input required value={draft.room_type} onChange={(e) => setDraft({ ...draft, room_type: e.target.value })} className={adminInputClass} />
+              <input value={draft.room_type} onChange={(e) => setDraft({ ...draft, room_type: e.target.value })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Location" className="md:col-span-2" hint="Area shown on listing cards">
-              <input required value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} className={adminInputClass} />
+              <input value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Full address" className="md:col-span-2">
-              <input required value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} className={adminInputClass} />
+              <input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Price per night (INR)">
-              <input required type="number" min={0} value={draft.price_per_night || ''} onChange={(e) => setDraft({ ...draft, price_per_night: Number(e.target.value) })} className={adminInputClass} />
+              <input type="number" min={0} value={draft.price_per_night || ''} onChange={(e) => setDraft({ ...draft, price_per_night: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Max guests">
-              <input required type="number" min={1} value={draft.max_guests || ''} onChange={(e) => setDraft({ ...draft, max_guests: Number(e.target.value) })} className={adminInputClass} />
+              <input type="number" min={1} value={draft.max_guests || ''} onChange={(e) => setDraft({ ...draft, max_guests: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Villa code" hint="Internal reference, e.g. GW-02">
-              <input required value={draft.room_number} onChange={(e) => setDraft({ ...draft, room_number: e.target.value })} className={adminInputClass} />
+              <input value={draft.room_number} onChange={(e) => setDraft({ ...draft, room_number: e.target.value })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField label="Standard check-in time" hint="e.g. 2:00 PM (optional)">
+              <input value={draft.check_in_time || ''} onChange={(e) => setDraft({ ...draft, check_in_time: e.target.value })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField label="Standard check-out time" hint="e.g. 11:00 AM (optional)">
+              <input value={draft.check_out_time || ''} onChange={(e) => setDraft({ ...draft, check_out_time: e.target.value })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField label="Refundable security deposit (INR)" hint="Optional refundable amount taken at check-in">
+              <input type="number" min={0} value={draft.refundable_security_deposit || ''} onChange={(e) => setDraft({ ...draft, refundable_security_deposit: Number(e.target.value) })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField label="Extra guests allowed" hint="Allowed beyond max guests (optional)">
+              <input type="number" min={0} value={draft.extra_guest_limit || ''} onChange={(e) => setDraft({ ...draft, extra_guest_limit: Number(e.target.value) })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField label="Additional cost per extra guest (INR/night)" hint="Used when extra guests are added">
+              <input type="number" min={0} value={draft.extra_guest_cost || ''} onChange={(e) => setDraft({ ...draft, extra_guest_cost: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Availability status">
               <select value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as Room['status'] })} className={adminInputClass}>
@@ -171,7 +193,7 @@ const AdminRoomsPage: React.FC = () => {
             </AdminFormField>
           </div>
           <AdminFormField label="Description" hint="Short summary shown on villa cards">
-            <textarea required value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} rows={3} className={adminInputClass} />
+            <textarea value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} rows={3} className={adminInputClass} />
           </AdminFormField>
           <AdminFormField label="Amenities" hint="One amenity per line">
             <textarea value={draft.amenities.join('\n')} onChange={(e) => setDraft({ ...draft, amenities: e.target.value.split('\n') })} rows={3} className={adminInputClass} />

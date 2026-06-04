@@ -20,6 +20,7 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { formatPrice } from '../data/resort';
 import { useSiteData } from '../context/SiteDataContext';
+import { getPrimaryImage } from '../lib/imageUrl';
 import {
   createRazorpayOrder,
   getPaymentModeLabel,
@@ -48,6 +49,8 @@ const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const { getRoomById, settings, addBooking } = useSiteData();
   const villa = roomId ? getRoomById(roomId) : undefined;
+  const extraGuestLimit = villa?.extra_guest_limit ?? 0;
+  const maxTotalGuests = (villa?.max_guests ?? 0) + extraGuestLimit;
 
   const [checkIn, setCheckIn] = useState(toDateInputValue(addDays(new Date(), 1)));
   const [checkOut, setCheckOut] = useState(toDateInputValue(addDays(new Date(), 3)));
@@ -74,15 +77,18 @@ const BookingPage: React.FC = () => {
 
   const pricing = useMemo(() => {
     if (!villa || nights < 1) {
-      return { base: 0, cleaning: 0, service: 0, taxes: 0, total: 0 };
+      return { base: 0, extraGuest: 0, cleaning: 0, service: 0, taxes: 0, total: 0 };
     }
+    const extraGuests = Math.max(0, adults + children - villa.max_guests);
+    const extraGuestRate = villa.extra_guest_cost ?? 0;
+    const extraGuest = extraGuests * extraGuestRate * nights;
     const base = villa.price_per_night * nights;
     const cleaning = 750;
-    const service = Math.round(base * 0.08);
-    const taxes = Math.round((base + cleaning + service) * 0.05);
-    const total = base + cleaning + service + taxes;
-    return { base, cleaning, service, taxes, total };
-  }, [villa, nights]);
+    const service = Math.round((base + extraGuest) * 0.08);
+    const taxes = Math.round((base + extraGuest + cleaning + service) * 0.05);
+    const total = base + extraGuest + cleaning + service + taxes;
+    return { base, extraGuest, cleaning, service, taxes, total };
+  }, [villa, nights, adults, children]);
 
   const validateDates = () => {
     const start = new Date(checkIn);
@@ -99,8 +105,8 @@ const BookingPage: React.FC = () => {
       setDateError('At least one adult is required.');
       return false;
     }
-    if (villa && adults + children > villa.max_guests) {
-      setDateError(`This villa allows up to ${villa.max_guests} guests.`);
+    if (villa && adults + children > maxTotalGuests) {
+      setDateError(`This villa allows up to ${maxTotalGuests} guests.`);
       return false;
     }
     setDateError('');
@@ -247,7 +253,7 @@ const BookingPage: React.FC = () => {
                         onChange={(e) => setAdults(Number(e.target.value))}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium bg-white"
                       >
-                        {Array.from({ length: villa.max_guests }, (_, i) => i + 1).map((n) => (
+                        {Array.from({ length: Math.max(1, maxTotalGuests) }, (_, i) => i + 1).map((n) => (
                           <option key={n} value={n}>
                             {n} adult{n > 1 ? 's' : ''}
                           </option>
@@ -261,7 +267,7 @@ const BookingPage: React.FC = () => {
                         onChange={(e) => setChildren(Number(e.target.value))}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium bg-white"
                       >
-                        {Array.from({ length: villa.max_guests + 1 }, (_, i) => i).map((n) => (
+                        {Array.from({ length: Math.max(1, maxTotalGuests + 1) }, (_, i) => i).map((n) => (
                           <option key={n} value={n}>
                             {n} child{n !== 1 ? 'ren' : ''}
                           </option>
@@ -272,7 +278,7 @@ const BookingPage: React.FC = () => {
                   {nights > 0 && (
                     <p className="mt-4 text-base text-gray-600 font-medium">
                       {nights} night{nights !== 1 ? 's' : ''} · {adults + children} guest
-                      {adults + children !== 1 ? 's' : ''} (max {villa.max_guests})
+                      {adults + children !== 1 ? 's' : ''} (max {maxTotalGuests})
                     </p>
                   )}
                   {dateError && <p className="mt-3 text-sm text-red-600 font-medium">{dateError}</p>}
@@ -411,7 +417,7 @@ const BookingPage: React.FC = () => {
               <AnimatedSection delay={80} variant="slide-left">
                 <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
                   <img
-                    src={villa.images[0]}
+                    src={getPrimaryImage(villa.images, 'https://via.placeholder.com/900x500?text=Villa')}
                     alt={villa.name}
                     className="w-full h-44 object-cover"
                   />
@@ -442,6 +448,15 @@ const BookingPage: React.FC = () => {
                           </span>
                           <span className="font-medium text-gray-900">{formatPrice(pricing.base)}</span>
                         </div>
+                        {pricing.extraGuest > 0 && (
+                          <div className="flex justify-between text-gray-700">
+                            <span>
+                              Extra guest charge ({Math.max(0, adults + children - villa.max_guests)} guest
+                              {Math.max(0, adults + children - villa.max_guests) !== 1 ? 's' : ''})
+                            </span>
+                            <span className="font-medium text-gray-900">{formatPrice(pricing.extraGuest)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between text-gray-700">
                           <span>Cleaning fee</span>
                           <span className="font-medium text-gray-900">{formatPrice(pricing.cleaning)}</span>
@@ -464,8 +479,21 @@ const BookingPage: React.FC = () => {
                     <div className="mt-6 pt-6 border-t border-gray-100 space-y-2 text-sm text-gray-600">
                       <p className="flex items-center gap-2">
                         <UserGroupIcon className="h-4 w-4 text-airbnb-red" />
-                        Up to {villa.max_guests} guests
+                        Up to {villa.max_guests} guests included
+                        {extraGuestLimit > 0 ? ` (+${extraGuestLimit} extra)` : ''}
                       </p>
+                      {villa.check_in_time && villa.check_out_time && (
+                        <p className="flex items-center gap-2">
+                          <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                          Check-in {villa.check_in_time} · Check-out {villa.check_out_time}
+                        </p>
+                      )}
+                      {(villa.refundable_security_deposit ?? 0) > 0 && (
+                        <p className="flex items-center gap-2">
+                          <ShieldCheckIcon className="h-4 w-4 text-green-600" />
+                          Refundable security deposit: {formatPrice(villa.refundable_security_deposit ?? 0)}
+                        </p>
+                      )}
                       <p className="flex items-center gap-2">
                         <CheckCircleIcon className="h-4 w-4 text-green-600" />
                         Free cancellation up to 24h before check-in

@@ -6,6 +6,7 @@ import PublicLayout from './components/layout/PublicLayout';
 import ScrollToTop from './components/layout/ScrollToTop';
 import { formatSalePrice, getCategoryLabel } from './data/propertiesForSale';
 import { useSiteData } from './context/SiteDataContext';
+import { getPrimaryImage } from './lib/imageUrl';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminSiteSettingsPage from './pages/admin/AdminSiteSettingsPage';
 import AdminRoomsPage from './pages/admin/AdminRoomsPage';
@@ -308,7 +309,7 @@ const HomePage = () => {
             >
               <div className="relative overflow-hidden">
                 <img
-                  src={room.images[0]}
+                  src={getPrimaryImage(room.images, 'https://via.placeholder.com/800x600?text=Villa')}
                   alt={room.name}
                   className="room-card-image w-full h-56 object-cover"
                 />
@@ -380,7 +381,7 @@ const HomePage = () => {
                   >
                     <div className="relative overflow-hidden">
                       <img
-                        src={property.images[0]}
+                        src={getPrimaryImage(property.images, 'https://via.placeholder.com/800x600?text=Property')}
                         alt={property.title}
                         className="room-card-image w-full h-56 object-cover"
                       />

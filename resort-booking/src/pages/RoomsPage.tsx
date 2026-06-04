@@ -4,6 +4,7 @@ import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import { useSiteData } from '../context/SiteDataContext';
 import { formatPrice } from '../data/resort';
+import { getPrimaryImage } from '../lib/imageUrl';
 
 const RoomsPage: React.FC = () => {
   const { rooms, settings } = useSiteData();
@@ -127,7 +128,7 @@ const RoomsPage: React.FC = () => {
               >
                 <div className="relative overflow-hidden">
                   <img
-                    src={room.images[0]}
+                    src={getPrimaryImage(room.images, 'https://via.placeholder.com/800x600?text=Villa')}
                     alt={room.name}
                     className="room-card-image w-full h-72 object-cover"
                   />

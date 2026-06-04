@@ -9,6 +9,7 @@ import {
   type PropertyCategory,
 } from '../data/propertiesForSale';
 import { useSiteData } from '../context/SiteDataContext';
+import { getPrimaryImage } from '../lib/imageUrl';
 import { cn } from '../utils/cn';
 
 type CategoryFilter = 'all' | PropertyCategory;
@@ -140,7 +141,7 @@ const PropertiesForSalePage: React.FC = () => {
                 >
                   <div className="relative overflow-hidden">
                     <img
-                      src={property.images[0]}
+                      src={getPrimaryImage(property.images, 'https://via.placeholder.com/800x600?text=Property')}
                       alt={property.title}
                       className="room-card-image w-full h-72 object-cover"
                     />

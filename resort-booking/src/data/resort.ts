@@ -24,6 +24,16 @@ export type Room = {
   status: 'available' | 'maintenance' | 'occupied';
   amenities: string[];
   images: string[];
+  /** Optional standard check-in time text, e.g. 2:00 PM */
+  check_in_time?: string;
+  /** Optional standard check-out time text, e.g. 11:00 AM */
+  check_out_time?: string;
+  /** Refundable security deposit amount in INR */
+  refundable_security_deposit?: number;
+  /** Number of additional guests allowed beyond max_guests */
+  extra_guest_limit?: number;
+  /** Extra guest cost in INR per guest per night */
+  extra_guest_cost?: number;
   /** Google Maps embed iframe src, embed URL, or share link */
   mapEmbedUrl?: string;
 };

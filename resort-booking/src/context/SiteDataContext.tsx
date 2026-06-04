@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createDefaultSiteData,
   loadSiteData,
@@ -50,17 +50,21 @@ const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<SiteData>(() => loadSiteData());
+  const dataRef = useRef<SiteData>(data);
 
   const persist = useCallback((updater: (prev: SiteData) => SiteData) => {
-    setData((prev) => {
-      const next = updater(prev);
-      saveSiteData(next);
-      return next;
-    });
+    const next = updater(dataRef.current);
+    dataRef.current = next;
+    setData(next);
+    saveSiteData(next);
   }, []);
 
   useEffect(() => {
-    const onUpdate = () => setData(loadSiteData());
+    const onUpdate = () => {
+      const next = loadSiteData();
+      dataRef.current = next;
+      setData(next);
+    };
     window.addEventListener('site-data-updated', onUpdate);
     window.addEventListener('storage', onUpdate);
     return () => {
@@ -232,7 +236,9 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   const resetAllData = useCallback(() => {
-    setData(resetSiteData());
+    const next = resetSiteData();
+    dataRef.current = next;
+    setData(next);
   }, []);
 
   const getRoomById = useCallback((id: string) => data.rooms.find((r) => r.id === id), [data.rooms]);
