@@ -9,6 +9,7 @@ import Button from '../components/ui/Button';
 import LocationMapSection from '../components/maps/LocationMapSection';
 import { formatPrice, formatTimeLabel } from '../data/resort';
 import { useSiteData } from '../context/SiteDataContext';
+import { normalizeImageUrl } from '../lib/imageUrl';
 
 const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +54,7 @@ const RoomDetailPage: React.FC = () => {
             <AnimatedSection variant="fade-in">
               <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 <img
-                  src={room.images[imageIndex]}
+                  src={normalizeImageUrl(room.images[imageIndex])}
                   alt={room.name}
                   className="w-full h-80 md:h-[28rem] object-cover"
                 />
@@ -88,7 +89,7 @@ const RoomDetailPage: React.FC = () => {
                       idx === imageIndex ? 'border-airbnb-red' : 'border-transparent opacity-70'
                     }`}
                   >
-                    <img src={img} alt="" className="h-16 w-24 object-cover" />
+                    <img src={normalizeImageUrl(img)} alt="" className="h-16 w-24 object-cover" />
                   </button>
                 ))}
               </div>
@@ -113,6 +114,13 @@ const RoomDetailPage: React.FC = () => {
                 Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
               </p>
               <p className="text-base text-gray-600 leading-relaxed">{room.description}</p>
+              {(room.check_in_time || room.check_out_time) && (
+                <p className="text-sm text-gray-600 mt-4">
+                  {room.check_in_time ? `Check-in: ${room.check_in_time}` : ''}
+                  {room.check_in_time && room.check_out_time ? ' · ' : ''}
+                  {room.check_out_time ? `Check-out: ${room.check_out_time}` : ''}
+                </p>
+              )}
             </AnimatedSection>
 
             <AnimatedSection delay={150}>
@@ -148,7 +156,9 @@ const RoomDetailPage: React.FC = () => {
               <p className="flex items-center gap-2 text-base text-gray-600 font-medium mb-2">
                 <UserGroupIcon className="h-5 w-5" />
                 Up to {room.max_guests} guests
+                {(room.extra_guest_limit ?? 0) > 0 ? ` (+${room.extra_guest_limit} extra)` : ''}
               </p>
+<<<<<<< HEAD
               <p className="text-sm text-gray-600 mb-4">
                 Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
               </p>
@@ -162,6 +172,13 @@ const RoomDetailPage: React.FC = () => {
                   setCheckOut(end);
                 }}
               />
+=======
+              {(room.refundable_security_deposit ?? 0) > 0 && (
+                <p className="text-sm text-gray-600 mb-4">
+                  Refundable security deposit: {formatPrice(room.refundable_security_deposit ?? 0)}
+                </p>
+              )}
+>>>>>>> 5e587cefe66a7c5507e46cb8d4381a083fcda235
               <Button
                 fullWidth
                 size="lg"
