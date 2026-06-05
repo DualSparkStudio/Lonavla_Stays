@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSiteData } from '../../context/SiteDataContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { adminLogout } from '../../lib/adminAuth';
+import { getAdminInitials, loadAdminProfile } from '../../lib/adminProfile';
 
 const adminNavLinks = [
   { to: '/admin', page: 'dashboard', label: 'Dashboard' },
   { to: '/admin/settings', page: 'settings', label: 'Site content' },
   { to: '/admin/rooms', page: 'rooms', label: 'Villas' },
   { to: '/admin/for-sale', page: 'for-sale', label: 'For sale' },
-  { to: '/admin/facilities', page: 'facilities', label: 'Facilities' },
   { to: '/admin/bookings', page: 'bookings', label: 'Bookings' },
-  { to: '/admin/messages', page: 'messages', label: 'Messages' },
+  { to: '/admin/calendar', page: 'calendar', label: 'Calendar' },
 ] as const;
 
 type AdminLayoutProps = {
@@ -20,7 +21,14 @@ type AdminLayoutProps = {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
   const navigate = useNavigate();
+  const { ensureAdminData } = useSiteData();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    ensureAdminData();
+  }, [ensureAdminData]);
+  const profile = loadAdminProfile();
+  const initials = getAdminInitials(profile.displayName);
 
   const linkClass = (page: string) =>
     currentPage === page ? 'text-red-500' : 'text-gray-600 hover:text-gray-900';
@@ -52,6 +60,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
             </nav>
 
             <div className="hidden md:flex items-center gap-3 shrink-0">
+              <Link
+                to="/admin/profile"
+                className={`flex items-center gap-2 rounded-full px-2 py-1 transition-colors ${
+                  currentPage === 'profile' ? 'text-red-500' : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Profile"
+              >
+                <span className="h-8 w-8 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                  {initials}
+                </span>
+                <span className="text-sm font-medium max-w-[8rem] truncate hidden xl:inline">{profile.displayName}</span>
+              </Link>
               <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
                 View Site
               </Link>
@@ -89,6 +109,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                to="/admin/profile"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium ${linkClass('profile')}`}
+              >
+                <span className="h-8 w-8 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                  {initials}
+                </span>
+                Profile
+              </Link>
               <Link to="/" className="block rounded-lg px-3 py-2.5 font-medium text-gray-600">
                 View Site
               </Link>

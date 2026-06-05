@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ChevronLeftIcon,
-  EnvelopeIcon,
   MapPinIcon,
   PhoneIcon,
   HomeModernIcon,
@@ -17,6 +16,7 @@ import {
   getStatusLabel,
 } from '../data/propertiesForSale';
 import { useSiteData } from '../context/SiteDataContext';
+import { buildPropertyEnquiryMessage, buildWhatsAppUrl } from '../lib/whatsapp';
 
 const PropertyForSaleDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,18 +43,12 @@ const PropertyForSaleDetailPage: React.FC = () => {
   const prevImage = () =>
     setImageIndex((i) => (i - 1 + property.images.length) % property.images.length);
 
-  const contactQuery = new URLSearchParams({
-    subject: 'purchase',
-    property: property.title,
-    id: property.id,
-  }).toString();
-
-  const phoneHref = `tel:${settings.resortPhone.replace(/\s/g, '')}`;
-  const mailHref = `mailto:${settings.resortEmail}?subject=${encodeURIComponent(
-    `Purchase enquiry: ${property.title}`
-  )}&body=${encodeURIComponent(
-    `Hi,\n\nI am interested in purchasing "${property.title}" (${property.location}).\n\nPlease share pricing details, site visit availability, and required documents.\n\nThank you.`
-  )}`;
+  const whatsappPhone = settings.resortPhone.trim();
+  const whatsappHref = buildWhatsAppUrl(
+    whatsappPhone,
+    buildPropertyEnquiryMessage(property.title),
+  );
+  const phoneHref = `tel:${whatsappPhone.replace(/\s/g, '')}`;
 
   return (
     <PublicLayout currentPage="for-sale">
@@ -192,23 +186,22 @@ const PropertyForSaleDetailPage: React.FC = () => {
                 {settings.resortName} for site visits, title documents, and negotiation support.
               </p>
 
-              <Link to={`/contact?${contactQuery}`}>
+              <a
+                href={whatsappHref || undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={whatsappHref ? 'block' : 'block pointer-events-none opacity-50'}
+                aria-disabled={!whatsappHref}
+              >
                 <Button fullWidth size="lg" className="rounded-full btn-primary-motion mb-3">
                   Enquire to buy
                 </Button>
-              </Link>
-
-              <a href={phoneHref} className="block">
-                <Button variant="outline" fullWidth size="lg" className="rounded-full mb-3">
-                  <PhoneIcon className="h-5 w-5 mr-2" />
-                  Call {settings.resortPhone}
-                </Button>
               </a>
 
-              <a href={mailHref} className="block">
+              <a href={phoneHref} className="block">
                 <Button variant="outline" fullWidth size="lg" className="rounded-full">
-                  <EnvelopeIcon className="h-5 w-5 mr-2" />
-                  Email us
+                  <PhoneIcon className="h-5 w-5 mr-2" />
+                  Call {whatsappPhone}
                 </Button>
               </a>
 

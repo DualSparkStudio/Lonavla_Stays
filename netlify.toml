@@ -1,4 +1,6 @@
-# The live app lives in resort-booking/ — do not install from repo root (peer dependency conflicts).
+# Deploy from repo root — app lives in resort-booking/
+# Netlify UI: Site settings → Build & deploy → Base directory can stay empty (this file sets base).
+
 [build]
   base = "resort-booking"
   command = "npm run build"
@@ -9,6 +11,18 @@
   NODE_VERSION = "20"
   NPM_FLAGS = "--no-audit"
 
+[functions]
+  node_bundler = "esbuild"
+  # Keep native/server deps external so Razorpay + Nodemailer work in serverless.
+  external_node_modules = ["razorpay", "nodemailer"]
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+  port = 8888
+  autoLaunch = false
+
+# API routes → Netlify Functions (must be listed before the SPA fallback)
 [[redirects]]
   from = "/api/create-razorpay-order"
   to = "/.netlify/functions/create-razorpay-order"
@@ -19,6 +33,27 @@
   to = "/.netlify/functions/verify-razorpay-payment"
   status = 200
 
+[[redirects]]
+  from = "/api/send-booking-emails"
+  to = "/.netlify/functions/send-booking-emails"
+  status = 200
+
+[[redirects]]
+  from = "/api/smtp-status"
+  to = "/.netlify/functions/smtp-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/send-test-email"
+  to = "/.netlify/functions/send-test-email"
+  status = 200
+
+[[redirects]]
+  from = "/api/check-availability"
+  to = "/.netlify/functions/check-availability"
+  status = 200
+
+# React Router — client-side routes
 [[redirects]]
   from = "/*"
   to = "/index.html"

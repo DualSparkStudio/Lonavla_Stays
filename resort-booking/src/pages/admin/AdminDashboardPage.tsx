@@ -4,7 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import { useSiteData } from '../../context/SiteDataContext';
 
 const AdminDashboardPage: React.FC = () => {
-  const { rooms, propertiesForSale, bookings, contactMessages, facilities } = useSiteData();
+  const { rooms, propertiesForSale, bookings } = useSiteData();
 
   const availableVillas = rooms.filter((r) => r.status === 'available').length;
   const saleListings = propertiesForSale.filter((p) => p.status !== 'sold').length;
@@ -18,9 +18,7 @@ const AdminDashboardPage: React.FC = () => {
         {[
           { label: 'Villas', value: rooms.length, sub: `${availableVillas} available`, to: '/admin/rooms' },
           { label: 'For sale', value: saleListings, sub: 'active listings', to: '/admin/for-sale' },
-          { label: 'Facilities', value: facilities.length, sub: 'items', to: '/admin/facilities' },
           { label: 'Bookings', value: bookings.length, sub: 'records', to: '/admin/bookings' },
-          { label: 'Messages', value: contactMessages.length, sub: 'unread enquiries', to: '/admin/messages' },
         ].map((card) => (
           <Link key={card.label} to={card.to} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <p className="text-sm text-gray-500">{card.label}</p>

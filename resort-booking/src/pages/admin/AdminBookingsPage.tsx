@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
+import BookingDetailsModal from '../../components/BookingDetailsModal';
+import { notifyBookingByEmail } from '../../lib/bookingEmail';
 import { useSiteData } from '../../context/SiteDataContext';
 import type { AdminBooking } from '../../types/site';
 
@@ -18,23 +20,65 @@ const emptyBooking = (): Omit<AdminBooking, 'id' | 'bookedAt'> => ({
 });
 
 const AdminBookingsPage: React.FC = () => {
-  const { bookings, rooms, addBooking, updateBooking, deleteBooking } = useSiteData();
+  const { bookings, rooms, addBooking, deleteBooking, settings } = useSiteData();
   const [filter, setFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [draft, setDraft] = useState(emptyBooking());
   const [saved, setSaved] = useState(false);
+  const [viewing, setViewing] = useState<AdminBooking | null>(null);
 
   const filtered = filter === 'all' ? bookings : bookings.filter((b) => b.status === filter);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     const room = rooms.find((r) => r.id === draft.roomId);
+    const bookingRef = draft.bookingRef;
+    const checkIn = draft.checkIn;
+    const checkOut = draft.checkOut;
+    const guests = Number(draft.guests);
+    const total = Number(draft.total);
+    const roomName = room?.name ?? draft.roomName;
+
     addBooking({
       ...draft,
-      roomName: room?.name ?? draft.roomName,
-      total: Number(draft.total),
-      guests: Number(draft.guests),
+      roomName,
+      total,
+      guests,
     });
+
+    const nights = checkIn && checkOut ? Math.max(0, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)) : 0;
+    const gstPercent = settings.gstPercent ?? 18;
+    const subtotal = Math.round(total / (1 + gstPercent / 100));
+    const gst = total - subtotal;
+
+    notifyBookingByEmail({
+      bookingRef,
+      guestName: draft.guestName,
+      guestEmail: draft.guestEmail,
+      roomId: draft.roomId,
+      roomName,
+      checkIn,
+      checkOut,
+      guests,
+      nights,
+      basePrice: subtotal,
+      extraAdultsCharge: 0,
+      childrenCharge: 0,
+      subtotal,
+      gst,
+      gstPercent,
+      total,
+      guestPhone: '',
+      paymentCompleted: false,
+      resortName: settings.resortName,
+      resortPhone: settings.resortPhone,
+      resortEmail: settings.resortEmail,
+      resortAddress: settings.resortAddress,
+      resortLocation: settings.resortLocation,
+      checkInTime: settings.checkInTime,
+      checkOutTime: settings.checkOutTime,
+    });
+
     setDraft(emptyBooking());
     setShowForm(false);
     setSaved(true);
@@ -141,25 +185,38 @@ const AdminBookingsPage: React.FC = () => {
                   <td className="px-4 py-3 text-sm">{b.roomName}</td>
                   <td className="px-4 py-3 text-sm">{b.checkIn} → {b.checkOut}</td>
                   <td className="px-4 py-3 text-sm">₹{b.total.toLocaleString('en-IN')}</td>
-                  <td className="px-4 py-3 text-sm capitalize">{b.status}</td>
-                  <td className="px-4 py-3 space-y-2">
-                    <select
-                      value={b.status}
-                      onChange={(e) => updateBooking(b.id, { status: e.target.value as AdminBooking['status'] })}
-                      className="text-sm border rounded px-2 py-1 block w-full"
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex capitalize px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                        b.status === 'confirmed'
+                          ? 'bg-green-100 text-green-800'
+                          : b.status === 'completed'
+                            ? 'bg-blue-100 text-blue-800'
+                            : b.status === 'pending'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-red-100 text-red-800'
+                      }`}
                     >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => window.confirm('Delete this booking?') && deleteBooking(b.id)}
-                      className="text-xs text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                      {b.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setViewing(b)}
+                        className="text-sm font-medium text-red-600 hover:text-red-700"
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => window.confirm('Delete this booking?') && deleteBooking(b.id)}
+                        className="text-sm text-gray-500 hover:text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -167,6 +224,12 @@ const AdminBookingsPage: React.FC = () => {
           </table>
         </div>
       )}
+
+      <BookingDetailsModal
+        booking={viewing}
+        roomName={viewing ? rooms.find((r) => r.id === viewing.roomId)?.name : undefined}
+        onClose={() => setViewing(null)}
+      />
     </AdminLayout>
   );
 };

@@ -30,7 +30,7 @@ const field = (
   </div>
 );
 
-const AdminSiteSettingsPage: React.FC = () => {
+export default function AdminSiteSettingsPage() {
   const { settings, updateSettings, resetAllData } = useSiteData();
   const [draft, setDraft] = useState<SiteSettings>(settings);
   const [saved, setSaved] = useState(false);
@@ -199,6 +199,4 @@ const AdminSiteSettingsPage: React.FC = () => {
       </form>
     </AdminLayout>
   );
-};
-
-export default AdminSiteSettingsPage;
+}

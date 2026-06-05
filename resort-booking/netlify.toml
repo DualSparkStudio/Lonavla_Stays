@@ -1,4 +1,6 @@
-# Prefer root netlify.toml (base = resort-booking). Kept for local Netlify CLI runs in this folder.
+# Used when running Netlify CLI from this folder (npm run dev:netlify).
+# Production deploys should use the repo-root netlify.toml (base = resort-booking).
+
 [build]
   command = "npm run build"
   publish = "dist"
@@ -6,6 +8,17 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--no-audit"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["razorpay", "nodemailer"]
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+  port = 8888
+  autoLaunch = false
 
 [[redirects]]
   from = "/api/create-razorpay-order"
@@ -15,6 +28,26 @@
 [[redirects]]
   from = "/api/verify-razorpay-payment"
   to = "/.netlify/functions/verify-razorpay-payment"
+  status = 200
+
+[[redirects]]
+  from = "/api/send-booking-emails"
+  to = "/.netlify/functions/send-booking-emails"
+  status = 200
+
+[[redirects]]
+  from = "/api/smtp-status"
+  to = "/.netlify/functions/smtp-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/send-test-email"
+  to = "/.netlify/functions/send-test-email"
+  status = 200
+
+[[redirects]]
+  from = "/api/check-availability"
+  to = "/.netlify/functions/check-availability"
   status = 200
 
 [[redirects]]

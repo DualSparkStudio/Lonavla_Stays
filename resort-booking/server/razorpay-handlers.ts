@@ -1,9 +1,22 @@
 import crypto from 'node:crypto';
 import Razorpay from 'razorpay';
 
-/** Local demo checkout — no Razorpay account required. Never enable on production. */
+function paymentBypassFromEnv(): boolean | undefined {
+  const flag = process.env.PAYMENT_DEMO_MODE ?? process.env.VITE_PAYMENT_DEMO_MODE;
+  if (flag === 'true') return true;
+  if (flag === 'false') return false;
+  return undefined;
+}
+
+/** Bypass Razorpay API on local dev (Vite / Netlify dev). */
 export function isPaymentDemoMode(): boolean {
-  return process.env.PAYMENT_DEMO_MODE === 'true';
+  const fromEnv = paymentBypassFromEnv();
+  if (fromEnv !== undefined) return fromEnv;
+  return (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NETLIFY_DEV === 'true' ||
+    process.env.CONTEXT === 'dev'
+  );
 }
 
 export function getRazorpayCredentials() {
@@ -53,19 +66,31 @@ export async function createRazorpayOrder(input: CreateOrderInput) {
 
   const { key_id } = getRazorpayCredentials();
   const client = getClient();
-  const order = await client.orders.create({
-    amount: amountPaise,
-    currency: 'INR',
-    receipt: input.receipt.slice(0, 40),
-    notes: input.notes,
-  });
 
-  return {
-    keyId: key_id,
-    orderId: order.id,
-    amount: order.amount,
-    currency: order.currency,
-  };
+  try {
+    const order = await client.orders.create({
+      amount: amountPaise,
+      currency: 'INR',
+      receipt: input.receipt.slice(0, 40),
+      notes: input.notes,
+    });
+
+    return {
+      keyId: key_id,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+    };
+  } catch (err: unknown) {
+    const rzp = err as { statusCode?: number; error?: { description?: string; reason?: string } };
+    const detail = rzp.error?.description || rzp.error?.reason;
+    if (rzp.statusCode === 401 || detail?.toLowerCase().includes('authentication')) {
+      throw new Error(
+        'Razorpay authentication failed. In the dashboard (Test mode), copy Key ID and Key Secret again into resort-booking/.env.local, then restart npm run dev.',
+      );
+    }
+    throw new Error(detail || (err instanceof Error ? err.message : 'Failed to create Razorpay order'));
+  }
 }
 
 export function verifyRazorpaySignature(

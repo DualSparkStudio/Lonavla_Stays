@@ -28,6 +28,46 @@ export type Room = {
   mapEmbedUrl?: string;
 };
 
+export const DEFAULT_CHECK_IN_TIME = '14:00';
+export const DEFAULT_CHECK_OUT_TIME = '11:00';
+export const DEFAULT_GST_PERCENT = 18;
+export const DEFAULT_EXTRA_PERSON_CHARGE = 1500;
+
+export type Time12Parts = {
+  hour: number;
+  minute: number;
+  period: 'AM' | 'PM';
+};
+
+export function parseTime24(value: string, fallback: Time12Parts): Time12Parts {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+  if (!match) return fallback;
+  const hour24 = Number(match[1]);
+  const minute = Number(match[2]);
+  if (Number.isNaN(hour24) || Number.isNaN(minute) || minute > 59 || hour24 > 23) return fallback;
+  const period = hour24 >= 12 ? 'PM' : 'AM';
+  const hour = hour24 % 12 || 12;
+  return { hour, minute, period };
+}
+
+export function formatTime24(parts: Time12Parts): string {
+  const hour = Math.min(12, Math.max(1, Math.round(parts.hour) || 1));
+  const minute = Math.min(59, Math.max(0, Math.round(parts.minute) || 0));
+  let hour24: number;
+  if (parts.period === 'AM') {
+    hour24 = hour === 12 ? 0 : hour;
+  } else {
+    hour24 = hour === 12 ? 12 : hour + 12;
+  }
+  return `${String(hour24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+export function formatTimeLabel(value: string): string {
+  if (!value) return '';
+  const { hour, minute, period } = parseTime24(value, { hour: 12, minute: 0, period: 'AM' });
+  return `${hour}:${String(minute).padStart(2, '0')} ${period}`;
+}
+
 export const demoRooms: Room[] = [
   {
     id: '1',

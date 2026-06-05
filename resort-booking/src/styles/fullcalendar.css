@@ -1,0 +1,120 @@
+/* FullCalendar — loaded with calendar components only */
+.availability-calendar .fc,
+.enhanced-calendar .fc {
+  --fc-border-color: #e5e7eb;
+  --fc-button-bg-color: #ff385c;
+  --fc-button-border-color: #ff385c;
+  --fc-button-hover-bg-color: #e31c5f;
+  --fc-button-hover-border-color: #e31c5f;
+  --fc-today-bg-color: #fff1f2;
+  --fc-small-font-size: 0.75rem;
+  font-family: inherit;
+  width: 100%;
+  max-width: 100%;
+}
+
+.availability-calendar--embedded {
+  margin-left: -0.25rem;
+  margin-right: -0.25rem;
+  width: calc(100% + 0.5rem);
+}
+
+.availability-calendar .fc-header-toolbar,
+.enhanced-calendar .fc-header-toolbar {
+  margin-bottom: 0.5rem !important;
+  flex-wrap: nowrap !important;
+  gap: 0.35rem;
+}
+
+.availability-calendar .fc-toolbar,
+.enhanced-calendar .fc-toolbar {
+  align-items: center;
+}
+
+.availability-calendar .fc-toolbar-chunk,
+.enhanced-calendar .fc-toolbar-chunk {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.availability-calendar .fc-toolbar-title,
+.enhanced-calendar .fc-toolbar-title {
+  font-size: 1rem !important;
+  font-weight: 700;
+  font-family: inherit;
+  line-height: 1.25;
+  padding: 0 0.25rem;
+}
+
+.availability-calendar .fc-button,
+.enhanced-calendar .fc-button {
+  padding: 0.2rem 0.45rem !important;
+  font-size: 0.7rem !important;
+  line-height: 1.2;
+}
+
+.availability-calendar .fc-scrollgrid,
+.availability-calendar .fc-view-harness,
+.availability-calendar .fc-daygrid-body,
+.availability-calendar .fc-col-header,
+.enhanced-calendar .fc-scrollgrid,
+.enhanced-calendar .fc-view-harness {
+  width: 100% !important;
+}
+
+.availability-calendar .fc-scrollgrid-sync-table,
+.enhanced-calendar .fc-scrollgrid-sync-table {
+  width: 100% !important;
+}
+
+.availability-calendar .fc-daygrid-day-number,
+.enhanced-calendar .fc-daygrid-day-number {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+}
+
+.availability-calendar .fc-col-header-cell-cushion,
+.enhanced-calendar .fc-col-header-cell-cushion {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.availability-calendar .fc-daygrid-day-frame,
+.enhanced-calendar .fc-daygrid-day-frame {
+  min-height: 2rem;
+}
+
+.availability-calendar table,
+.enhanced-calendar table {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.availability-calendar .fc-bg-event,
+.enhanced-calendar .fc-bg-event {
+  pointer-events: none;
+}
+
+.availability-calendar .fc-day-check-in .fc-daygrid-day-number,
+.availability-calendar .fc-day-check-out .fc-daygrid-day-number {
+  font-weight: 700;
+  color: #059669;
+}
+
+.availability-calendar .fc-day-in-range {
+  background-color: #ecfdf5;
+}
+
+.availability-calendar .fc-day-in-range .fc-daygrid-day-frame {
+  background-color: #d1fae5;
+}
+
+.availability-calendar .fc-scrollgrid-section-body > td,
+.availability-calendar .fc-scrollgrid-section-header > td {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}

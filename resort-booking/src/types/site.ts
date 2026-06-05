@@ -20,6 +20,11 @@ export type AboutHighlight = {
   text: string;
 };
 
+export type InfoSection = {
+  title: string;
+  items: string[];
+};
+
 export type SiteSettings = {
   resortName: string;
   brandTagline: string;
@@ -27,6 +32,14 @@ export type SiteSettings = {
   resortAddress: string;
   resortPhone: string;
   resortEmail: string;
+  /** Site-wide standard check-in time (24h, e.g. 14:00) */
+  checkInTime: string;
+  /** Site-wide standard check-out time (24h, e.g. 11:00) */
+  checkOutTime: string;
+  /** GST percentage applied to villa bookings */
+  gstPercent: number;
+  /** Per-night charge for each extra adult beyond the included guests */
+  extraPersonCharge: number;
   heroTitle: string;
   heroSubtitle: string;
   aboutImage: string;
@@ -40,6 +53,8 @@ export type SiteSettings = {
   forSalePageTitle: string;
   forSalePageSubtitle: string;
   contactPageSubtitle: string;
+  houseRulesSections: InfoSection[];
+  importantInfoSections: InfoSection[];
 };
 
 export type AdminBooking = {
@@ -55,6 +70,26 @@ export type AdminBooking = {
   status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
   bookingRef: string;
   bookedAt: string;
+  nights?: number;
+  basePrice?: number;
+  extraAdults?: number;
+  children?: number;
+  extraAdultsCharge?: number;
+  childrenCharge?: number;
+  pricingSubtotal?: number;
+  gst?: number;
+  gstPercent?: number;
+};
+
+export type BlockedDate = {
+  id: string;
+  roomId: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  notes?: string;
+  source: 'manual';
+  createdAt: string;
 };
 
 export type AdminUser = {
@@ -84,6 +119,7 @@ export type SiteData = {
   propertiesForSale: PropertyForSale[];
   facilities: Facility[];
   bookings: AdminBooking[];
+  blockedDates: BlockedDate[];
   users: AdminUser[];
   contactMessages: ContactMessage[];
 };

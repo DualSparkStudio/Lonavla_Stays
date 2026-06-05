@@ -1,6 +1,19 @@
-import { demoRooms, resortFacilities, RESORT_NAME, BRAND_TAGLINE, RESORT_LOCATION, RESORT_ADDRESS, RESORT_PHONE, RESORT_EMAIL } from '../data/resort';
+import {
+  DEFAULT_CHECK_IN_TIME,
+  DEFAULT_CHECK_OUT_TIME,
+  demoRooms,
+  resortFacilities,
+  RESORT_NAME,
+  BRAND_TAGLINE,
+  RESORT_LOCATION,
+  RESORT_ADDRESS,
+  RESORT_PHONE,
+  RESORT_EMAIL,
+  DEFAULT_GST_PERCENT,
+  DEFAULT_EXTRA_PERSON_CHARGE,
+} from '../data/resort';
 import { propertiesForSale as defaultPropertiesForSale } from '../data/propertiesForSale';
-import type { SiteData, SiteSettings, Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage } from '../types/site';
+import type { SiteData, SiteSettings, Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, BlockedDate } from '../types/site';
 
 const STORAGE_KEY = 'lonavala-stays-site-data-v1';
 
@@ -11,6 +24,10 @@ export const defaultSiteSettings = (): SiteSettings => ({
   resortAddress: RESORT_ADDRESS,
   resortPhone: RESORT_PHONE,
   resortEmail: RESORT_EMAIL,
+  checkInTime: DEFAULT_CHECK_IN_TIME,
+  checkOutTime: DEFAULT_CHECK_OUT_TIME,
+  gstPercent: DEFAULT_GST_PERCENT,
+  extraPersonCharge: DEFAULT_EXTRA_PERSON_CHARGE,
   heroTitle: 'Escape Into The Hills',
   heroSubtitle:
     'Book luxury villa stays or explore plots & villas for sale across Lonavala—each with its own home and hillside setting.',
@@ -49,6 +66,72 @@ export const defaultSiteSettings = (): SiteSettings => ({
     'Own a piece of Lonavala. Browse our curated plots and ready villas—view full galleries and descriptions, then contact us to schedule a visit or request documents.',
   contactPageSubtitle:
     'Questions about a villa stay, a plot or villa for sale, availability, or directions? Our team manages every property in our collection.',
+  houseRulesSections: [
+    {
+      title: 'Check-in & check-out',
+      items: [
+        'Standard check-in is from 2:00 PM and check-out is by 11:00 AM.',
+        'Early check-in or late check-out may be available on request, subject to availability.',
+        'A valid government-issued photo ID is required for all guests at check-in.',
+      ],
+    },
+    {
+      title: 'Guests & occupancy',
+      items: [
+        'Only registered guests may stay overnight. Day visitors must be approved in advance.',
+        'Maximum occupancy must not exceed the limit shown on your villa listing.',
+        'Additional guests or events require prior written approval from our team.',
+      ],
+    },
+    {
+      title: 'Conduct & noise',
+      items: [
+        'Parties, loud music, and commercial photography are not permitted unless pre-approved.',
+        'Quiet hours are from 10:00 PM to 8:00 AM. Please respect neighbours and villa staff.',
+        'Smoking is not allowed inside villas. Use designated outdoor areas only where provided.',
+      ],
+    },
+    {
+      title: 'Property care',
+      items: [
+        'Treat the villa, furniture, and amenities with care. Guests are responsible for damage caused during the stay.',
+        'Do not move heavy furniture or reconfigure safety equipment without staff assistance.',
+        'Report maintenance issues promptly so our on-ground team can assist.',
+      ],
+    },
+  ],
+  importantInfoSections: [
+    {
+      title: 'Payments & deposits',
+      items: [
+        'Full payment terms are shared at booking. A security deposit may be collected before check-in for select villas.',
+        'Any deductions for damages or policy violations will be communicated with supporting details.',
+      ],
+    },
+    {
+      title: 'Cancellation & changes',
+      items: [
+        'Cancellation and rescheduling terms depend on your booking date and villa. Refer to your confirmation email for the applicable policy.',
+        'For date changes, contact us as early as possible—peak weekends and holidays may have stricter terms.',
+      ],
+    },
+    {
+      title: 'Safety & emergencies',
+      items: [
+        'Lonavala weather can change quickly—carry warm layers in monsoon and winter months.',
+        'In case of emergency, contact our team immediately using the phone number on your booking confirmation.',
+        'Swimming pools, bonfires, and hillside paths involve inherent risks—follow on-site instructions and supervise children.',
+      ],
+    },
+    {
+      title: 'Local guidelines',
+      items: [
+        'Alcohol consumption must comply with local laws. Guests are responsible for their own conduct.',
+        'Pets are welcome only at villas explicitly marked as pet-friendly—confirm before you book.',
+        'Parking is limited at some properties; inform us in advance if you are bringing multiple vehicles.',
+      ],
+    },
+  ],
 });
 
 const defaultBookings = (): AdminBooking[] => [
@@ -112,19 +195,53 @@ export function createDefaultSiteData(): SiteData {
     propertiesForSale: structuredClone(defaultPropertiesForSale),
     facilities: structuredClone(resortFacilities),
     bookings: defaultBookings(),
+    blockedDates: [],
     users: defaultUsers(),
     contactMessages: [],
   };
 }
 
+/** Removes duplicate rows from double payment submit (same stay or same booking ref). */
+export function dedupeBookings(bookings: AdminBooking[]): AdminBooking[] {
+  const seenRef = new Set<string>();
+  const seenStay = new Set<string>();
+  const result: AdminBooking[] = [];
+  for (const b of bookings) {
+    const refKey = b.bookingRef?.trim();
+    const stayKey = `${b.guestEmail}|${b.roomId}|${b.checkIn}|${b.checkOut}`;
+    if (refKey && seenRef.has(refKey)) continue;
+    if (seenStay.has(stayKey)) continue;
+    if (refKey) seenRef.add(refKey);
+    seenStay.add(stayKey);
+    result.push(b);
+  }
+  return result;
+}
+
 function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
   const defaults = createDefaultSiteData();
+  const rawBookings = parsed.bookings ?? defaults.bookings;
+  const rooms = parsed.rooms?.length ? parsed.rooms : defaults.rooms;
   return {
-    settings: { ...defaults.settings, ...parsed.settings },
-    rooms: parsed.rooms?.length ? parsed.rooms : defaults.rooms,
+    settings: {
+      ...defaults.settings,
+      ...parsed.settings,
+      checkInTime: parsed.settings?.checkInTime ?? defaults.settings.checkInTime,
+      checkOutTime: parsed.settings?.checkOutTime ?? defaults.settings.checkOutTime,
+      gstPercent: parsed.settings?.gstPercent ?? defaults.settings.gstPercent,
+      extraPersonCharge: parsed.settings?.extraPersonCharge ?? defaults.settings.extraPersonCharge,
+      houseRulesSections: parsed.settings?.houseRulesSections?.length
+        ? parsed.settings.houseRulesSections
+        : defaults.settings.houseRulesSections,
+      importantInfoSections: parsed.settings?.importantInfoSections?.length
+        ? parsed.settings.importantInfoSections
+        : defaults.settings.importantInfoSections,
+    },
+    rooms,
     propertiesForSale: parsed.propertiesForSale?.length ? parsed.propertiesForSale : defaults.propertiesForSale,
     facilities: parsed.facilities?.length ? parsed.facilities : defaults.facilities,
-    bookings: parsed.bookings ?? defaults.bookings,
+    bookings: dedupeBookings(rawBookings),
+    blockedDates: parsed.blockedDates ?? defaults.blockedDates,
     users: parsed.users?.length ? parsed.users : defaults.users,
     contactMessages: parsed.contactMessages ?? defaults.contactMessages,
   };
@@ -135,15 +252,46 @@ export function loadSiteData(): SiteData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return createDefaultSiteData();
-    return mergeWithDefaults(JSON.parse(raw) as Partial<SiteData>);
+    const parsed = JSON.parse(raw) as Partial<SiteData>;
+    const data = mergeWithDefaults(parsed);
+    const before = parsed.bookings?.length ?? 0;
+    if (before > data.bookings.length) {
+      saveSiteData(data);
+    }
+    return data;
   } catch {
     return createDefaultSiteData();
   }
 }
 
-export function saveSiteData(data: SiteData): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  window.dispatchEvent(new CustomEvent('site-data-updated'));
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingSave: SiteData | null = null;
+
+function flushSiteDataSave(silent = false): void {
+  if (!pendingSave || typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(pendingSave));
+  pendingSave = null;
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+  if (!silent) {
+    window.dispatchEvent(new CustomEvent('site-data-updated'));
+  }
+}
+
+export function saveSiteData(
+  data: SiteData,
+  options?: { immediate?: boolean; silent?: boolean },
+): void {
+  if (typeof window === 'undefined') return;
+  pendingSave = data;
+  if (options?.immediate) {
+    flushSiteDataSave(options.silent);
+    return;
+  }
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => flushSiteDataSave(), 300);
 }
 
 export function resetSiteData(): SiteData {
@@ -152,4 +300,4 @@ export function resetSiteData(): SiteData {
   return data;
 }
 
-export type { Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, SiteSettings };
+export type { Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, SiteSettings, BlockedDate, SiteData };

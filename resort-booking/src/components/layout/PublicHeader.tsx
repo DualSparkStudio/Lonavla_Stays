@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import NavLink from './NavLink';
 import { mainNavConfig } from './NavIcons';
-import { useSiteData } from '../../context/SiteDataContext';
+import { useSiteSettings } from '../../context/SiteDataContext';
 import { cn } from '../../utils/cn';
 
 type PublicHeaderProps = {
@@ -11,7 +11,7 @@ type PublicHeaderProps = {
 };
 
 const PublicHeader: React.FC<PublicHeaderProps> = ({ currentPage = 'home' }) => {
-  const { settings } = useSiteData();
+  const settings = useSiteSettings();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();

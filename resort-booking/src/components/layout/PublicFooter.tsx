@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useSiteData } from '../../context/SiteDataContext';
+import { useSiteSettings } from '../../context/SiteDataContext';
 
 const PublicFooter: React.FC = () => {
-  const { settings } = useSiteData();
+  const settings = useSiteSettings();
 
   return (
     <footer className="bg-gray-50 text-gray-900 border-t border-gray-200">

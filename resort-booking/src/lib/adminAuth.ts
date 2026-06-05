@@ -1,3 +1,5 @@
+import { getCustomAdminPassword } from './adminProfile';
+
 const SESSION_KEY = 'lonavala-stays-admin-session';
 
 export const ADMIN_CREDENTIALS = {
@@ -19,5 +21,8 @@ export function adminLogout(): void {
 }
 
 export function validateAdminCredentials(username: string, password: string): boolean {
-  return username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password;
+  if (username !== ADMIN_CREDENTIALS.username) return false;
+  const customPassword = getCustomAdminPassword();
+  const expected = customPassword ?? ADMIN_CREDENTIALS.password;
+  return password === expected;
 }

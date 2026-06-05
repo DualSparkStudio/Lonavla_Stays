@@ -5,9 +5,10 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo.supabase.
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-key';
 
 // Only create real client if we have valid environment variables
-const hasValidConfig = supabaseUrl !== 'https://demo.supabase.co' && supabaseAnonKey !== 'demo-key';
+export const isSupabaseConfigured =
+  supabaseUrl !== 'https://demo.supabase.co' && supabaseAnonKey !== 'demo-key';
 
-export const supabase = hasValidConfig 
+export const supabase = isSupabaseConfigured 
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
@@ -371,4 +372,4 @@ export const demoRooms: Room[] = [
   }
 ];
 
-console.log('Supabase config status:', hasValidConfig ? 'Live' : 'Demo mode'); 
+console.log('Supabase config status:', isSupabaseConfigured ? 'Live' : 'Demo mode'); 

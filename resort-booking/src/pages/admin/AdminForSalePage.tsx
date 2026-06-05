@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
+import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminPropertyDetailsModal from '../../components/admin/AdminPropertyDetailsModal';
+import { getCategoryLabel } from '../../data/propertiesForSale';
 import { useSiteData } from '../../context/SiteDataContext';
 import type { PropertyForSale } from '../../types/site';
 
@@ -26,6 +29,7 @@ const AdminForSalePage: React.FC = () => {
   const [editing, setEditing] = useState<PropertyForSale | null>(null);
   const [draft, setDraft] = useState<Omit<PropertyForSale, 'id'>>(emptyProperty());
   const [isNew, setIsNew] = useState(false);
+  const [viewing, setViewing] = useState<PropertyForSale | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -90,16 +94,22 @@ const AdminForSalePage: React.FC = () => {
           <div key={p.id} className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
             <img src={p.images[0]} alt={p.title} className="w-full h-40 object-cover" />
             <div className="p-4">
-              <h3 className="font-bold text-gray-900">{p.title}</h3>
-              <p className="text-sm text-gray-500 capitalize">{p.category} · {p.status}</p>
-              <div className="flex gap-2 mt-3">
-                <button type="button" onClick={() => openEdit(p)} className="flex-1 bg-blue-500 text-white py-2 rounded-lg text-sm">
+              <div className="flex justify-between items-start gap-2 mb-1">
+                <h3 className="font-bold text-gray-900">{p.title}</h3>
+                <StatusPill status={p.status} />
+              </div>
+              <p className="text-sm text-gray-500 mb-3">{getCategoryLabel(p.category)}</p>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setViewing(p)} className="text-sm font-medium text-red-600 hover:text-red-700">
+                  View
+                </button>
+                <button type="button" onClick={() => openEdit(p)} className="text-sm font-medium text-blue-600 hover:text-blue-700">
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => window.confirm('Delete this listing?') && deletePropertyForSale(p.id)}
-                  className="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm"
+                  className="text-sm text-gray-500 hover:text-red-600"
                 >
                   Delete
                 </button>
@@ -186,6 +196,8 @@ const AdminForSalePage: React.FC = () => {
           </div>
         </form>
       )}
+
+      <AdminPropertyDetailsModal property={viewing} onClose={() => setViewing(null)} />
     </AdminLayout>
   );
 };

@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import AvailabilityCalendar from '../components/AvailabilityCalendar';
+import StickyBookingPanel from '../components/StickyBookingPanel';
 import { ChevronLeftIcon, MapPinIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import Button from '../components/ui/Button';
 import LocationMapSection from '../components/maps/LocationMapSection';
-import { formatPrice } from '../data/resort';
+import { formatPrice, formatTimeLabel } from '../data/resort';
 import { useSiteData } from '../context/SiteDataContext';
 
 const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [imageIndex, setImageIndex] = useState(0);
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
   const { getRoomById, settings } = useSiteData();
 
   const room = id ? getRoomById(id) : undefined;
@@ -34,7 +38,7 @@ const RoomDetailPage: React.FC = () => {
 
   return (
     <PublicLayout currentPage="villas">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-6 py-8">
         <button
           type="button"
           onClick={() => navigate('/villas')}
@@ -44,8 +48,8 @@ const RoomDetailPage: React.FC = () => {
           All villas
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-10">
+          <div className="flex-1 min-w-0 space-y-6">
             <AnimatedSection variant="fade-in">
               <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 <img
@@ -102,8 +106,11 @@ const RoomDetailPage: React.FC = () => {
                   <span className="block text-base text-gray-500 mt-1">{room.address}</span>
                 </span>
               </p>
-              <p className="text-base text-gray-500 mb-4">
+              <p className="text-base text-gray-500 mb-2">
                 Managed by {settings.resortName} · ★ {room.rating} ({room.review_count} reviews)
+              </p>
+              <p className="text-base text-gray-600 mb-4">
+                Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
               </p>
               <p className="text-base text-gray-600 leading-relaxed">{room.description}</p>
             </AnimatedSection>
@@ -132,21 +139,38 @@ const RoomDetailPage: React.FC = () => {
             </AnimatedSection>
           </div>
 
-          <AnimatedSection delay={200} variant="slide-left" className="lg:col-span-1">
-            <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-gray-200 shadow-lg p-6">
+          <aside className="w-full lg:w-[380px] lg:shrink-0">
+            <StickyBookingPanel className="bg-white rounded-2xl border border-gray-200 shadow-lg px-4 py-5 sm:px-5">
               <p className="text-2xl font-bold text-gray-900 mb-1">
                 {formatPrice(room.price_per_night)}
                 <span className="text-base font-medium text-gray-600"> / night</span>
               </p>
-              <p className="flex items-center gap-2 text-base text-gray-600 font-medium mb-6">
+              <p className="flex items-center gap-2 text-base text-gray-600 font-medium mb-2">
                 <UserGroupIcon className="h-5 w-5" />
                 Up to {room.max_guests} guests
               </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
+              </p>
+              <AvailabilityCalendar
+                embedded
+                roomId={room.id}
+                selectedStartDate={checkIn || undefined}
+                selectedEndDate={checkOut && checkOut > checkIn ? checkOut : undefined}
+                onDateSelect={(start, end) => {
+                  setCheckIn(start);
+                  setCheckOut(end);
+                }}
+              />
               <Button
                 fullWidth
                 size="lg"
-                className="rounded-full btn-primary-motion mb-3"
-                onClick={() => navigate(`/booking/${room.id}`)}
+                className="rounded-full btn-primary-motion mb-3 mt-4"
+                disabled={!checkIn || !checkOut || checkOut <= checkIn}
+                onClick={() => {
+                  const params = new URLSearchParams({ checkIn, checkOut });
+                  navigate(`/booking/${room.id}?${params.toString()}`);
+                }}
               >
                 Reserve this villa
               </Button>
@@ -155,8 +179,8 @@ const RoomDetailPage: React.FC = () => {
                   Ask a question
                 </Button>
               </Link>
-            </div>
-          </AnimatedSection>
+            </StickyBookingPanel>
+          </aside>
         </div>
       </div>
     </PublicLayout>

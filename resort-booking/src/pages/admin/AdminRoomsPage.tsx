@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
+import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminVillaDetailsModal from '../../components/admin/AdminVillaDetailsModal';
 import { useSiteData } from '../../context/SiteDataContext';
 import type { Room } from '../../types/site';
 
@@ -27,6 +29,7 @@ const AdminRoomsPage: React.FC = () => {
   const [draft, setDraft] = useState<Omit<Room, 'id'>>(emptyRoom());
   const [isNew, setIsNew] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [viewing, setViewing] = useState<Room | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -104,23 +107,21 @@ const AdminRoomsPage: React.FC = () => {
           <div key={room.id} className="bg-white rounded-xl overflow-hidden shadow-md">
             <img src={room.images[0] || 'https://via.placeholder.com/400x300?text=Villa'} alt={room.name} className="w-full h-48 object-cover" />
             <div className="p-4">
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex justify-between items-start gap-2 mb-2">
                 <h3 className="font-bold text-gray-900">{room.name}</h3>
-                <span className="text-xs bg-gray-100 px-2 py-1 rounded capitalize">{room.status}</span>
+                <StatusPill status={room.status} />
               </div>
-              <p className="text-sm text-gray-600 mb-2">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
-              <select
-                value={room.status}
-                onChange={(e) => updateRoom(room.id, { status: e.target.value as Room['status'] })}
-                className="w-full mb-2 px-2 py-1 border rounded text-sm"
-              >
-                <option value="available">Available</option>
-                <option value="occupied">Occupied</option>
-                <option value="maintenance">Maintenance</option>
-              </select>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => openEdit(room)} className="flex-1 bg-blue-500 text-white py-2 rounded-lg text-sm">Edit</button>
-                <button type="button" onClick={() => window.confirm('Delete villa?') && deleteRoom(room.id)} className="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-sm">Delete</button>
+              <p className="text-sm text-gray-600 mb-3">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setViewing(room)} className="text-sm font-medium text-red-600 hover:text-red-700">
+                  View
+                </button>
+                <button type="button" onClick={() => openEdit(room)} className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  Edit
+                </button>
+                <button type="button" onClick={() => window.confirm('Delete villa?') && deleteRoom(room.id)} className="text-sm text-gray-500 hover:text-red-600">
+                  Delete
+                </button>
               </div>
             </div>
           </div>
@@ -163,12 +164,6 @@ const AdminRoomsPage: React.FC = () => {
                 <option value="maintenance">Maintenance</option>
               </select>
             </AdminFormField>
-            <AdminFormField label="Rating" hint="Out of 5">
-              <input type="number" step="0.1" min={0} max={5} value={draft.rating} onChange={(e) => setDraft({ ...draft, rating: Number(e.target.value) })} className={adminInputClass} />
-            </AdminFormField>
-            <AdminFormField label="Review count">
-              <input type="number" min={0} value={draft.review_count} onChange={(e) => setDraft({ ...draft, review_count: Number(e.target.value) })} className={adminInputClass} />
-            </AdminFormField>
           </div>
           <AdminFormField label="Description" hint="Short summary shown on villa cards">
             <textarea required value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} rows={3} className={adminInputClass} />
@@ -197,6 +192,8 @@ const AdminRoomsPage: React.FC = () => {
           </div>
         </form>
       )}
+
+      <AdminVillaDetailsModal villa={viewing} onClose={() => setViewing(null)} />
     </AdminLayout>
   );
 };

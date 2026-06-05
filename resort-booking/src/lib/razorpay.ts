@@ -2,8 +2,26 @@ import { formatPrice, RESORT_NAME } from '../data/resort';
 
 export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID as string | undefined;
 
-/** Simulated checkout locally — no real charge. Set PAYMENT_DEMO_MODE=true in .env.local */
-export const isPaymentDemoMode = import.meta.env.VITE_PAYMENT_DEMO_MODE === 'true';
+/** true = bypass, false = force real Razorpay, unset = bypass on localhost */
+function paymentBypassFromEnv(): boolean | undefined {
+  const flag = import.meta.env.VITE_PAYMENT_DEMO_MODE;
+  if (flag === 'true') return true;
+  if (flag === 'false') return false;
+  return undefined;
+}
+
+function isLocalhostRuntime(): boolean {
+  if (typeof window === 'undefined') return import.meta.env.DEV;
+  const host = window.location.hostname;
+  return host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+}
+
+/** Skip Razorpay on localhost unless VITE_PAYMENT_DEMO_MODE=false */
+export function isPaymentDemoMode(): boolean {
+  const fromEnv = paymentBypassFromEnv();
+  if (fromEnv !== undefined) return fromEnv;
+  return isLocalhostRuntime() || import.meta.env.DEV;
+}
 
 /** True when using Razorpay dashboard test keys (rzp_test_…) */
 export function isRazorpayTestKey(keyId?: string): boolean {
@@ -12,7 +30,8 @@ export function isRazorpayTestKey(keyId?: string): boolean {
 }
 
 export function getPaymentModeLabel(): string {
-  if (isPaymentDemoMode) return 'Demo test mode — no real payment';
+  if (isPaymentDemoMode() && isLocalhostRuntime()) return 'Local mode — Razorpay bypassed';
+  if (isPaymentDemoMode()) return 'Demo test mode — no real payment';
   if (isRazorpayTestKey()) return 'Razorpay test mode — use test cards/UPI only';
   return 'Live payment';
 }
@@ -84,15 +103,29 @@ async function parseApiResponse<T>(response: Response): Promise<T> {
   }
 
   if (!response.ok) {
-    throw new Error(data.error || `Payment request failed (${response.status})`);
+    const msg = typeof data.error === 'string' ? data.error : `Payment request failed (${response.status})`;
+    throw new Error(msg);
   }
 
   return data;
 }
 
+function createDemoOrder(payload: CreateOrderPayload): CreateOrderResponse {
+  return {
+    keyId: 'rzp_test_demo',
+    orderId: `order_demo_${Date.now()}`,
+    amount: Math.round(payload.amountInr * 100),
+    currency: 'INR',
+  };
+}
+
 export async function createRazorpayOrder(
   payload: CreateOrderPayload,
 ): Promise<CreateOrderResponse> {
+  if (isPaymentDemoMode()) {
+    return createDemoOrder(payload);
+  }
+
   const response = await fetch('/api/create-razorpay-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -107,6 +140,14 @@ export async function verifyRazorpayPayment(params: {
   paymentId: string;
   signature: string;
 }): Promise<void> {
+  if (
+    isPaymentDemoMode() &&
+    params.paymentId.startsWith('pay_demo_') &&
+    params.signature === 'demo_signature'
+  ) {
+    return;
+  }
+
   const response = await fetch('/api/verify-razorpay-payment', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -118,15 +159,15 @@ export async function verifyRazorpayPayment(params: {
 
 async function openDemoCheckout(params: RazorpayCheckoutParams): Promise<RazorpaySuccessResponse> {
   const amountInr = params.order.amount / 100;
-  const confirmed = window.confirm(
-    `Demo test payment\n\n${params.description}\nAmount: ${formatPrice(amountInr)}\n\nNo real money will be charged. Continue?`,
-  );
 
-  if (!confirmed) {
-    throw new Error('Payment cancelled');
+  if (!import.meta.env.DEV) {
+    const confirmed = window.confirm(
+      `Demo test payment\n\n${params.description}\nAmount: ${formatPrice(amountInr)}\n\nNo real money will be charged. Continue?`,
+    );
+    if (!confirmed) throw new Error('Payment cancelled');
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  await new Promise((resolve) => setTimeout(resolve, import.meta.env.DEV ? 200 : 600));
 
   return {
     razorpay_order_id: params.order.orderId,
@@ -138,7 +179,7 @@ async function openDemoCheckout(params: RazorpayCheckoutParams): Promise<Razorpa
 export async function openRazorpayCheckout(
   params: RazorpayCheckoutParams,
 ): Promise<RazorpaySuccessResponse> {
-  if (isPaymentDemoMode || params.order.keyId === 'rzp_test_demo') {
+  if (isPaymentDemoMode() || params.order.keyId === 'rzp_test_demo') {
     return openDemoCheckout(params);
   }
 
