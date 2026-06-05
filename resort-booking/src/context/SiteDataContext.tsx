@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, {
   createContext,
   useCallback,
@@ -28,9 +27,6 @@ import {
   upsertVillaToSupabase,
   updateBookingInSupabase,
 } from '../lib/siteDataSupabase';
-=======
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
->>>>>>> 5e587cefe66a7c5507e46cb8d4381a083fcda235
 import {
   createDefaultSiteData,
   loadSiteData,
@@ -100,7 +96,6 @@ const SiteDataActionsContext = createContext<SiteDataActions | null>(null);
 
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-<<<<<<< HEAD
 function logRemoteError(label: string, error: unknown) {
   const message =
     error && typeof error === 'object' && 'message' in error
@@ -165,25 +160,6 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (!isSupabaseConfigured || dataSource !== 'local') return;
     const onUpdate = () => setLocalData(loadSiteData());
-=======
-export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [data, setData] = useState<SiteData>(() => loadSiteData());
-  const dataRef = useRef<SiteData>(data);
-
-  const persist = useCallback((updater: (prev: SiteData) => SiteData) => {
-    const next = updater(dataRef.current);
-    dataRef.current = next;
-    setData(next);
-    saveSiteData(next);
-  }, []);
-
-  useEffect(() => {
-    const onUpdate = () => {
-      const next = loadSiteData();
-      dataRef.current = next;
-      setData(next);
-    };
->>>>>>> 5e587cefe66a7c5507e46cb8d4381a083fcda235
     window.addEventListener('site-data-updated', onUpdate);
     window.addEventListener('storage', onUpdate);
     return () => {
@@ -540,15 +516,9 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   const resetAllData = useCallback(() => {
-<<<<<<< HEAD
     setDataSource('local');
     const reset = resetSiteData();
     setLocalData(reset);
-=======
-    const next = resetSiteData();
-    dataRef.current = next;
-    setData(next);
->>>>>>> 5e587cefe66a7c5507e46cb8d4381a083fcda235
   }, []);
 
   const getRoomById = useCallback((id: string) => data.rooms.find((r) => r.id === id), [data.rooms]);

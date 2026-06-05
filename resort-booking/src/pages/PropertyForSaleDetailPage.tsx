@@ -16,11 +16,7 @@ import {
   getStatusLabel,
 } from '../data/propertiesForSale';
 import { useSiteData } from '../context/SiteDataContext';
-<<<<<<< HEAD
 import { buildPropertyEnquiryMessage, buildWhatsAppUrl } from '../lib/whatsapp';
-=======
-import { normalizeImageUrl } from '../lib/imageUrl';
->>>>>>> 5e587cefe66a7c5507e46cb8d4381a083fcda235
 
 const PropertyForSaleDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,7 +67,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
             <AnimatedSection variant="fade-in">
               <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 <img
-                  src={normalizeImageUrl(property.images[imageIndex])}
+                  src={property.images[imageIndex]}
                   alt={property.title}
                   className="w-full h-80 md:h-[28rem] object-cover"
                 />
@@ -106,7 +102,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
                       idx === imageIndex ? 'border-airbnb-red' : 'border-transparent opacity-70'
                     }`}
                   >
-                    <img src={normalizeImageUrl(img)} alt="" className="h-16 w-24 object-cover" />
+                    <img src={img} alt="" className="h-16 w-24 object-cover" />
                   </button>
                 ))}
               </div>

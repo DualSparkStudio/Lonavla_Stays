@@ -5,6 +5,7 @@ import PublicLayout from '../components/layout/PublicLayout';
 import HeroExplorer from '../components/home/HeroExplorer';
 import { formatSalePrice } from '../data/propertiesForSale';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
+import { getPrimaryImage } from '../lib/imageUrl';
 
 const PublicHomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const PublicHomePage: React.FC = () => {
               >
                 <div className="relative overflow-hidden">
                   <img
-                    src={room.images[0]}
+                    src={getPrimaryImage(room.images, 'https://via.placeholder.com/800x600?text=Villa')}
                     alt={room.name}
                     loading={index < 2 ? 'eager' : 'lazy'}
                     decoding="async"
@@ -109,7 +110,7 @@ const PublicHomePage: React.FC = () => {
                   tabIndex={0}
                 >
                   <img
-                    src={property.images[0]}
+                    src={getPrimaryImage(property.images, 'https://via.placeholder.com/800x600?text=Property')}
                     alt={property.title}
                     loading="lazy"
                     decoding="async"
