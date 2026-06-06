@@ -63,8 +63,14 @@ const AdminProfilePage: React.FC = () => {
   const [bookingSaved, setBookingSaved] = useState(false);
 
   useEffect(() => {
-    setProfile(loadAdminProfile());
-  }, []);
+    const loaded = loadAdminProfile();
+    setProfile({
+      ...loaded,
+      phone: loaded.phone.trim() || settings.resortPhone,
+      email: loaded.email.trim() || settings.resortEmail,
+      officeAddress: loaded.officeAddress?.trim() || settings.resortAddress,
+    });
+  }, [settings.resortAddress, settings.resortEmail, settings.resortPhone]);
 
   useEffect(() => {
     setBookingDraft({
@@ -99,9 +105,11 @@ const AdminProfilePage: React.FC = () => {
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
     saveAdminProfile(profile);
-    if (profile.phone.trim()) {
-      updateSettings({ resortPhone: profile.phone.trim() });
-    }
+    updateSettings({
+      ...(profile.phone.trim() ? { resortPhone: profile.phone.trim() } : {}),
+      ...(profile.email.trim() ? { resortEmail: profile.email.trim() } : {}),
+      ...(profile.officeAddress.trim() ? { resortAddress: profile.officeAddress.trim() } : {}),
+    });
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 3000);
   };
@@ -268,7 +276,7 @@ const AdminProfilePage: React.FC = () => {
                   />
                 </AdminFormField>
 
-                <AdminFormField label="Email">
+                <AdminFormField label="Email" hint="Shown in the website footer and booking emails">
                   <input
                     type="email"
                     required
@@ -280,13 +288,27 @@ const AdminProfilePage: React.FC = () => {
 
                 <AdminFormField
                   label="WhatsApp / Phone"
-                  hint="Used for For Sale enquiries and the public Call button"
+                  hint="Shown in the website footer, contact page, and booking emails"
                 >
                   <input
                     type="tel"
                     value={profile.phone}
                     onChange={(e) => handleProfileChange('phone', e.target.value)}
                     placeholder="+91 98765 43210"
+                    className={adminInputClass}
+                  />
+                </AdminFormField>
+
+                <AdminFormField
+                  label="Office address"
+                  hint="Reservations office address — shown in the website footer and confirmation emails"
+                  className="sm:col-span-2"
+                >
+                  <textarea
+                    rows={2}
+                    value={profile.officeAddress}
+                    onChange={(e) => handleProfileChange('officeAddress', e.target.value)}
+                    placeholder="Office 2, Hill Plaza, Old Mumbai-Pune Highway, Lonavala 410401"
                     className={adminInputClass}
                   />
                 </AdminFormField>

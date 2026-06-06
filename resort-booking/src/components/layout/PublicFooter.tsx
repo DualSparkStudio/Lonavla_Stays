@@ -37,10 +37,35 @@ const PublicFooter: React.FC = () => {
 
           <div>
             <h3 className="font-heading text-lg mb-4 uppercase tracking-wide">Contact</h3>
-            <div className="space-y-2 text-gray-600 font-medium">
-              <p>📍 {settings.resortAddress}</p>
-              <p>📞 {settings.resortPhone}</p>
-              <p>✉️ {settings.resortEmail}</p>
+            <div className="space-y-3 text-gray-600 font-medium">
+              {settings.resortAddress.trim() ? (
+                <p>
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
+                    Office
+                  </span>
+                  {settings.resortAddress}
+                </p>
+              ) : null}
+              {settings.resortPhone.trim() ? (
+                <p>
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
+                    Phone / WhatsApp
+                  </span>
+                  <a href={`tel:${settings.resortPhone.replace(/\s/g, '')}`} className="hover:text-airbnb-red transition-colors">
+                    {settings.resortPhone}
+                  </a>
+                </p>
+              ) : null}
+              {settings.resortEmail.trim() ? (
+                <p>
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
+                    Email
+                  </span>
+                  <a href={`mailto:${settings.resortEmail}`} className="hover:text-airbnb-red transition-colors">
+                    {settings.resortEmail}
+                  </a>
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

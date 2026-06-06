@@ -178,7 +178,7 @@ function buildGuestEmail(payload: BookingEmailPayload, resortName: string) {
     ${sectionTitle('📋', 'Booking Details')}
     ${detailLine('Booking ID', bookingIdLabel(payload.bookingRef))}
     ${detailLine('Status', statusPill('Confirmed', '#dcfce7', '#166534'))}
-    ${detailLine('Room', payload.roomName)}
+    ${detailLine('Villa', payload.roomName)}
     ${detailLine('Check-in Date', formatLongDate(payload.checkIn))}
     ${detailLine('Check-out Date', formatLongDate(payload.checkOut))}
     ${detailLine('Number of Nights', `${payload.nights} ${payload.nights === 1 ? 'night' : 'nights'}`)}
@@ -217,7 +217,7 @@ function buildAdminEmail(payload: BookingEmailPayload, resortName: string) {
     ${detailLine('Guest', payload.guestName)}
     ${detailLine('Guest email', `<a href="mailto:${payload.guestEmail}" style="color:#2563eb;">${payload.guestEmail}</a>`)}
     ${payload.guestPhone ? detailLine('Guest phone', payload.guestPhone) : ''}
-    ${detailLine('Room', payload.roomName)}
+    ${detailLine('Villa', payload.roomName)}
     ${detailLine('Check-in', formatLongDate(payload.checkIn))}
     ${detailLine('Check-out', formatLongDate(payload.checkOut))}
     ${detailLine('Guests', String(payload.guests))}

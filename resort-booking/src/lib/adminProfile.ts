@@ -3,6 +3,9 @@ import {
   DEFAULT_CHECK_OUT_TIME,
   DEFAULT_EXTRA_PERSON_CHARGE,
   DEFAULT_GST_PERCENT,
+  RESORT_ADDRESS,
+  RESORT_EMAIL,
+  RESORT_PHONE,
 } from '../data/resort';
 
 const PROFILE_KEY = 'lonavala-stays-admin-profile';
@@ -12,6 +15,8 @@ export type AdminProfile = {
   displayName: string;
   email: string;
   phone: string;
+  /** Reservations / management office address (shown in site footer & emails) */
+  officeAddress: string;
   bio: string;
   checkInTime: string;
   checkOutTime: string;
@@ -23,8 +28,9 @@ export type AdminProfile = {
 
 export const defaultAdminProfile = (): AdminProfile => ({
   displayName: 'Resort Admin',
-  email: 'admin@lonavalastays.com',
-  phone: '+91 98765 43210',
+  email: RESORT_EMAIL,
+  phone: RESORT_PHONE,
+  officeAddress: RESORT_ADDRESS,
   bio: 'Managing villas, bookings, and guest enquiries for Lonavala Stays.',
   checkInTime: DEFAULT_CHECK_IN_TIME,
   checkOutTime: DEFAULT_CHECK_OUT_TIME,
