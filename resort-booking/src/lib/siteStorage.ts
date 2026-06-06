@@ -16,6 +16,7 @@ import { propertiesForSale as defaultPropertiesForSale } from '../data/propertie
 import type { SiteData, SiteSettings, Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, BlockedDate } from '../types/site';
 
 const STORAGE_KEY = 'lonavala-stays-site-data-v1';
+const SESSION_CACHE_KEY = 'lonavala-stays-session-site-data';
 
 export const defaultSiteSettings = (): SiteSettings => ({
   resortName: RESORT_NAME,
@@ -216,6 +217,26 @@ export function dedupeBookings(bookings: AdminBooking[]): AdminBooking[] {
     result.push(b);
   }
   return result;
+}
+
+export function readSessionSiteData(): SiteData | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(SESSION_CACHE_KEY);
+    if (!raw) return null;
+    return mergeWithDefaults(JSON.parse(raw) as Partial<SiteData>);
+  } catch {
+    return null;
+  }
+}
+
+export function writeSessionSiteData(data: SiteData): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    /* session quota */
+  }
 }
 
 function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {

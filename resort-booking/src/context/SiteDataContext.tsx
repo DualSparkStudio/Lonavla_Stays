@@ -30,8 +30,10 @@ import {
 import {
   createDefaultSiteData,
   loadSiteData,
+  readSessionSiteData,
   resetSiteData,
   saveSiteData,
+  writeSessionSiteData,
   type AdminBooking,
   type BlockedDate,
   type ContactMessage,
@@ -112,9 +114,11 @@ function persistIfLocal(next: SiteData, dataSource: 'supabase' | 'local', silent
 
 export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const [localData, setLocalData] = useState<SiteData>(() =>
-    isSupabaseConfigured ? createDefaultSiteData() : loadSiteData(),
-  );
+  const [localData, setLocalData] = useState<SiteData>(() => {
+    if (!isSupabaseConfigured) return loadSiteData();
+    return readSessionSiteData() ?? createDefaultSiteData();
+  });
+  const hadSessionCache = useRef(Boolean(readSessionSiteData()));
   const [dataSource, setDataSource] = useState<'supabase' | 'local'>(isSupabaseConfigured ? 'supabase' : 'local');
   const [adminLoaded, setAdminLoaded] = useState(false);
   const bookingSyncInFlight = useRef(new Set<string>());
@@ -124,6 +128,7 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     queryFn: fetchPublicSiteDataFromSupabase,
     enabled: isSupabaseConfigured,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     retry: 1,
   });
 
@@ -139,11 +144,16 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!isSupabaseConfigured) return;
     if (publicQuery.isSuccess && publicQuery.data) {
       setDataSource('supabase');
-      setLocalData((prev) => ({
-        ...publicQuery.data!,
-        contactMessages: adminQuery.data?.contactMessages ?? prev.contactMessages,
-        bookings: adminQuery.data?.bookings ?? publicQuery.data!.bookings,
-      }));
+      setLocalData((prev) => {
+        const next = {
+          ...publicQuery.data!,
+          contactMessages: adminQuery.data?.contactMessages ?? prev.contactMessages,
+          bookings: adminQuery.data?.bookings ?? publicQuery.data!.bookings,
+        };
+        writeSessionSiteData(next);
+        hadSessionCache.current = true;
+        return next;
+      });
     }
     if (publicQuery.isError) {
       setDataSource('local');
@@ -169,7 +179,11 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [dataSource]);
 
   const data = localData;
-  const loading = isSupabaseConfigured && publicQuery.isLoading;
+  const loading =
+    isSupabaseConfigured &&
+    publicQuery.isLoading &&
+    !hadSessionCache.current &&
+    !publicQuery.data;
 
   const patchData = useCallback(
     (updater: (prev: SiteData) => SiteData, options?: { silent?: boolean }) => {

@@ -66,17 +66,17 @@ const bookingIdLabel = (ref: string) => {
 };
 
 function statusPill(label: string, bg: string, color: string) {
-  return `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:13px;font-weight:700;">${label}</span>`;
+  return `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:13px;font-weight:500;">${label}</span>`;
 }
 
 function sectionTitle(icon: string, title: string) {
-  return `<h2 style="margin:0 0 14px;font-size:17px;color:#111827;font-weight:700;">${icon} ${title}</h2>`;
+  return `<h2 style="margin:0 0 14px;font-size:17px;color:#111827;font-weight:600;">${icon} ${title}</h2>`;
 }
 
 function detailLine(label: string, value: string, valueStyle = '') {
-  return `<p style="margin:0 0 10px;font-size:15px;line-height:1.5;color:#374151;">
-    <strong style="color:#111827;">${label}:</strong>
-    <span style="${valueStyle}">${value}</span>
+  return `<p style="margin:0 0 10px;font-size:15px;line-height:1.5;color:#374151;font-weight:400;">
+    <span style="color:#6b7280;">${label}:</span>
+    <span style="color:#111827;${valueStyle}"> ${value}</span>
   </p>`;
 }
 
@@ -85,14 +85,14 @@ function unitRate(total: number, count: number, nights: number) {
   return Math.round(total / (count * nights));
 }
 
-function priceRowWithDetail(label: string, amount: number, detail?: string, bold = false) {
-  const weight = bold ? 700 : 600;
-  const size = bold ? '17px' : '15px';
+function priceRowWithDetail(label: string, amount: number, detail?: string, emphasizeTotal = false) {
+  const weight = emphasizeTotal ? 500 : 400;
+  const size = emphasizeTotal ? '16px' : '15px';
   const detailCell = detail
-    ? `<span style="flex:1;text-align:center;color:#6b7280;font-size:14px;">${detail}</span>`
+    ? `<span style="flex:1;text-align:center;color:#6b7280;font-size:14px;font-weight:400;">${detail}</span>`
     : `<span style="flex:1;"></span>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 8px;font-size:${size};color:#374151;">
-    <span style="flex-shrink:0;">${label}</span>
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 8px;font-size:${size};color:#374151;font-weight:400;">
+    <span style="flex-shrink:0;font-weight:400;">${label}</span>
     ${detailCell}
     <span style="font-weight:${weight};color:#111827;white-space:nowrap;flex-shrink:0;">${formatInr(amount)}</span>
   </div>`;
@@ -140,7 +140,7 @@ function emailShell(headerTitle: string, headerSubtitle: string, body: string, r
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <tr>
           <td style="background:#2563eb;padding:28px 32px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">${headerTitle}</h1>
+            <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:600;">${headerTitle}</h1>
             <p style="margin:10px 0 0;color:rgba(255,255,255,0.95);font-size:15px;">${headerSubtitle}</p>
           </td>
         </tr>
@@ -170,9 +170,9 @@ function buildGuestEmail(payload: BookingEmailPayload, resortName: string) {
       : { bg: '#dbeafe', color: '#1e40af' };
 
   const body = `
-    <p style="margin:0 0 12px;font-size:16px;line-height:1.6;color:#111827;">Dear <strong>${payload.guestName}</strong>,</p>
-    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#374151;">
-      Your booking has been successfully confirmed! We&apos;re excited to welcome you to <strong>${resortName}</strong>.
+    <p style="margin:0 0 12px;font-size:16px;line-height:1.6;color:#111827;font-weight:400;">Dear ${payload.guestName},</p>
+    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#374151;font-weight:400;">
+      Your booking has been successfully confirmed! We&apos;re excited to welcome you to ${resortName}.
     </p>
 
     ${sectionTitle('📋', 'Booking Details')}
@@ -225,8 +225,8 @@ function buildAdminEmail(payload: BookingEmailPayload, resortName: string) {
     ${payload.paymentId ? detailLine('Payment ref', payload.paymentId) : ''}
 
     ${buildPriceBreakdownHtml(payload)}
-    <p style="margin:20px 0 0;font-size:14px;line-height:1.6;color:#374151;">
-      Review this booking in the admin panel under <strong>Bookings</strong> or <strong>Calendar</strong>.
+    <p style="margin:20px 0 0;font-size:14px;line-height:1.6;color:#374151;font-weight:400;">
+      Review this booking in the admin panel under Bookings or Calendar.
     </p>`;
 
   return emailShell('📬 New Booking Received', resortName, body, resortName);
