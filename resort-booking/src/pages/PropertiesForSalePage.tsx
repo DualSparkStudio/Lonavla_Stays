@@ -69,11 +69,11 @@ const PropertiesForSalePage: React.FC = () => {
             <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">
               {settings.forSalePageTitle}
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl">
+            <p className="text-2xl text-gray-900 max-w-2xl">
               {settings.forSalePageSubtitle}
             </p>
             {(categoryFilter !== 'all' || areaFilter !== 'all') && (
-              <p className="mt-3 text-base font-medium text-airbnb-red">
+              <p className="mt-3 text-lg font-medium text-airbnb-red">
                 Filtered:
                 {categoryFilter !== 'all' ? ` ${categoryFilter === 'villa' ? 'Villas' : 'Plots'}` : ''}
                 {areaFilter !== 'all' ? ` · ${areaFilter}` : ''}
@@ -92,7 +92,7 @@ const PropertiesForSalePage: React.FC = () => {
                 type="button"
                 onClick={() => setCategoryFilter(filter.key)}
                 className={cn(
-                  'rounded-full px-4 py-2 text-sm font-bold transition-all duration-200',
+                  'rounded-full px-4 py-2 text-base font-bold transition-all duration-200',
                   categoryFilter === filter.key
                     ? 'bg-airbnb-red text-white shadow-md'
                     : 'bg-white border border-gray-200 text-gray-700 hover:border-airbnb-red hover:text-airbnb-red'
@@ -105,7 +105,7 @@ const PropertiesForSalePage: React.FC = () => {
           <select
             value={areaFilter}
             onChange={(e) => setAreaFilter(e.target.value)}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-base font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-lg font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
           >
             {saleAreas.map((area) => (
               <option key={area} value={area}>
@@ -116,7 +116,7 @@ const PropertiesForSalePage: React.FC = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-base font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-lg font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
           >
             <option value="price-desc">Price: high to low</option>
             <option value="price-asc">Price: low to high</option>
@@ -125,8 +125,8 @@ const PropertiesForSalePage: React.FC = () => {
         </div>
 
         {listings.length === 0 ? (
-          <div className="text-center py-16 text-gray-600">
-            <p className="text-lg font-medium">No listings in this category right now.</p>
+          <div className="text-center py-16 text-gray-900">
+            <p className="text-xl font-medium">No listings in this category right now.</p>
             <Link to="/contact" className="inline-block mt-4 text-airbnb-red font-bold hover:underline">
               Contact us for off-market options →
             </Link>
@@ -145,7 +145,7 @@ const PropertiesForSalePage: React.FC = () => {
                       alt={property.title}
                       className="room-card-image w-full h-72 object-cover"
                     />
-                    <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-sm font-bold">
+                    <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-base font-bold">
                       {getCategoryLabel(property.category)}
                     </span>
                     {property.status !== 'available' && (
@@ -155,12 +155,12 @@ const PropertiesForSalePage: React.FC = () => {
                     )}
                   </div>
                   <div className="p-6">
-                    <h2 className="font-heading text-xl text-gray-900 uppercase tracking-wide mb-2">
+                    <h2 className="font-heading text-xl text-airbnb-red uppercase tracking-wide mb-2">
                       {property.title}
                     </h2>
-                    <p className="text-base text-gray-600 font-medium mb-1">{property.location}</p>
-                    <p className="text-sm text-gray-500 mb-3">{property.areaLabel}</p>
-                    <p className="text-base text-gray-500 mb-4 line-clamp-2">{property.description}</p>
+                    <p className="text-lg text-gray-900 font-medium mb-1">{property.location}</p>
+                    <p className="text-base text-gray-900 mb-3">{property.areaLabel}</p>
+                    <p className="text-lg text-gray-900 mb-4 line-clamp-2">{property.description}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {property.highlights.slice(0, 3).map((h) => (
                         <span
@@ -172,10 +172,10 @@ const PropertiesForSalePage: React.FC = () => {
                       ))}
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold villa-card-price">
+                      <span className="villa-card-price">
                         {formatSalePrice(property)}
                       </span>
-                      <span className="text-airbnb-red font-bold text-sm">View details →</span>
+                      <span className="text-airbnb-red font-bold text-base">View details →</span>
                     </div>
                   </div>
                 </Link>
@@ -186,7 +186,7 @@ const PropertiesForSalePage: React.FC = () => {
 
         <AnimatedSection delay={300} className="mt-12 bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
           <h2 className="font-heading text-2xl text-gray-900 mb-2">Looking for something specific?</h2>
-          <p className="text-lg text-gray-600 mb-6 max-w-xl mx-auto">
+          <p className="text-xl text-gray-900 mb-6 max-w-xl mx-auto">
             Tell us your budget, preferred location, and whether you need a plot or villa—we&apos;ll share
             matching options and arrange site visits.
           </p>

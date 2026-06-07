@@ -90,7 +90,7 @@ const AdminBookingsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Bookings</h1>
-          <p className="text-gray-600">Manage reservations from the booking flow or add them manually.</p>
+          <p className="text-gray-900">Manage reservations from the booking flow or add them manually.</p>
         </div>
         <button
           type="button"
@@ -156,7 +156,7 @@ const AdminBookingsPage: React.FC = () => {
             key={s}
             type="button"
             onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-full text-sm font-bold capitalize ${
+            className={`px-4 py-2 rounded-full text-base font-bold capitalize ${
               filter === s ? 'bg-red-500 text-white' : 'bg-white border border-gray-200'
             }`}
           >
@@ -166,7 +166,7 @@ const AdminBookingsPage: React.FC = () => {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-gray-500 bg-white rounded-xl p-8 text-center border">No bookings match this filter.</p>
+        <p className="text-gray-900 bg-white rounded-xl p-8 text-center border">No bookings match this filter.</p>
       ) : (
         <div className="bg-white rounded-xl shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -180,11 +180,11 @@ const AdminBookingsPage: React.FC = () => {
             <tbody className="divide-y divide-gray-200">
               {filtered.map((b) => (
                 <tr key={b.id}>
-                  <td className="px-4 py-3 text-sm font-medium">{b.bookingRef}</td>
-                  <td className="px-4 py-3 text-sm">{b.guestName}<br /><span className="text-gray-500">{b.guestEmail}</span></td>
-                  <td className="px-4 py-3 text-sm">{b.roomName}</td>
-                  <td className="px-4 py-3 text-sm">{b.checkIn} → {b.checkOut}</td>
-                  <td className="px-4 py-3 text-sm">₹{b.total.toLocaleString('en-IN')}</td>
+                  <td className="px-4 py-3 text-base font-medium">{b.bookingRef}</td>
+                  <td className="px-4 py-3 text-base">{b.guestName}<br /><span className="text-gray-900">{b.guestEmail}</span></td>
+                  <td className="px-4 py-3 text-base">{b.roomName}</td>
+                  <td className="px-4 py-3 text-base">{b.checkIn} → {b.checkOut}</td>
+                  <td className="px-4 py-3 text-base">₹{b.total.toLocaleString('en-IN')}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex capitalize px-2.5 py-0.5 rounded-full text-xs font-bold ${
@@ -212,7 +212,7 @@ const AdminBookingsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => window.confirm('Delete this booking?') && deleteBooking(b.id)}
-                        className="text-sm text-gray-500 hover:text-red-600"
+                        className="text-sm text-gray-900 hover:text-red-600"
                       >
                         Delete
                       </button>

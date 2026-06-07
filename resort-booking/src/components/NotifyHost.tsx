@@ -27,7 +27,7 @@ const NotifyHost: React.FC = () => {
 
   return (
     <div
-      className={`fixed top-4 left-1/2 z-[100] -translate-x-1/2 max-w-md rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${variantStyles[toast.variant] ?? variantStyles.info}`}
+      className={`fixed top-4 left-1/2 z-[100] -translate-x-1/2 max-w-md rounded-lg px-4 py-3 text-base font-medium shadow-lg ${variantStyles[toast.variant] ?? variantStyles.info}`}
       role="status"
     >
       {toast.message}

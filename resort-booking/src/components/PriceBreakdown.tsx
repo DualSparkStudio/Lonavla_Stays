@@ -15,13 +15,13 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
   totalClassName = 'border-gray-300 text-gray-900',
   subtotalClassName = 'border-gray-200',
 }) => (
-  <div className={`space-y-2 text-sm ${className}`}>
+  <div className={`space-y-2 text-base ${className}`}>
     {lines.map((line) => {
       if (line.variant === 'total') {
         return (
           <div
             key={line.key}
-            className={`flex justify-between items-center gap-3 text-lg font-bold pt-2 border-t ${totalClassName}`}
+            className={`flex justify-between items-center gap-3 text-xl font-bold pt-2 border-t ${totalClassName}`}
           >
             <span>{line.label}</span>
             <span>{formatPrice(line.amount)}</span>
@@ -42,7 +42,7 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
       }
 
       return (
-        <div key={line.key} className="flex justify-between items-center gap-3 text-gray-700">
+        <div key={line.key} className="flex justify-between items-center gap-3 text-gray-900">
           <span className="shrink-0">{line.label}</span>
           {line.detail ? (
             <span className="flex-1 text-center text-gray-500 text-xs sm:text-sm">{line.detail}</span>

@@ -7,7 +7,7 @@ type FieldProps = { label: string; value: React.ReactNode; className?: string };
 export const AdminDetailField: React.FC<FieldProps> = ({ label, value, className }) => (
   <div className={className}>
     <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">{label}</p>
-    <div className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-sm font-semibold text-gray-900 shadow-sm">
+    <div className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-base font-semibold text-gray-900 shadow-sm">
       {value}
     </div>
   </div>
@@ -85,7 +85,7 @@ export const AdminDetailModalShell: React.FC<AdminDetailModalShellProps> = ({
                     <Dialog.Title className="font-heading text-2xl text-white tracking-wide truncate">
                       {title}
                     </Dialog.Title>
-                    <p className="text-white/90 text-sm font-medium mt-0.5 uppercase tracking-wide">
+                    <p className="text-white/90 text-base font-medium mt-0.5 uppercase tracking-wide">
                       {subtitle}
                     </p>
                   </div>

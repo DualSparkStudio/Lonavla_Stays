@@ -92,7 +92,7 @@ const AdminRoomsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Villa management</h1>
-          <p className="text-gray-600">Changes appear immediately on the public villas pages.</p>
+          <p className="text-gray-900">Changes appear immediately on the public villas pages.</p>
         </div>
         <button
           type="button"
@@ -118,15 +118,15 @@ const AdminRoomsPage: React.FC = () => {
                 <h3 className="font-bold text-gray-900">{room.name}</h3>
                 <StatusPill status={room.status} />
               </div>
-              <p className="text-sm text-gray-600 mb-3">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
+              <p className="text-base text-gray-900 mb-3">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setViewing(room)} className="text-sm font-medium text-red-600 hover:text-red-700">
                   View
                 </button>
-                <button type="button" onClick={() => openEdit(room)} className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                <button type="button" onClick={() => openEdit(room)} className="text-base font-medium text-blue-600 hover:text-blue-700">
                   Edit
                 </button>
-                <button type="button" onClick={() => window.confirm('Delete villa?') && deleteRoom(room.id)} className="text-sm text-gray-500 hover:text-red-600">
+                <button type="button" onClick={() => window.confirm('Delete villa?') && deleteRoom(room.id)} className="text-sm text-gray-900 hover:text-red-600">
                   Delete
                 </button>
               </div>
@@ -141,7 +141,7 @@ const AdminRoomsPage: React.FC = () => {
           onSubmit={handleSave}
           className="scroll-mt-24 bg-white rounded-xl border p-6 mt-10 space-y-4"
         >
-          <h2 className="text-lg font-bold">{isNew ? 'New villa' : `Edit: ${editing?.name}`}</h2>
+          <h2 className="text-xl font-bold">{isNew ? 'New villa' : `Edit: ${editing?.name}`}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AdminFormField label="Villa name">
               <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={adminInputClass} />

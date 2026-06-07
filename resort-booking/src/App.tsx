@@ -25,7 +25,7 @@ const AdminCalendarPage = lazy(() => import('./pages/admin/AdminCalendarPage'));
 const AdminProfilePage = lazy(() => import('./pages/admin/AdminProfilePage'));
 
 const PageLoader = () => (
-  <div className="min-h-[50vh] flex items-center justify-center text-gray-500">Loading…</div>
+  <div className="min-h-[50vh] flex items-center justify-center text-gray-900">Loading…</div>
 );
 
 const LegacyRoomRedirect = () => {
@@ -71,7 +71,7 @@ function App() {
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                   <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-                  <p className="text-gray-600 mb-6">Page not found</p>
+                  <p className="text-gray-900 mb-6">Page not found</p>
                   <Link to="/" className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg">
                     Go back home
                   </Link>

@@ -100,11 +100,11 @@ const AdminCalendarPage: React.FC = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Availability calendar</h1>
-          <p className="text-gray-600 text-sm mt-1">
+          <p className="text-gray-900 text-base mt-1">
             View bookings and block dates. Drag on the calendar to block or unblock a range.
           </p>
         </div>
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <label className="flex items-center gap-2 text-base font-medium text-gray-700">
           Villa
           <select
             value={selectedRoom}
@@ -158,11 +158,11 @@ const AdminCalendarPage: React.FC = () => {
       >
         {pendingRange && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-base text-gray-900">
               {pendingRoom?.name ?? 'Villa'} · {pendingRange.startDate} – {pendingRange.endDate}
             </p>
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-1">Reason</label>
+              <label className="block text-base font-bold text-gray-900 mb-1">Reason</label>
               <input
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
@@ -170,7 +170,7 @@ const AdminCalendarPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-1">Notes (optional)</label>
+              <label className="block text-base font-bold text-gray-900 mb-1">Notes (optional)</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}

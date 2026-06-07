@@ -12,7 +12,7 @@ type AdminFormFieldProps = {
 
 const AdminFormField: React.FC<AdminFormFieldProps> = ({ label, hint, className, children }) => (
   <div className={className}>
-    <label className="block text-sm font-semibold text-pink-600 mb-1">{label}</label>
+    <label className="block text-base font-semibold text-pink-600 mb-1">{label}</label>
     {children}
     {hint ? <p className="mt-1 text-xs text-gray-500">{hint}</p> : null}
   </div>

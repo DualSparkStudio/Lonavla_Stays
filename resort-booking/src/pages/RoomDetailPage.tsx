@@ -42,7 +42,7 @@ const RoomDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/villas')}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-airbnb-red font-bold mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-gray-900 hover:text-airbnb-red font-bold mb-6 transition-colors"
         >
           <ChevronLeftIcon className="h-5 w-5" />
           All villas
@@ -95,24 +95,24 @@ const RoomDetailPage: React.FC = () => {
             </AnimatedSection>
 
             <AnimatedSection delay={100}>
-              <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-sm font-bold text-gray-800 mb-3">
+              <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-base font-bold text-gray-800 mb-3">
                 {room.room_type}
               </span>
               <h1 className="font-heading text-4xl text-gray-900 mb-2">{room.name}</h1>
-              <p className="flex items-start gap-2 text-lg text-gray-600 mb-2">
+              <p className="flex items-start gap-2 text-xl text-gray-900 mb-2">
                 <MapPinIcon className="h-5 w-5 shrink-0 mt-0.5 text-airbnb-red" />
                 <span>
                   {room.location}
-                  <span className="block text-base text-gray-500 mt-1">{room.address}</span>
+                  <span className="block text-lg text-gray-900 mt-1">{room.address}</span>
                 </span>
               </p>
-              <p className="text-base text-gray-500 mb-2">
+              <p className="text-lg text-gray-900 mb-2">
                 Managed by {settings.resortName} · ★ {room.rating} ({room.review_count} reviews)
               </p>
-              <p className="text-base text-gray-600 mb-4">
+              <p className="text-lg text-gray-900 mb-4">
                 Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
               </p>
-              <p className="text-base text-gray-600 leading-relaxed">{room.description}</p>
+              <p className="text-lg text-gray-900 leading-relaxed">{room.description}</p>
             </AnimatedSection>
 
             <AnimatedSection delay={150}>
@@ -121,7 +121,7 @@ const RoomDetailPage: React.FC = () => {
                 {room.amenities.map((amenity) => (
                   <div
                     key={amenity}
-                    className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 text-sm font-medium text-gray-700"
+                    className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 text-base font-medium text-gray-700"
                   >
                     <span className="text-airbnb-red">✓</span>
                     {amenity}
@@ -143,13 +143,13 @@ const RoomDetailPage: React.FC = () => {
             <StickyBookingPanel className="bg-white rounded-2xl border border-gray-200 shadow-lg px-4 py-5 sm:px-5">
               <p className="text-2xl font-bold text-gray-900 mb-1">
                 {formatPrice(room.price_per_night)}
-                <span className="text-base font-medium text-gray-600"> / night</span>
+                <span className="text-lg font-medium text-gray-900"> / night</span>
               </p>
-              <p className="flex items-center gap-2 text-base text-gray-600 font-medium mb-2">
+              <p className="flex items-center gap-2 text-lg text-gray-900 font-medium mb-2">
                 <UserGroupIcon className="h-5 w-5" />
                 Up to {room.max_guests} guests
               </p>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-base text-gray-900 mb-4">
                 Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
               </p>
               <AvailabilityCalendar

@@ -82,10 +82,10 @@ const AdminPropertyDetailsModal: React.FC<AdminPropertyDetailsModalProps> = ({ p
         border="border-pink-100"
       >
         <div className="rounded-xl bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 flex items-center justify-between text-white">
-          <span className="text-sm font-bold uppercase tracking-wide">
+          <span className="text-base font-bold uppercase tracking-wide">
             {property.priceOnRequest ? 'Price on request' : 'Listing price'}
           </span>
-          <span className="text-xl font-bold">
+          <span className="text-2xl font-bold">
             {property.priceOnRequest ? 'Contact for quote' : formatSalePrice(property)}
           </span>
         </div>
@@ -116,13 +116,13 @@ const AdminPropertyDetailsModal: React.FC<AdminPropertyDetailsModalProps> = ({ p
         <div className="space-y-4">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Short description</p>
-            <p className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-sm text-gray-700 leading-relaxed shadow-sm">
+            <p className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-base text-gray-700 leading-relaxed shadow-sm">
               {property.description}
             </p>
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Full description</p>
-            <p className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-sm text-gray-700 leading-relaxed shadow-sm whitespace-pre-line">
+            <p className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-base text-gray-700 leading-relaxed shadow-sm whitespace-pre-line">
               {property.longDescription}
             </p>
           </div>

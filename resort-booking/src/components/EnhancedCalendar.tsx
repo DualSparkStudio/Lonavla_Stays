@@ -121,7 +121,7 @@ const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         select={onDateSelect}
         eventClick={handleEventClick}
       />
-      <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
+      <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-900">
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded bg-red-500" /> Confirmed
         </span>

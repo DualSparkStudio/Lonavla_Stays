@@ -75,7 +75,7 @@ const BookingConfirmationPage: React.FC = () => {
       <PublicLayout currentPage="villas">
         <div className="max-w-lg mx-auto px-4 py-20 text-center">
           <h1 className="font-heading text-3xl text-gray-900 mb-4">Booking not found</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-900 mb-6">
             We could not find confirmation details for this booking.
           </p>
           <Link to="/villas">
@@ -102,10 +102,10 @@ const BookingConfirmationPage: React.FC = () => {
                 <CheckCircleIcon className="h-10 w-10" />
               </div>
               <h1 className="font-heading text-3xl md:text-4xl tracking-wide mb-2">Booking Confirmed!</h1>
-              <p className="text-emerald-50 text-base md:text-lg">
+              <p className="text-emerald-50 text-lg md:text-xl">
                 Your reservation has been successfully created.
               </p>
-              <span className="inline-block mt-4 rounded-full bg-white/20 px-5 py-2 text-sm font-bold tracking-wide">
+              <span className="inline-block mt-4 rounded-full bg-white/20 px-5 py-2 text-base font-bold tracking-wide">
                 Booking ID: #{displayId}
               </span>
             </div>
@@ -118,18 +118,18 @@ const BookingConfirmationPage: React.FC = () => {
                     <UserIcon className="h-5 w-5 text-sky-700" />
                     <h2 className="font-bold text-gray-900">Guest Information</h2>
                   </div>
-                  <dl className="space-y-3 text-sm">
+                  <dl className="space-y-3 text-base">
                     <div>
-                      <dt className="text-gray-500 font-medium">Name</dt>
+                      <dt className="text-gray-900 font-medium">Name</dt>
                       <dd className="font-semibold text-gray-900">{data.guestName}</dd>
                     </div>
                     <div>
-                      <dt className="text-gray-500 font-medium">Email</dt>
+                      <dt className="text-gray-900 font-medium">Email</dt>
                       <dd className="font-semibold text-gray-900 break-all">{data.guestEmail}</dd>
                     </div>
                     {data.guestPhone && (
                       <div>
-                        <dt className="text-gray-500 font-medium">Phone</dt>
+                        <dt className="text-gray-900 font-medium">Phone</dt>
                         <dd className="font-semibold text-gray-900">{data.guestPhone}</dd>
                       </div>
                     )}
@@ -142,9 +142,9 @@ const BookingConfirmationPage: React.FC = () => {
                     <CalendarDaysIcon className="h-5 w-5 text-violet-700" />
                     <h2 className="font-bold text-gray-900">Booking Details</h2>
                   </div>
-                  <dl className="space-y-3 text-sm">
+                  <dl className="space-y-3 text-base">
                     <div>
-                      <dt className="text-gray-500 font-medium">Status</dt>
+                      <dt className="text-gray-900 font-medium">Status</dt>
                       <dd>
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
                           <CheckCircleIcon className="h-3.5 w-3.5" />
@@ -153,21 +153,21 @@ const BookingConfirmationPage: React.FC = () => {
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-gray-500 font-medium">Check-in</dt>
+                      <dt className="text-gray-900 font-medium">Check-in</dt>
                       <dd className="font-semibold text-gray-900">{formatDisplayDate(data.checkIn)}</dd>
                     </div>
                     <div>
-                      <dt className="text-gray-500 font-medium">Check-out</dt>
+                      <dt className="text-gray-900 font-medium">Check-out</dt>
                       <dd className="font-semibold text-gray-900">{formatDisplayDate(data.checkOut)}</dd>
                     </div>
                     <div>
-                      <dt className="text-gray-500 font-medium">Nights</dt>
+                      <dt className="text-gray-900 font-medium">Nights</dt>
                       <dd className="font-semibold text-gray-900">
                         {data.nights} Night{data.nights !== 1 ? 's' : ''}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-gray-500 font-medium">Total guests</dt>
+                      <dt className="text-gray-900 font-medium">Total guests</dt>
                       <dd className="font-semibold text-gray-900">{data.guests}</dd>
                     </div>
                   </dl>
@@ -189,8 +189,8 @@ const BookingConfirmationPage: React.FC = () => {
                     />
                   )}
                   <div>
-                    <p className="font-bold text-gray-900 text-lg">{data.roomName}</p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="font-bold text-gray-900 text-xl">{data.roomName}</p>
+                    <p className="text-base text-gray-900 mt-1">
                       {settings.resortName} — private villa stay in {settings.resortLocation}
                     </p>
                   </div>
@@ -237,8 +237,8 @@ const BookingConfirmationPage: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <InformationCircleIcon className="h-6 w-6 shrink-0 mt-0.5" />
                   <div>
-                    <h2 className="font-bold text-lg mb-3">Important information</h2>
-                    <ul className="list-disc pl-5 space-y-2 text-sm text-sky-50">
+                    <h2 className="font-bold text-xl mb-3">Important information</h2>
+                    <ul className="list-disc pl-5 space-y-2 text-base text-sky-50">
                       <li>Check-in from 2:00 PM · Check-out by 11:00 AM</li>
                       <li>Please carry a valid government-issued photo ID for all guests</li>
                       <li>No smoking inside the villa</li>

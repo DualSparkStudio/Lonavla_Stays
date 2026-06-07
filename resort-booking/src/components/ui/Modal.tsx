@@ -61,7 +61,7 @@ const Modal: React.FC<ModalProps> = ({
                     {title && (
                       <Dialog.Title
                         as="h3"
-                        className="text-lg font-semibold leading-6 text-gray-900"
+                        className="text-xl font-semibold leading-6 text-gray-900"
                       >
                         {title}
                       </Dialog.Title>

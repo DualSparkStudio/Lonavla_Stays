@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                 <div className="h-8 w-8 bg-gradient-airbnb rounded-lg flex items-center justify-center">
                   <HomeIcon className="h-5 w-5 text-white" />
                 </div>
-                <span className="ml-2 text-xl font-bold text-gray-900">
+                <span className="ml-2 text-2xl font-bold text-gray-900">
                   Resort<span className="text-airbnb-red">Stay</span>
                 </span>
               </div>
@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
             {user ? (
               <Menu as="div" className="relative">
                 <Menu.Button className="flex items-center p-2 border border-gray-300 rounded-full hover:shadow-md transition-shadow duration-200">
-                  <Bars3Icon className="h-4 w-4 text-gray-600" />
+                  <Bars3Icon className="h-4 w-4 text-gray-900" />
                   <div className="ml-2">
                     {user.avatar ? (
                       <img
@@ -71,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                         alt={`${user.firstName} ${user.lastName}`}
                       />
                     ) : (
-                      <UserCircleIcon className="h-6 w-6 text-gray-600" />
+                      <UserCircleIcon className="h-6 w-6 text-gray-900" />
                     )}
                   </div>
                 </Menu.Button>
@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                         <Link
                           to="/profile"
                           className={cn(
-                            'block px-4 py-2 text-sm',
+                            'block px-4 py-2 text-base',
                             active ? 'bg-gray-100' : ''
                           )}
                         >
@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                         <Link
                           to="/bookings"
                           className={cn(
-                            'block px-4 py-2 text-sm',
+                            'block px-4 py-2 text-base',
                             active ? 'bg-gray-100' : ''
                           )}
                         >
@@ -117,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                           <Link
                             to="/admin"
                             className={cn(
-                              'block px-4 py-2 text-sm',
+                              'block px-4 py-2 text-base',
                               active ? 'bg-gray-100' : ''
                             )}
                           >
@@ -132,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                         <button
                           onClick={onLogout}
                           className={cn(
-                            'block w-full text-left px-4 py-2 text-sm',
+                            'block w-full text-left px-4 py-2 text-base',
                             active ? 'bg-gray-100' : ''
                           )}
                         >
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900"
+              className="md:hidden p-2 rounded-md text-gray-900 hover:text-gray-900"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <Bars3Icon className="h-6 w-6" />
@@ -164,7 +164,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogin, onLogout }) => {
                   key={item.page}
                   to={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 text-base font-bold transition-colors duration-200',
+                    'flex items-center gap-3 px-3 py-2 text-lg font-bold transition-colors duration-200',
                     isNavActive(item.href)
                       ? 'text-[#222222] bg-gray-50 hover:text-airbnb-red'
                       : 'text-[#717171] hover:text-airbnb-red'

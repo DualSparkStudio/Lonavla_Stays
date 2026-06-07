@@ -171,8 +171,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300" />
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">or</span>
+          <div className="relative flex justify-center text-base">
+            <span className="px-2 bg-white text-gray-900">or</span>
           </div>
         </div>
 
@@ -190,7 +190,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         {mode === 'login' && (
           <div className="text-center">
-            <button className="text-sm text-gray-600 hover:text-gray-800">
+            <button className="text-base text-gray-900 hover:text-gray-800">
               Forgot your password?
             </button>
           </div>

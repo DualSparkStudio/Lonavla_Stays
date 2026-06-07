@@ -38,7 +38,7 @@ const AdminLoginPage: React.FC = () => {
             <span className="text-white font-bold text-2xl">⚙️</span>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Login</h2>
-          <p className="text-gray-600">Sign in to manage site content, villas, and bookings.</p>
+          <p className="text-gray-900">Sign in to manage site content, villas, and bookings.</p>
         </div>
 
         {error && (
@@ -47,7 +47,7 @@ const AdminLoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-pink-600 mb-1">Username</label>
+            <label className="block text-base font-semibold text-pink-600 mb-1">Username</label>
             <input
               type="text"
               required
@@ -60,7 +60,7 @@ const AdminLoginPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-pink-600 mb-1">Password</label>
+            <label className="block text-base font-semibold text-pink-600 mb-1">Password</label>
             <input
               type="password"
               required
@@ -82,7 +82,7 @@ const AdminLoginPage: React.FC = () => {
         </form>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-sm text-gray-700 text-center">
+          <p className="text-base text-gray-700 text-center">
             <strong>Demo credentials:</strong>
             <br />
             Username: <code className="bg-white px-1 rounded">admin</code>
@@ -92,7 +92,7 @@ const AdminLoginPage: React.FC = () => {
         </div>
 
         <div className="mt-6 text-center space-y-2">
-          <Link to="/" className="block text-gray-500 hover:text-gray-700 text-sm font-medium">
+          <Link to="/" className="block text-gray-900 hover:text-gray-700 text-base font-medium">
             ← Back to Home
           </Link>
         </div>

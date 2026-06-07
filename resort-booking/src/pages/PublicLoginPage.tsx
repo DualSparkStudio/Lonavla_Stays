@@ -59,7 +59,7 @@ const PublicLoginPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-900">
             {isSignUp ? 'Join ResortStay to book your perfect getaway' : 'Sign in to your ResortStay account'}
           </p>
         </div>
@@ -73,7 +73,7 @@ const PublicLoginPage: React.FC = () => {
           {isSignUp && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <label className="block text-base font-medium text-gray-700 mb-1">First Name</label>
                 <input
                   type="text"
                   name="firstName"
@@ -85,7 +85,7 @@ const PublicLoginPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <label className="block text-base font-medium text-gray-700 mb-1">Last Name</label>
                 <input
                   type="text"
                   name="lastName"
@@ -99,7 +99,7 @@ const PublicLoginPage: React.FC = () => {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-base font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               name="email"
@@ -111,7 +111,7 @@ const PublicLoginPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-base font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               name="password"
@@ -124,7 +124,7 @@ const PublicLoginPage: React.FC = () => {
           </div>
           {isSignUp && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <label className="block text-base font-medium text-gray-700 mb-1">Confirm Password</label>
               <input
                 type="password"
                 name="confirmPassword"
@@ -160,7 +160,7 @@ const PublicLoginPage: React.FC = () => {
         </div>
 
         <div className="mt-6 text-center space-y-2">
-          <Link to="/" className="block text-gray-500 hover:text-gray-700 text-sm font-medium">
+          <Link to="/" className="block text-gray-900 hover:text-gray-700 text-base font-medium">
             ← Back to Home
           </Link>
           <Link to="/admin/login" className="block text-red-500 hover:text-red-600 text-sm font-medium">

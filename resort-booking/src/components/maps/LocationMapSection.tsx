@@ -41,7 +41,7 @@ const LocationMapSection: React.FC<LocationMapSectionProps> = ({
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-sm font-medium text-airbnb-red hover:underline"
+          className="block text-base font-medium text-airbnb-red hover:underline"
         >
           View {displayAddress} on Google Maps
         </a>

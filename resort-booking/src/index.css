@@ -27,7 +27,7 @@
 
   body {
     @apply font-sans text-gray-900 antialiased bg-white;
-    font-size: 1.03rem;
+    font-size: 1.125rem;
     font-weight: 500;
     margin: 0;
     padding: 0;
@@ -87,11 +87,11 @@
   }
 
   .search-bar-shell:hover {
-    @apply shadow-floating -translate-y-0.5;
+    @apply shadow-floating -translate-y-0.5 border-airbnb-red/65;
   }
 
   .search-bar-shell:focus-within {
-    @apply shadow-floating ring-2 ring-airbnb-red/20 -translate-y-0.5;
+    @apply shadow-floating ring-2 ring-airbnb-red/25 border-airbnb-red -translate-y-0.5;
   }
 
   .room-card {
@@ -115,7 +115,7 @@
   }
 
   .room-card .villa-card-price {
-    @apply text-airbnb-red;
+    @apply text-airbnb-red text-2xl font-bold;
   }
 
   .explore-tile {

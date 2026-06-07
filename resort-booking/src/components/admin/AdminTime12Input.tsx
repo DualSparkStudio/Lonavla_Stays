@@ -8,7 +8,7 @@ type AdminTime12InputProps = {
 };
 
 const fieldClass =
-  'w-11 border-0 bg-transparent text-center text-base font-semibold text-gray-900 focus:outline-none focus:ring-0 p-0';
+  'w-11 border-0 bg-transparent text-center text-lg font-semibold text-gray-900 focus:outline-none focus:ring-0 p-0';
 
 const AdminTime12Input: React.FC<AdminTime12InputProps> = ({ value, onChange, fallback }) => {
   const parts = parseTime24(value, fallback);
@@ -30,8 +30,8 @@ const AdminTime12Input: React.FC<AdminTime12InputProps> = ({ value, onChange, fa
   };
 
   const periodBtn = (period: 'AM' | 'PM') =>
-    `min-w-[3.25rem] px-4 py-2.5 text-sm font-semibold transition-colors ${
-      parts.period === period ? 'bg-red-500 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+    `min-w-[3.25rem] px-4 py-2.5 text-base font-semibold transition-colors ${
+      parts.period === period ? 'bg-red-500 text-white' : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
     }`;
 
   return (

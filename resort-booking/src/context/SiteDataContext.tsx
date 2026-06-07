@@ -607,7 +607,7 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         <SiteDataActionsContext.Provider value={actions}>
           {children}
           {loading && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/85 text-gray-600">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/85 text-gray-900">
               Loading site data…
             </div>
           )}

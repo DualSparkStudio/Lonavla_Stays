@@ -69,7 +69,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <input
               type="text"
               placeholder="Search destinations"
-              className="w-full text-sm placeholder-gray-500 focus:outline-none"
+              className="w-full text-base placeholder-gray-500 focus:outline-none"
             />
           </div>
           <Button
@@ -99,7 +99,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <div className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
               Check in
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-base text-gray-900 mt-1">
               {filters.checkIn ? format(filters.checkIn, 'MMM dd') : 'Add dates'}
             </div>
           </button>
@@ -117,7 +117,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <div className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
               Check out
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-base text-gray-900 mt-1">
               {filters.checkOut ? format(filters.checkOut, 'MMM dd') : 'Add dates'}
             </div>
           </button>
@@ -135,7 +135,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <div className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
               Who
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-base text-gray-900 mt-1">
               {getGuestText()}
             </div>
           </button>
@@ -148,7 +148,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900">Adults</div>
-                    <div className="text-sm text-gray-500">Ages 13 or above</div>
+                    <div className="text-base text-gray-900">Ages 13 or above</div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
@@ -172,7 +172,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900">Children</div>
-                    <div className="text-sm text-gray-500">Ages 2–12</div>
+                    <div className="text-base text-gray-900">Ages 2–12</div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
@@ -196,7 +196,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900">Infants</div>
-                    <div className="text-sm text-gray-500">Under 2</div>
+                    <div className="text-base text-gray-900">Under 2</div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button

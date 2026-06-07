@@ -171,7 +171,7 @@ const UserBookingsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AnimatedSection className="mb-8">
           <h1 className="font-heading text-4xl text-gray-900 mb-2">My bookings</h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-2xl text-gray-900">
             Your villa bookings across our Lonavala collection
           </p>
         </AnimatedSection>
@@ -189,10 +189,10 @@ const UserBookingsPage: React.FC = () => {
                 key={tab.key}
                 onClick={() => setSelectedTab(tab.key as any)}
                 className={cn(
-                  'py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap',
+                  'py-2 px-1 border-b-2 font-medium text-base whitespace-nowrap',
                   selectedTab === tab.key
                     ? 'border-airbnb-red text-airbnb-red'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-900 hover:text-gray-700 hover:border-gray-300'
                 )}
               >
                 {tab.label} ({tab.count})
@@ -205,8 +205,8 @@ const UserBookingsPage: React.FC = () => {
         {filteredBookings.length === 0 ? (
           <div className="text-center py-12">
             <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-base font-medium text-gray-900">No bookings found</h3>
+            <p className="mt-1 text-base text-gray-900">
               {selectedTab === 'all' ? "You haven't made any bookings yet." : `No ${selectedTab} bookings found.`}
             </p>
             <div className="mt-6">
@@ -236,14 +236,14 @@ const UserBookingsPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-xl font-semibold text-gray-900 mb-1">
                             {booking.roomName}
                           </h3>
-                          <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <div className="flex items-center text-base text-gray-900 mb-2">
                             <MapPinIcon className="h-4 w-4 mr-1 shrink-0" />
                             {booking.location}
                           </div>
-                          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-sm text-gray-600">
+                          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-base text-gray-900">
                             <div className="flex items-center">
                               <CalendarDaysIcon className="h-4 w-4 mr-1 shrink-0" />
                               {new Date(booking.checkIn).toLocaleDateString('en-US', { 
@@ -272,10 +272,10 @@ const UserBookingsPage: React.FC = () => {
                               <span className="ml-1 capitalize">{booking.status}</span>
                             </span>
                           </div>
-                          <div className="text-lg font-semibold text-gray-900">
+                          <div className="text-xl font-semibold text-gray-900">
                             {formatPrice(booking.totalAmount)}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-base text-gray-900">
                             Booking #{booking.id}
                           </div>
                         </div>
@@ -327,7 +327,7 @@ const UserBookingsPage: React.FC = () => {
                       {booking.status === 'completed' && booking.hasReview && (
                         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center mb-1">
-                            <span className="text-sm font-medium text-gray-900 mr-2">Your Review:</span>
+                            <span className="text-base font-medium text-gray-900 mr-2">Your Review:</span>
                             <div className="flex">
                               {[...Array(5)].map((_, i) => (
                                 <StarSolidIcon
@@ -340,7 +340,7 @@ const UserBookingsPage: React.FC = () => {
                               ))}
                             </div>
                           </div>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-base text-gray-900">
                             "Amazing stay! The ocean view was breathtaking and the amenities were top-notch."
                           </p>
                         </div>
@@ -369,8 +369,8 @@ const UserBookingsPage: React.FC = () => {
                   className="w-24 h-24 rounded-lg object-cover"
                 />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{selectedBooking.roomName}</h3>
-                  <p className="text-gray-600">{selectedBooking.location}</p>
+                  <h3 className="text-xl font-semibold text-gray-900">{selectedBooking.roomName}</h3>
+                  <p className="text-gray-900">{selectedBooking.location}</p>
                   <div className="mt-2">
                     <span className={cn(
                       'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -385,8 +385,8 @@ const UserBookingsPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Check-in</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="block text-base font-medium text-gray-700">Check-in</label>
+                  <p className="mt-1 text-base text-gray-900">
                     {new Date(selectedBooking.checkIn).toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
@@ -396,8 +396,8 @@ const UserBookingsPage: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Check-out</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="block text-base font-medium text-gray-700">Check-out</label>
+                  <p className="mt-1 text-base text-gray-900">
                     {new Date(selectedBooking.checkOut).toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
@@ -409,23 +409,23 @@ const UserBookingsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Guests</label>
-                <p className="mt-1 text-sm text-gray-900">{getTotalGuests(selectedBooking.guests)}</p>
+                <label className="block text-base font-medium text-gray-700">Guests</label>
+                <p className="mt-1 text-base text-gray-900">{getTotalGuests(selectedBooking.guests)}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Confirmation Code</label>
-                <p className="mt-1 text-sm font-mono font-semibold text-gray-900">{selectedBooking.confirmationCode}</p>
+                <label className="block text-base font-medium text-gray-700">Confirmation Code</label>
+                <p className="mt-1 text-base font-mono font-semibold text-gray-900">{selectedBooking.confirmationCode}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Total Amount</label>
-                <p className="mt-1 text-lg font-semibold text-gray-900">{formatPrice(selectedBooking.totalAmount)}</p>
+                <label className="block text-base font-medium text-gray-700">Total Amount</label>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatPrice(selectedBooking.totalAmount)}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Booking Date</label>
-                <p className="mt-1 text-sm text-gray-900">
+                <label className="block text-base font-medium text-gray-700">Booking Date</label>
+                <p className="mt-1 text-base text-gray-900">
                   {new Date(selectedBooking.bookingDate).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -445,12 +445,12 @@ const UserBookingsPage: React.FC = () => {
         >
           {selectedBooking && (
             <div className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-gray-900">
                 Are you sure you want to cancel your booking for <strong>{selectedBooking.roomName}</strong>?
               </p>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-medium text-yellow-800 mb-2">Cancellation Policy</h4>
-                <p className="text-sm text-yellow-700">
+                <p className="text-base text-yellow-700">
                   Free cancellation until 24 hours before check-in. After that, you'll receive a 50% refund.
                 </p>
               </div>

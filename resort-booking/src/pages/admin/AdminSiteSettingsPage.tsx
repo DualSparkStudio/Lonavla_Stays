@@ -11,7 +11,7 @@ const field = (
   multiline = false
 ) => (
   <div key={key}>
-    <label className="block text-sm font-semibold text-pink-600 mb-1">{label}</label>
+    <label className="block text-base font-semibold text-pink-600 mb-1">{label}</label>
     {multiline ? (
       <textarea
         rows={3}
@@ -55,7 +55,7 @@ export default function AdminSiteSettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Site content</h1>
-          <p className="text-gray-600">Brand, contact, homepage hero, and page headings shown on the public site.</p>
+          <p className="text-gray-900">Brand, contact, homepage hero, and page headings shown on the public site.</p>
         </div>
         <button
           type="button"
@@ -79,7 +79,7 @@ export default function AdminSiteSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-8">
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">Brand &amp; contact</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Brand &amp; contact</h2>
           {field('Resort name', 'resortName', draft.resortName, handleChange)}
           {field('Tagline', 'brandTagline', draft.brandTagline, handleChange)}
           {field('Location', 'resortLocation', draft.resortLocation, handleChange)}
@@ -89,13 +89,13 @@ export default function AdminSiteSettingsPage() {
         </section>
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">Homepage hero</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Homepage hero</h2>
           {field('Hero title', 'heroTitle', draft.heroTitle, handleChange)}
           {field('Hero subtitle', 'heroSubtitle', draft.heroSubtitle, handleChange, true)}
         </section>
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">Page headings</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Page headings</h2>
           {field('Villas page title', 'villasPageTitle', draft.villasPageTitle, handleChange)}
           {field('Villas page subtitle', 'villasPageSubtitle', draft.villasPageSubtitle, handleChange, true)}
           {field('For sale page title', 'forSalePageTitle', draft.forSalePageTitle, handleChange)}
@@ -106,10 +106,10 @@ export default function AdminSiteSettingsPage() {
         </section>
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">About page</h2>
+          <h2 className="text-2xl font-bold text-gray-900">About page</h2>
           {field('About image URL', 'aboutImage', draft.aboutImage, handleChange)}
           <div>
-            <label className="block text-sm font-semibold text-pink-600 mb-1">About paragraphs (one per line)</label>
+            <label className="block text-base font-semibold text-pink-600 mb-1">About paragraphs (one per line)</label>
             <textarea
               rows={4}
               value={draft.aboutParagraphs.join('\n\n')}
@@ -123,7 +123,7 @@ export default function AdminSiteSettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-pink-600 mb-2">Highlights</label>
+            <label className="block text-base font-semibold text-pink-600 mb-2">Highlights</label>
             {draft.aboutHighlights.map((h, i) => (
               <div key={i} className="mb-4 p-4 bg-gray-50 rounded-lg space-y-2">
                 <input
@@ -153,7 +153,7 @@ export default function AdminSiteSettingsPage() {
         </section>
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">Homepage explore tiles</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Homepage explore tiles</h2>
           {draft.exploreTiles.map((tile, i) => (
             <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-lg">
               <input

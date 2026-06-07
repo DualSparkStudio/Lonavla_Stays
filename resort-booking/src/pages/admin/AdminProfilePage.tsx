@@ -199,15 +199,15 @@ const AdminProfilePage: React.FC = () => {
   const pendingBookings = bookings.filter((b) => b.status === 'pending').length;
 
   const tabClass = (tab: ProfileTab) =>
-    `px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-      activeTab === tab ? 'bg-red-500 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+    `px-5 py-2.5 rounded-lg text-base font-semibold transition-colors ${
+      activeTab === tab ? 'bg-red-500 text-white' : 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50'
     }`;
 
   return (
     <AdminLayout currentPage="profile">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
-        <p className="text-gray-600">Manage your account, booking defaults, and SMTP email settings.</p>
+        <p className="text-gray-900">Manage your account, booking defaults, and SMTP email settings.</p>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8">
@@ -229,8 +229,8 @@ const AdminProfilePage: React.FC = () => {
               <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold mb-4">
                 {initials}
               </div>
-              <h2 className="text-xl font-bold text-gray-900">{profile.displayName}</h2>
-              <p className="text-sm text-gray-500 mt-1">@{ADMIN_CREDENTIALS.username}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{profile.displayName}</h2>
+              <p className="text-base text-gray-900 mt-1">@{ADMIN_CREDENTIALS.username}</p>
               <span className="inline-block mt-3 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold">
                 Administrator
               </span>
@@ -238,17 +238,17 @@ const AdminProfilePage: React.FC = () => {
 
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Overview</h3>
-              <dl className="space-y-3 text-sm">
+              <dl className="space-y-3 text-base">
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">Total bookings</dt>
+                  <dt className="text-gray-900">Total bookings</dt>
                   <dd className="font-semibold text-gray-900">{bookings.length}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">Pending bookings</dt>
+                  <dt className="text-gray-900">Pending bookings</dt>
                   <dd className="font-semibold text-gray-900">{pendingBookings}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">Messages</dt>
+                  <dt className="text-gray-900">Messages</dt>
                   <dd className="font-semibold text-gray-900">{contactMessages.length}</dd>
                 </div>
               </dl>
@@ -263,7 +263,7 @@ const AdminProfilePage: React.FC = () => {
             )}
 
             <form onSubmit={handleProfileSave} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
-              <h2 className="text-lg font-bold text-gray-900">Personal information</h2>
+              <h2 className="text-xl font-bold text-gray-900">Personal information</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <AdminFormField label="Display name" className="sm:col-span-2">
@@ -324,8 +324,8 @@ const AdminProfilePage: React.FC = () => {
               </div>
 
               <fieldset className="space-y-3">
-                <legend className="text-sm font-semibold text-pink-600">Notifications</legend>
-                <label className="flex items-center gap-3 text-sm text-gray-700">
+                <legend className="text-base font-semibold text-pink-600">Notifications</legend>
+                <label className="flex items-center gap-3 text-base text-gray-700">
                   <input
                     type="checkbox"
                     checked={profile.notifyNewBookings}
@@ -334,7 +334,7 @@ const AdminProfilePage: React.FC = () => {
                   />
                   Email me when a new booking is received
                 </label>
-                <label className="flex items-center gap-3 text-sm text-gray-700">
+                <label className="flex items-center gap-3 text-base text-gray-700">
                   <input
                     type="checkbox"
                     checked={profile.notifyNewMessages}
@@ -347,7 +347,7 @@ const AdminProfilePage: React.FC = () => {
 
               <button
                 type="submit"
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-lg text-base font-medium transition-colors"
               >
                 Save profile
               </button>
@@ -355,8 +355,8 @@ const AdminProfilePage: React.FC = () => {
 
             <form onSubmit={handlePasswordSave} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Change password</h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <h2 className="text-xl font-bold text-gray-900">Change password</h2>
+                <p className="text-base text-gray-900 mt-1">
                   Username stays <code className="bg-gray-100 px-1 rounded">admin</code>.
                 </p>
               </div>
@@ -365,7 +365,7 @@ const AdminProfilePage: React.FC = () => {
                 <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">{passwordError}</div>
               )}
               {passwordSaved && (
-                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
+                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-base">
                   Password updated successfully.
                 </div>
               )}
@@ -407,7 +407,7 @@ const AdminProfilePage: React.FC = () => {
 
               <button
                 type="submit"
-                className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg text-base font-medium transition-colors"
               >
                 Update password
               </button>
@@ -425,32 +425,32 @@ const AdminProfilePage: React.FC = () => {
           )}
 
           <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Current defaults</h2>
-            <p className="text-sm text-gray-600 mb-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Current defaults</h2>
+            <p className="text-base text-gray-900 mb-4">
               These apply site-wide to all villas, the booking checkout, confirmation emails, and admin booking views.
             </p>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-base">
               <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-500 mb-1">Check-in</dt>
+                <dt className="text-gray-900 mb-1">Check-in</dt>
                 <dd className="font-semibold text-gray-900">{formatTimeLabel(settings.checkInTime)}</dd>
               </div>
               <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-500 mb-1">Check-out</dt>
+                <dt className="text-gray-900 mb-1">Check-out</dt>
                 <dd className="font-semibold text-gray-900">{formatTimeLabel(settings.checkOutTime)}</dd>
               </div>
               <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-500 mb-1">GST</dt>
+                <dt className="text-gray-900 mb-1">GST</dt>
                 <dd className="font-semibold text-gray-900">{settings.gstPercent}%</dd>
               </div>
               <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-500 mb-1">Extra person</dt>
+                <dt className="text-gray-900 mb-1">Extra person</dt>
                 <dd className="font-semibold text-gray-900">{formatPrice(settings.extraPersonCharge)} / night</dd>
               </div>
             </dl>
           </section>
 
           <form onSubmit={handleBookingSave} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
-            <h2 className="text-lg font-bold text-gray-900">Booking settings</h2>
+            <h2 className="text-xl font-bold text-gray-900">Booking settings</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AdminFormField label="Check-in time" hint="Shown on villa pages and confirmation emails">
@@ -502,7 +502,7 @@ const AdminProfilePage: React.FC = () => {
 
             <button
               type="submit"
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-lg text-base font-medium transition-colors"
             >
               Save booking settings
             </button>
@@ -521,17 +521,17 @@ const AdminProfilePage: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">SMTP status</h2>
-              <dl className="space-y-3 text-sm">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">SMTP status</h2>
+              <dl className="space-y-3 text-base">
                 <div className="flex justify-between gap-4">
-                  <dt className="text-gray-500">Configured</dt>
+                  <dt className="text-gray-900">Configured</dt>
                   <dd className={`font-semibold ${smtpStatus.configured ? 'text-green-700' : 'text-red-600'}`}>
                     {smtpStatus.configured ? 'Yes' : 'No'}
                   </dd>
                 </div>
                 {smtpStatus.host && (
                   <div className="flex justify-between gap-4">
-                    <dt className="text-gray-500">Host</dt>
+                    <dt className="text-gray-900">Host</dt>
                     <dd className="font-medium text-gray-900">
                       {smtpStatus.host}:{smtpStatus.port}
                     </dd>
@@ -539,13 +539,13 @@ const AdminProfilePage: React.FC = () => {
                 )}
                 {smtpStatus.fromEmail && (
                   <div className="flex justify-between gap-4">
-                    <dt className="text-gray-500">From email</dt>
+                    <dt className="text-gray-900">From email</dt>
                     <dd className="font-medium text-gray-900 break-all">{smtpStatus.fromEmail}</dd>
                   </div>
                 )}
                 {smtpStatus.adminEmail && (
                   <div className="flex justify-between gap-4">
-                    <dt className="text-gray-500">Default admin email</dt>
+                    <dt className="text-gray-900">Default admin email</dt>
                     <dd className="font-medium text-gray-900 break-all">{smtpStatus.adminEmail}</dd>
                   </div>
                 )}
@@ -554,15 +554,15 @@ const AdminProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleVerify}
                 disabled={smtpLoading}
-                className="mt-5 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white px-5 py-2 rounded-lg text-sm font-medium"
+                className="mt-5 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white px-5 py-2 rounded-lg text-base font-medium"
               >
                 {smtpLoading ? 'Checking…' : 'Verify SMTP connection'}
               </button>
             </section>
 
             <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Environment variables</h2>
-              <p className="text-sm text-gray-600 mb-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Environment variables</h2>
+              <p className="text-base text-gray-900 mb-4">
                 Add these to <code className="bg-gray-100 px-1 rounded">resort-booking/.env.local</code> (local) or your
                 Netlify site environment (production). Do <strong>not</strong> put secrets in{' '}
                 <code className="bg-gray-100 px-1 rounded">env.example</code> — that file is only a template. For Gmail,
@@ -591,7 +591,7 @@ ADMIN_EMAIL=your-email@gmail.com`}
           </div>
 
           <form onSubmit={handleSmtpSave} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-6 max-w-2xl">
-            <h2 className="text-lg font-bold text-gray-900">Booking email notifications</h2>
+            <h2 className="text-xl font-bold text-gray-900">Booking email notifications</h2>
 
             <AdminFormField label="Admin notification email" hint="Overrides ADMIN_EMAIL env when set">
               <input
@@ -604,7 +604,7 @@ ADMIN_EMAIL=your-email@gmail.com`}
             </AdminFormField>
 
             <div className="space-y-3">
-              <label className="flex items-center gap-3 text-sm text-gray-700">
+              <label className="flex items-center gap-3 text-base text-gray-700">
                 <input
                   type="checkbox"
                   checked={smtpDraft.sendGuestConfirmation}
@@ -613,7 +613,7 @@ ADMIN_EMAIL=your-email@gmail.com`}
                 />
                 Send confirmation email to guest after booking
               </label>
-              <label className="flex items-center gap-3 text-sm text-gray-700">
+              <label className="flex items-center gap-3 text-base text-gray-700">
                 <input
                   type="checkbox"
                   checked={smtpDraft.sendAdminNotification}
@@ -630,7 +630,7 @@ ADMIN_EMAIL=your-email@gmail.com`}
           </form>
 
           <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm max-w-2xl">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Send test email</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Send test email</h2>
             <AdminFormField label="Recipient">
               <input
                 type="email"

@@ -303,7 +303,7 @@ const BookingPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/villas/${villa.id}`)}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-airbnb-red font-bold mb-5 transition-colors"
+            className="inline-flex items-center gap-2 text-gray-900 hover:text-airbnb-red font-bold mb-5 transition-colors"
           >
             <ChevronLeftIcon className="h-5 w-5" />
             Back to villa
@@ -325,21 +325,21 @@ const BookingPage: React.FC = () => {
                   />
                   <div className="flex-1 min-w-0">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">{villa.name}</h2>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+                    <p className="text-gray-900 text-base leading-relaxed mb-4 line-clamp-3">
                       {villa.description}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
                         <p className="text-xs text-gray-500 font-medium">Price per night</p>
-                        <p className="text-sm font-bold text-gray-900">{formatPrice(villa.price_per_night)}</p>
+                        <p className="text-base font-bold text-gray-900">{formatPrice(villa.price_per_night)}</p>
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
                         <p className="text-xs text-gray-500 font-medium">Check-in / Check-out</p>
-                        <p className="text-sm font-bold text-gray-900">2:00 PM / 11:00 AM</p>
+                        <p className="text-base font-bold text-gray-900">2:00 PM / 11:00 AM</p>
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
                         <p className="text-xs text-gray-500 font-medium">Max capacity</p>
-                        <p className="text-sm font-bold text-gray-900">{villa.max_guests} guests</p>
+                        <p className="text-base font-bold text-gray-900">{villa.max_guests} guests</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -362,18 +362,18 @@ const BookingPage: React.FC = () => {
                 {/* Left column */}
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Select dates</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Select dates</h3>
                     <button
                       type="button"
                       onClick={() => setShowCalendar((v) => !v)}
                       className="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-left font-medium text-gray-900 hover:border-airbnb-red focus:outline-none focus:ring-2 focus:ring-airbnb-red"
                     >
-                      <span className={!canPay ? 'text-gray-500' : ''}>{dateRangeLabel}</span>
-                      <CalendarDaysIcon className="h-5 w-5 shrink-0 text-gray-500" />
+                      <span className={!canPay ? 'text-gray-900' : ''}>{dateRangeLabel}</span>
+                      <CalendarDaysIcon className="h-5 w-5 shrink-0 text-gray-900" />
                     </button>
                     {showCalendar && (
                       <div className="mt-3">
-                        <Suspense fallback={<p className="text-sm text-gray-500">Loading calendar…</p>}>
+                        <Suspense fallback={<p className="text-base text-gray-900">Loading calendar…</p>}>
                           <AvailabilityCalendar
                             embedded
                             roomId={villa.id}
@@ -388,21 +388,21 @@ const BookingPage: React.FC = () => {
                   </div>
 
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-sm font-bold text-gray-900 mb-1">
+                    <p className="text-base font-bold text-gray-900 mb-1">
                       Base adults ({BASE_INCLUDED_ADULTS})
                     </p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-xl font-bold text-gray-900">
                       {formatPrice(villa.price_per_night)}
-                      <span className="text-sm font-medium text-gray-600"> / night</span>
+                      <span className="text-base font-medium text-gray-900"> / night</span>
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-sm text-gray-700 mb-2">
+                    <p className="text-base text-gray-900 mb-2">
                       <span className="font-bold">Maximum capacity:</span> {villa.max_guests} guests
                     </p>
                     <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5 inline-block">
-                      <p className="text-sm font-bold text-emerald-900">
+                      <p className="text-base font-bold text-emerald-900">
                         Total guests: {totalGuests}
                       </p>
                     </div>
@@ -410,7 +410,7 @@ const BookingPage: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-2">Extra adults</label>
+                      <label className="block text-base font-bold text-gray-900 mb-2">Extra adults</label>
                       <p className="text-xs text-gray-500 mb-2">
                         {formatPrice(extraPersonCharge)} per extra adult per night
                       </p>
@@ -424,7 +424,7 @@ const BookingPage: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-2">
+                      <label className="block text-base font-bold text-gray-900 mb-2">
                         Children above 5 years
                       </label>
                       <p className="text-xs text-gray-500 mb-2">
@@ -441,7 +441,7 @@ const BookingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-base text-amber-950">
                     <p className="font-bold mb-2">Booking terms</p>
                     <ul className="list-disc pl-5 space-y-1 text-amber-900">
                       <li>Check-in from 2:00 PM · Check-out by 11:00 AM</li>
@@ -456,7 +456,7 @@ const BookingPage: React.FC = () => {
                 {/* Right column */}
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Personal information</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Personal information</h3>
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
@@ -488,7 +488,7 @@ const BookingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-2">Special requests</label>
+                    <label className="block text-base font-bold text-gray-900 mb-2">Special requests</label>
                     <textarea
                       {...form.register('specialRequests')}
                       rows={4}
@@ -498,9 +498,9 @@ const BookingPage: React.FC = () => {
                   </div>
 
                   <div className="rounded-xl border border-sky-200 bg-sky-50 p-5">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Price breakdown</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Price breakdown</h3>
                     {nights < 1 ? (
-                      <p className="text-sm text-gray-600">Select dates to see pricing.</p>
+                      <p className="text-base text-gray-900">Select dates to see pricing.</p>
                     ) : (
                       <PriceBreakdown
                         lines={priceLines}
@@ -516,7 +516,7 @@ const BookingPage: React.FC = () => {
                       {...form.register('agreeToTerms')}
                       className="mt-1 h-4 w-4 text-airbnb-red focus:ring-airbnb-red border-gray-300 rounded"
                     />
-                    <p className="text-sm text-gray-600">
+                    <p className="text-base text-gray-900">
                       I agree to the booking terms and authorize {settings.resortName} to process this
                       reservation.
                     </p>
@@ -546,7 +546,7 @@ const BookingPage: React.FC = () => {
                   size="lg"
                   loading={isProcessing}
                   disabled={!canPay}
-                  className="rounded-lg !bg-sky-600 hover:!bg-sky-700 text-white font-bold text-lg py-4 shadow-md"
+                  className="rounded-lg !bg-sky-600 hover:!bg-sky-700 text-white font-bold text-xl py-4 shadow-md"
                 >
                   <span className="inline-flex items-center justify-center gap-2">
                     <CreditCardIcon className="h-5 w-5" />

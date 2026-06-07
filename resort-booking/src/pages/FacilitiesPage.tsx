@@ -15,7 +15,7 @@ const FacilitiesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AnimatedSection>
             <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">{settings.facilitiesPageTitle}</h1>
-            <p className="text-xl text-gray-600 max-w-2xl">{settings.facilitiesPageSubtitle}</p>
+            <p className="text-2xl text-gray-900 max-w-2xl">{settings.facilitiesPageSubtitle}</p>
           </AnimatedSection>
         </div>
       </div>
@@ -34,8 +34,8 @@ const FacilitiesPage: React.FC = () => {
                 </div>
                 <div className="p-6 flex flex-col flex-1">
                   <h2 className="font-heading text-xl text-gray-900 mb-2 uppercase tracking-wide">{facility.name}</h2>
-                  <p className="text-base text-gray-600 mb-4 flex-1">{facility.description}</p>
-                  <p className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <p className="text-lg text-gray-900 mb-4 flex-1">{facility.description}</p>
+                  <p className="flex items-center gap-2 text-base font-bold text-gray-900">
                     <ClockIcon className="h-5 w-5 text-airbnb-red" />
                     {facility.hours}
                   </p>
@@ -47,7 +47,7 @@ const FacilitiesPage: React.FC = () => {
 
         <AnimatedSection delay={200} className="mt-14 text-center bg-white rounded-2xl border border-gray-100 p-10 shadow-sm">
           <h2 className="font-heading text-3xl text-gray-900 mb-3">Ready to book your villa?</h2>
-          <p className="text-lg text-gray-600 mb-6">Pair your favourite facilities with the perfect villa for your dates.</p>
+          <p className="text-xl text-gray-900 mb-6">Pair your favourite facilities with the perfect villa for your dates.</p>
           <Link to="/villas">
             <Button size="lg" className="btn-primary-motion rounded-full">
               Browse villas

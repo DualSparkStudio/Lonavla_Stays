@@ -94,7 +94,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({ currentPage = 'home' }) => 
           <div className="relative z-10 flex items-center justify-end gap-2 sm:gap-3 shrink-0">
             <Link
               to="/villas"
-              className="hidden md:inline-flex items-center justify-center rounded-full bg-airbnb-red px-4 py-2 lg:px-6 lg:py-2.5 text-sm lg:text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-airbnb-red-dark hover:shadow-md active:scale-95 btn-primary-motion whitespace-nowrap"
+              className="hidden md:inline-flex items-center justify-center rounded-full bg-airbnb-red px-4 py-2 lg:px-6 lg:py-2.5 text-base lg:text-lg font-bold text-white shadow-sm transition-all duration-200 hover:bg-airbnb-red-dark hover:shadow-md active:scale-95 btn-primary-motion whitespace-nowrap"
             >
               Book Now
             </Link>
@@ -122,10 +122,10 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({ currentPage = 'home' }) => 
                   key={item.page}
                   to={item.href}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-3 text-base font-bold transition-colors',
+                    'flex items-center gap-3 rounded-lg px-3 py-3 text-lg font-bold transition-colors',
                     isActive(item.page, item.href)
                       ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-airbnb-red'
+                      : 'text-gray-900 hover:bg-gray-50 hover:text-airbnb-red'
                   )}
                 >
                   <item.Icon className="h-9 w-9 shrink-0" />
@@ -134,7 +134,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({ currentPage = 'home' }) => 
               ))}
               <Link
                 to="/villas"
-                className="mt-2 flex items-center justify-center rounded-full bg-airbnb-red px-6 py-3 text-base font-bold text-white md:hidden"
+                className="mt-2 flex items-center justify-center rounded-full bg-airbnb-red px-6 py-3 text-lg font-bold text-white md:hidden"
               >
                 Book Now
               </Link>

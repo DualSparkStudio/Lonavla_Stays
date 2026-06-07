@@ -56,11 +56,11 @@ const RoomsPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AnimatedSection>
             <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">{settings.villasPageTitle}</h1>
-            <p className="text-xl text-gray-600 max-w-2xl">
+            <p className="text-2xl text-gray-900 max-w-2xl">
               {settings.villasPageSubtitle}
             </p>
             {searchHint && (
-              <p className="mt-3 text-base font-medium text-airbnb-red">
+              <p className="mt-3 text-lg font-medium text-airbnb-red">
                 Showing stays for: {searchHint}
                 {areaFilter !== 'all' ? ` · ${areaFilter}` : ''}
               </p>
@@ -77,7 +77,7 @@ const RoomsPage: React.FC = () => {
                 key={type}
                 type="button"
                 onClick={() => setTypeFilter(type)}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 ${
+                className={`rounded-full px-4 py-2 text-base font-bold transition-all duration-200 ${
                   typeFilter === type
                     ? 'bg-airbnb-red text-white shadow-md'
                     : 'bg-white border border-gray-200 text-gray-700 hover:border-airbnb-red hover:text-airbnb-red'
@@ -91,7 +91,7 @@ const RoomsPage: React.FC = () => {
             <select
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-base font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
+              className="rounded-lg border border-gray-200 px-4 py-2 text-lg font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
             >
               {areas.map((area) => (
                 <option key={area} value={area}>
@@ -102,7 +102,7 @@ const RoomsPage: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-base font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
+              className="rounded-lg border border-gray-200 px-4 py-2 text-lg font-medium bg-white focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
             >
               <option value="rating">Top rated</option>
               <option value="price-asc">Price: low to high</option>
@@ -112,8 +112,8 @@ const RoomsPage: React.FC = () => {
         </div>
 
         {roomsList.length === 0 ? (
-          <div className="text-center py-16 text-gray-600">
-            <p className="text-lg font-medium mb-4">No villas match your search.</p>
+          <div className="text-center py-16 text-gray-900">
+            <p className="text-xl font-medium mb-4">No villas match your search.</p>
             <Link to="/villas" className="text-airbnb-red font-bold hover:underline">
               View all villas →
             </Link>
@@ -132,19 +132,19 @@ const RoomsPage: React.FC = () => {
                     alt={room.name}
                     className="room-card-image w-full h-72 object-cover"
                   />
-                  <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-sm font-bold">
+                  <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-base font-bold">
                     {room.room_type}
                   </span>
                 </div>
                 <div className="p-6">
                   <div className="flex justify-between items-start gap-3 mb-2">
-                    <h2 className="font-heading text-xl text-gray-900 uppercase tracking-wide">{room.name}</h2>
-                    <span className="text-base font-bold text-gray-800">★ {room.rating}</span>
+                    <h2 className="font-heading text-xl text-airbnb-red uppercase tracking-wide">{room.name}</h2>
+                    <span className="text-lg font-bold text-gray-800">★ {room.rating}</span>
                   </div>
-                  <p className="text-base text-gray-600 font-medium mb-2">
+                  <p className="text-lg text-gray-900 font-medium mb-2">
                     {room.location} · Up to {room.max_guests} guests
                   </p>
-                  <p className="text-base text-gray-500 mb-4 line-clamp-2">{room.description}</p>
+                  <p className="text-lg text-gray-900 mb-4 line-clamp-2">{room.description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {room.amenities.slice(0, 4).map((a) => (
                       <span key={a} className="text-xs font-bold bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
@@ -153,11 +153,11 @@ const RoomsPage: React.FC = () => {
                     ))}
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold">
+                    <div>
                       <span className="villa-card-price">{formatPrice(room.price_per_night)}</span>
-                      <span className="text-base font-medium text-gray-600"> / night</span>
-                    </span>
-                    <span className="text-airbnb-red font-bold text-sm">View details →</span>
+                      <span className="text-xl font-medium text-gray-900"> / night</span>
+                    </div>
+                    <span className="text-airbnb-red font-bold text-base">View details →</span>
                   </div>
                 </div>
               </Link>

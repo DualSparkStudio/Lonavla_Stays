@@ -17,7 +17,7 @@ const AboutPage: React.FC = () => {
             <AnimatedSection variant="slide-right">
               <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-4">About {settings.resortName}</h1>
               {settings.aboutParagraphs.map((para, i) => (
-                <p key={i} className={i === 0 ? 'text-xl text-gray-600 mb-4' : 'text-lg text-gray-600 mb-4'}>
+                <p key={i} className={i === 0 ? 'text-2xl text-gray-900 mb-4' : 'text-xl text-gray-900 mb-4'}>
                   {para}
                 </p>
               ))}
@@ -36,14 +36,14 @@ const AboutPage: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <AnimatedSection className="text-center mb-10">
           <h2 className="font-heading text-3xl text-gray-900 mb-2">What makes us different</h2>
-          <p className="text-lg text-gray-600">Many villas. One team. Handpicked hill escapes.</p>
+          <p className="text-xl text-gray-900">Many villas. One team. Handpicked hill escapes.</p>
         </AnimatedSection>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {settings.aboutHighlights.map((item, index) => (
             <AnimatedSection key={item.title} delay={index * 120}>
               <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm h-full hover:shadow-card-hover transition-shadow duration-300">
                 <h3 className="font-heading text-xl text-gray-900 mb-3 uppercase tracking-wide">{item.title}</h3>
-                <p className="text-base text-gray-600">{item.text}</p>
+                <p className="text-lg text-gray-900">{item.text}</p>
               </div>
             </AnimatedSection>
           ))}
@@ -54,7 +54,7 @@ const AboutPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection>
             <h2 className="font-heading text-3xl text-gray-900 mb-4">Plan your stay</h2>
-            <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto">
+            <p className="text-xl text-gray-900 mb-8 max-w-xl mx-auto">
               Browse our villas, compare locations and amenities, or contact us—we will help you pick the right property.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -99,7 +99,7 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
         <div className="space-y-4">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Description</p>
-            <p className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-sm text-gray-700 leading-relaxed shadow-sm">
+            <p className="bg-white rounded-lg border border-gray-100 px-3 py-2.5 text-base text-gray-700 leading-relaxed shadow-sm">
               {villa.description}
             </p>
           </div>

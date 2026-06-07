@@ -31,7 +31,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
   const initials = getAdminInitials(profile.displayName);
 
   const linkClass = (page: string) =>
-    currentPage === page ? 'text-red-500' : 'text-gray-600 hover:text-gray-900';
+    currentPage === page ? 'text-red-500' : 'text-gray-900 hover:text-gray-900';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,9 +40,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
           <div className="flex justify-between items-center min-h-16 py-2 md:py-0">
             <Link to="/admin" className="flex items-center min-w-0">
               <div className="h-8 w-8 shrink-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">⚙️</span>
+                <span className="text-white font-bold text-xl">⚙️</span>
               </div>
-              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900 truncate">
+              <span className="ml-2 text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 Resort<span className="text-red-500">Admin</span>
               </span>
             </Link>
@@ -52,7 +52,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
                 <Link
                   key={item.page}
                   to={item.to}
-                  className={`${linkClass(item.page)} transition-colors text-sm whitespace-nowrap`}
+                  className={`${linkClass(item.page)} transition-colors text-base whitespace-nowrap`}
                 >
                   {item.label}
                 </Link>
@@ -63,16 +63,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
               <Link
                 to="/admin/profile"
                 className={`flex items-center gap-2 rounded-full px-2 py-1 transition-colors ${
-                  currentPage === 'profile' ? 'text-red-500' : 'text-gray-600 hover:text-gray-900'
+                  currentPage === 'profile' ? 'text-red-500' : 'text-gray-900 hover:text-gray-900'
                 }`}
                 title="Profile"
               >
                 <span className="h-8 w-8 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
                   {initials}
                 </span>
-                <span className="text-sm font-medium max-w-[8rem] truncate hidden xl:inline">{profile.displayName}</span>
+                <span className="text-base font-medium max-w-[8rem] truncate hidden xl:inline">{profile.displayName}</span>
               </Link>
-              <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
+              <Link to="/" className="text-gray-900 hover:text-gray-900 font-medium text-base">
                 View Site
               </Link>
               <button
@@ -81,7 +81,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
                   adminLogout();
                   navigate('/admin/login', { replace: true });
                 }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full text-base font-medium"
               >
                 Logout
               </button>
@@ -119,7 +119,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
                 </span>
                 Profile
               </Link>
-              <Link to="/" className="block rounded-lg px-3 py-2.5 font-medium text-gray-600">
+              <Link to="/" className="block rounded-lg px-3 py-2.5 font-medium text-gray-900">
                 View Site
               </Link>
               <button
@@ -129,7 +129,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentPage, children }) => {
                   navigate('/admin/login', { replace: true });
                   setMobileOpen(false);
                 }}
-                className="block w-full text-left rounded-lg px-3 py-2.5 font-medium text-gray-600"
+                className="block w-full text-left rounded-lg px-3 py-2.5 font-medium text-gray-900"
               >
                 Logout
               </button>

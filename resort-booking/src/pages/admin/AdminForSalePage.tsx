@@ -83,7 +83,7 @@ const AdminForSalePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Properties for sale</h1>
-          <p className="text-gray-600">Manage plots and villas shown on the public For Sale section.</p>
+          <p className="text-gray-900">Manage plots and villas shown on the public For Sale section.</p>
         </div>
         <button type="button" onClick={openNew} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg">
           Add listing
@@ -99,18 +99,18 @@ const AdminForSalePage: React.FC = () => {
                 <h3 className="font-bold text-gray-900">{p.title}</h3>
                 <StatusPill status={p.status} />
               </div>
-              <p className="text-sm text-gray-500 mb-3">{getCategoryLabel(p.category)}</p>
+              <p className="text-base text-gray-900 mb-3">{getCategoryLabel(p.category)}</p>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setViewing(p)} className="text-sm font-medium text-red-600 hover:text-red-700">
                   View
                 </button>
-                <button type="button" onClick={() => openEdit(p)} className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                <button type="button" onClick={() => openEdit(p)} className="text-base font-medium text-blue-600 hover:text-blue-700">
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => window.confirm('Delete this listing?') && deletePropertyForSale(p.id)}
-                  className="text-sm text-gray-500 hover:text-red-600"
+                  className="text-sm text-gray-900 hover:text-red-600"
                 >
                   Delete
                 </button>
@@ -126,7 +126,7 @@ const AdminForSalePage: React.FC = () => {
           onSubmit={handleSave}
           className="scroll-mt-24 bg-white rounded-xl border border-gray-200 p-6 mt-10 space-y-4"
         >
-          <h2 className="text-lg font-bold">{isNew ? 'New listing' : `Edit: ${editing?.title}`}</h2>
+          <h2 className="text-xl font-bold">{isNew ? 'New listing' : `Edit: ${editing?.title}`}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AdminFormField label="Property title">
               <input required value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className={adminInputClass} />
@@ -150,7 +150,7 @@ const AdminForSalePage: React.FC = () => {
               <input type="number" min={0} value={draft.price || ''} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Price on request">
-              <label className="flex items-center gap-2 text-sm text-gray-700 mt-2">
+              <label className="flex items-center gap-2 text-base text-gray-700 mt-2">
                 <input type="checkbox" checked={draft.priceOnRequest ?? false} onChange={(e) => setDraft({ ...draft, priceOnRequest: e.target.checked })} />
                 Show &quot;Price on request&quot; instead of amount
               </label>

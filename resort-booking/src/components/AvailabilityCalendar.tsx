@@ -241,11 +241,11 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
 
   return (
     <div className={wrapperClass}>
-      <p className="mb-2 text-xs text-gray-600 leading-snug">
+      <p className="mb-2 text-sm text-gray-900 leading-snug">
         {awaitingCheckOut
           ? 'Tap your check-out date (or drag a range).'
           : 'Tap check-in, then check-out (or drag a range).'}{' '}
-        <span className="text-gray-500">Gray = blocked · Pink = booked</span>
+        <span className="text-gray-900">Gray = blocked · Pink = booked</span>
       </p>
 
       {(selectedStartDate || complete) && (

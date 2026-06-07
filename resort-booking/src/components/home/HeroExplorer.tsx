@@ -53,25 +53,26 @@ const HeroExplorer: React.FC = () => {
   };
 
   const fieldClass =
-    'flex-1 min-w-0 px-3 py-2 md:px-4 md:py-3 border-b border-gray-100 md:border-b-0';
-  const labelClass = 'text-sm font-bold text-gray-900 mb-1';
+    'px-3 py-2 md:px-4 md:py-3 border-b border-gray-100 md:border-b-0 overflow-visible';
+  const labelClass = 'text-base font-bold text-gray-900 mb-1';
   const inputClass =
-    'w-full text-base font-medium text-gray-700 bg-transparent border-0 focus:outline-none focus:ring-0 p-0';
+    'w-full min-w-0 text-lg font-medium text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 p-0';
+  const dateInputClass = cn(inputClass, 'min-w-[9.75rem]');
 
   return (
-    <AnimatedSection variant="scale-in" delay={250} className="max-w-4xl mx-auto w-full">
-      <div className="search-bar-shell bg-white rounded-2xl md:rounded-3xl shadow-lg border border-gray-200 p-3 md:p-4 motion-safe:animate-float">
+    <AnimatedSection variant="scale-in" delay={250} className="max-w-5xl mx-auto w-full">
+      <div className="search-bar-shell bg-white rounded-2xl md:rounded-3xl shadow-lg border-2 border-airbnb-red/40 p-3 md:p-4 motion-safe:animate-float">
         {/* Mode toggle */}
         <div className="flex justify-center mb-3 md:mb-4">
-          <div className="inline-flex rounded-full bg-gray-100 p-1 gap-1">
+          <div className="inline-flex rounded-full bg-pink-50 p-1.5 gap-1 ring-1 ring-airbnb-red/20 shadow-sm">
             <button
               type="button"
               onClick={() => setMode('stay')}
               className={cn(
-                'rounded-full px-4 py-2 text-sm font-bold transition-all duration-200',
+                'rounded-full px-5 py-2.5 text-base font-bold leading-normal transition-all duration-200',
                 mode === 'stay'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
+                  : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
               )}
             >
               Book a villa stay
@@ -80,10 +81,10 @@ const HeroExplorer: React.FC = () => {
               type="button"
               onClick={() => setMode('buy')}
               className={cn(
-                'rounded-full px-4 py-2 text-sm font-bold transition-all duration-200',
+                'rounded-full px-5 py-2.5 text-base font-bold leading-normal transition-all duration-200',
                 mode === 'buy'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
+                  : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
               )}
             >
               Buy plot or villa
@@ -93,20 +94,21 @@ const HeroExplorer: React.FC = () => {
 
         {mode === 'stay' ? (
           <>
-            <p className="text-center text-sm text-gray-500 mb-3 px-2">
+            <p className="text-center text-base text-gray-900 mb-3 px-2 leading-relaxed">
               Nightly villa rentals across {settings.resortLocation || RESORT_LOCATION} — pick dates and browse available stays.
             </p>
-            <div className="flex flex-col md:flex-row md:items-end md:divide-x md:divide-gray-300">
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.35fr)_minmax(10rem,1fr)_minmax(10rem,1fr)_auto] md:items-end md:divide-x md:divide-gray-300">
               <div className={fieldClass}>
                 <div className={labelClass}>Area</div>
                 <select
                   value={stayArea}
                   onChange={(e) => setStayArea(e.target.value)}
                   className={cn(inputClass, 'cursor-pointer')}
+                  title={stayArea === 'All areas' ? `All areas · ${settings.resortLocation || RESORT_LOCATION}` : stayArea}
                 >
                   {stayAreas.map((area) => (
                     <option key={area} value={area}>
-                      {area === 'All areas' ? `All areas · ${settings.resortLocation || RESORT_LOCATION}` : area}
+                      {area === 'All areas' ? 'All areas' : area}
                     </option>
                   ))}
                 </select>
@@ -118,7 +120,7 @@ const HeroExplorer: React.FC = () => {
                   value={checkIn}
                   min={toDateValue(new Date())}
                   onChange={(e) => setCheckIn(e.target.value)}
-                  className={inputClass}
+                  className={dateInputClass}
                 />
               </div>
               <div className={fieldClass}>
@@ -128,11 +130,11 @@ const HeroExplorer: React.FC = () => {
                   value={checkOut}
                   min={checkIn || toDateValue(new Date())}
                   onChange={(e) => setCheckOut(e.target.value)}
-                  className={inputClass}
+                  className={dateInputClass}
                 />
               </div>
-              <div className={cn(fieldClass, 'flex items-end justify-between gap-3 md:min-w-[140px]')}>
-                <div className="flex-1 min-w-0">
+              <div className={cn(fieldClass, 'flex items-end justify-between gap-3 md:pl-4 md:min-w-[9.5rem]')}>
+                <div className="min-w-[5.5rem]">
                   <div className={labelClass}>Guests</div>
                   <select
                     value={guests}
@@ -166,11 +168,11 @@ const HeroExplorer: React.FC = () => {
           </>
         ) : (
           <>
-            <p className="text-center text-sm text-gray-500 mb-3 px-2">
+            <p className="text-center text-base text-gray-900 mb-3 px-2 leading-relaxed">
               Own a piece of Lonavala — browse NA plots and ready villas with photos, details, and
               direct contact.
             </p>
-            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-0 sm:divide-x sm:divide-gray-300">
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end gap-3 sm:gap-0 sm:divide-x sm:divide-gray-300">
               <div className={fieldClass}>
                 <div className={labelClass}>Property type</div>
                 <select

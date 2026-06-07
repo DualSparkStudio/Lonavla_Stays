@@ -20,7 +20,7 @@ const BlockedDateDetailsModal: React.FC<BlockedDateDetailsModalProps> = ({
 
   return (
     <Modal isOpen onClose={onClose} title="Blocked dates" size="md">
-      <dl className="space-y-3 text-sm mb-6">
+      <dl className="space-y-3 text-base mb-6">
         <div>
           <dt className="font-bold text-gray-900">Villa</dt>
           <dd className="text-gray-700">{roomName ?? blocked.roomId}</dd>

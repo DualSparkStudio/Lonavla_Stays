@@ -31,7 +31,7 @@ const PublicHomePage: React.FC = () => {
             <h1 className="font-heading text-4xl md:text-6xl font-normal tracking-wide text-gray-900 mb-4 motion-safe:animate-slide-up">
               {settings.heroTitle}
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto motion-safe:animate-fade-in [animation-delay:150ms] opacity-0 [animation-fill-mode:forwards]">
+            <p className="text-2xl text-gray-900 max-w-2xl mx-auto motion-safe:animate-fade-in [animation-delay:150ms] opacity-0 [animation-fill-mode:forwards]">
               {settings.heroSubtitle}
             </p>
           </div>
@@ -42,7 +42,7 @@ const PublicHomePage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <AnimatedSection>
           <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">Featured villas</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl">
+          <p className="text-2xl text-gray-900 mb-8 max-w-2xl">
             {settings.brandTagline}. Every card is a separate villa we manage—tap to see location, amenities, and rates.
           </p>
         </AnimatedSection>
@@ -61,20 +61,20 @@ const PublicHomePage: React.FC = () => {
                     decoding="async"
                     className="room-card-image w-full h-56 object-cover"
                   />
-                  <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-sm font-bold">
+                  <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-base font-bold">
                     {room.room_type}
                   </span>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-heading text-lg text-gray-900 leading-snug uppercase tracking-wide">{room.name}</h3>
-                  <p className="text-gray-600 text-base font-medium mb-2 mt-2">
+                  <h3 className="font-heading text-lg text-airbnb-red leading-snug uppercase tracking-wide">{room.name}</h3>
+                  <p className="text-gray-900 text-lg font-medium mb-2 mt-2">
                     {room.location} · Up to {room.max_guests} guests
                   </p>
-                  <p className="text-gray-500 text-base mb-3 line-clamp-2">{room.description}</p>
+                  <p className="text-gray-900 text-lg mb-3 line-clamp-2">{room.description}</p>
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="text-lg font-bold villa-card-price">₹{room.price_per_night.toLocaleString('en-IN')}</span>
-                      <span className="text-gray-600 text-base"> / night</span>
+                      <span className="villa-card-price">₹{room.price_per_night.toLocaleString('en-IN')}</span>
+                      <span className="text-gray-900 text-xl"> / night</span>
                     </div>
                   </div>
                 </div>
@@ -117,9 +117,9 @@ const PublicHomePage: React.FC = () => {
                     className="room-card-image w-full h-56 object-cover"
                   />
                   <div className="p-5">
-                    <h3 className="font-heading text-lg text-gray-900 uppercase tracking-wide mb-2">{property.title}</h3>
-                    <p className="text-gray-600 text-base font-medium mb-2">{property.location}</p>
-                    <span className="font-bold text-lg villa-card-price">{formatSalePrice(property)}</span>
+                    <h3 className="font-heading text-lg text-airbnb-red uppercase tracking-wide mb-2">{property.title}</h3>
+                    <p className="text-gray-900 text-lg font-medium mb-2">{property.location}</p>
+                    <span className="font-bold text-2xl villa-card-price">{formatSalePrice(property)}</span>
                   </div>
                 </div>
               </AnimatedSection>
