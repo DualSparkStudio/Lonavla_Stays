@@ -6,6 +6,7 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { formatPrice } from '../../data/resort';
+import NormalizedImage from '../ui/NormalizedImage';
 import type { Room } from '../../types/site';
 import {
   AdminDetailField,
@@ -41,11 +42,11 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
     >
       {villa.images[0] && (
         <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-          <img src={villa.images[0]} alt={villa.name} className="w-full h-48 object-cover" />
+          <NormalizedImage src={villa.images[0]} alt={villa.name} className="w-full h-48 object-cover" />
           {villa.images.length > 1 && (
             <div className="flex gap-2 p-2 bg-gray-50 overflow-x-auto">
-              {villa.images.slice(1, 5).map((img) => (
-                <img key={img} src={img} alt="" className="h-14 w-20 rounded-lg object-cover shrink-0 border border-gray-200" />
+              {villa.images.slice(1, 5).map((img, idx) => (
+                <NormalizedImage key={`${img}-${idx}`} src={img} alt="" className="h-14 w-20 rounded-lg object-cover shrink-0 border border-gray-200" />
               ))}
               {villa.images.length > 5 && (
                 <span className="text-xs text-gray-500 self-center px-2">+{villa.images.length - 5} more</span>

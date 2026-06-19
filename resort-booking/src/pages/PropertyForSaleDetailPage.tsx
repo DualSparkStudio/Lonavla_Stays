@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ChevronLeftIcon,
@@ -16,6 +16,7 @@ import {
   getStatusLabel,
 } from '../data/propertiesForSale';
 import { useSiteData } from '../context/SiteDataContext';
+import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
 import { buildPropertyEnquiryMessage, buildWhatsAppUrl } from '../lib/whatsapp';
 
 const PropertyForSaleDetailPage: React.FC = () => {
@@ -25,6 +26,19 @@ const PropertyForSaleDetailPage: React.FC = () => {
   const { getPropertyForSaleById, settings } = useSiteData();
 
   const property = id ? getPropertyForSaleById(id) : undefined;
+
+  const galleryImages = useMemo(
+    () => (property ? normalizeImageUrls(property.images) : []),
+    [property],
+  );
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, originalUrl: string) => {
+    const img = e.currentTarget;
+    const fallback = driveImageFallbackUrl(originalUrl);
+    if (fallback && img.src !== fallback) {
+      img.src = fallback;
+    }
+  };
 
   if (!property) {
     return (
@@ -39,9 +53,11 @@ const PropertyForSaleDetailPage: React.FC = () => {
     );
   }
 
-  const nextImage = () => setImageIndex((i) => (i + 1) % property.images.length);
+  const nextImage = () => setImageIndex((i) => (i + 1) % galleryImages.length);
   const prevImage = () =>
-    setImageIndex((i) => (i - 1 + property.images.length) % property.images.length);
+    setImageIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
+  const activeImage = galleryImages[imageIndex] || 'https://via.placeholder.com/800x600?text=Property';
+  const activeOriginal = property.images[imageIndex] || property.images[0] || '';
 
   const whatsappPhone = settings.resortPhone.trim();
   const whatsappHref = buildWhatsAppUrl(
@@ -67,11 +83,13 @@ const PropertyForSaleDetailPage: React.FC = () => {
             <AnimatedSection variant="fade-in">
               <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 <img
-                  src={property.images[imageIndex]}
+                  src={activeImage}
                   alt={property.title}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => handleImageError(e, activeOriginal)}
                   className="w-full h-80 md:h-[28rem] object-cover"
                 />
-                {property.images.length > 1 && (
+                {galleryImages.length > 1 && (
                   <>
                     <button
                       type="button"
@@ -93,16 +111,22 @@ const PropertyForSaleDetailPage: React.FC = () => {
                 )}
               </div>
               <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1">
-                {property.images.map((img, idx) => (
+                {galleryImages.map((img, idx) => (
                   <button
-                    key={img}
+                    key={`${property.images[idx]}-${idx}`}
                     type="button"
                     onClick={() => setImageIndex(idx)}
                     className={`shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                       idx === imageIndex ? 'border-airbnb-red' : 'border-transparent opacity-70'
                     }`}
                   >
-                    <img src={img} alt="" className="h-16 w-24 object-cover" />
+                    <img
+                      src={img}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      onError={(e) => handleImageError(e, property.images[idx] || '')}
+                      className="h-16 w-24 object-cover"
+                    />
                   </button>
                 ))}
               </div>

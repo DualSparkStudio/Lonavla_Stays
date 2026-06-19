@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminCardActions from '../../components/admin/AdminCardActions';
 import AdminPropertyDetailsModal from '../../components/admin/AdminPropertyDetailsModal';
 import { getCategoryLabel } from '../../data/propertiesForSale';
 import { useSiteData } from '../../context/SiteDataContext';
-import { getPrimaryImage } from '../../lib/imageUrl';
+import NormalizedImage from '../../components/ui/NormalizedImage';
 import type { PropertyForSale } from '../../types/site';
 
 const emptyProperty = (): Omit<PropertyForSale, 'id'> => ({
@@ -93,28 +94,23 @@ const AdminForSalePage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {propertiesForSale.map((p) => (
           <div key={p.id} className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-            <img src={getPrimaryImage(p.images, 'https://via.placeholder.com/800x600?text=Property')} alt={p.title} className="w-full h-40 object-cover" />
+            <NormalizedImage
+              urls={p.images}
+              fallback="https://via.placeholder.com/800x600?text=Property"
+              alt={p.title}
+              className="w-full h-40 object-cover"
+            />
             <div className="p-4">
               <div className="flex justify-between items-start gap-2 mb-1">
                 <h3 className="font-bold text-gray-900">{p.title}</h3>
                 <StatusPill status={p.status} />
               </div>
               <p className="text-base text-gray-900 mb-3">{getCategoryLabel(p.category)}</p>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setViewing(p)} className="text-sm font-medium text-red-600 hover:text-red-700">
-                  View
-                </button>
-                <button type="button" onClick={() => openEdit(p)} className="text-base font-medium text-blue-600 hover:text-blue-700">
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => window.confirm('Delete this listing?') && deletePropertyForSale(p.id)}
-                  className="text-sm text-gray-900 hover:text-red-600"
-                >
-                  Delete
-                </button>
-              </div>
+              <AdminCardActions
+                onView={() => setViewing(p)}
+                onEdit={() => openEdit(p)}
+                onDelete={() => window.confirm('Delete this listing?') && deletePropertyForSale(p.id)}
+              />
             </div>
           </div>
         ))}

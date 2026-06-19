@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AvailabilityCalendar from '../components/AvailabilityCalendar';
 import StickyBookingPanel from '../components/StickyBookingPanel';
@@ -8,6 +8,7 @@ import AnimatedSection from '../components/ui/AnimatedSection';
 import Button from '../components/ui/Button';
 import LocationMapSection from '../components/maps/LocationMapSection';
 import { formatPrice, formatTimeLabel } from '../data/resort';
+import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
 import { useSiteData } from '../context/SiteDataContext';
 
 const RoomDetailPage: React.FC = () => {
@@ -19,6 +20,19 @@ const RoomDetailPage: React.FC = () => {
   const { getRoomById, settings } = useSiteData();
 
   const room = id ? getRoomById(id) : undefined;
+
+  const galleryImages = useMemo(
+    () => (room ? normalizeImageUrls(room.images) : []),
+    [room],
+  );
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, originalUrl: string) => {
+    const img = e.currentTarget;
+    const fallback = driveImageFallbackUrl(originalUrl);
+    if (fallback && img.src !== fallback) {
+      img.src = fallback;
+    }
+  };
 
   if (!room) {
     return (
@@ -33,8 +47,10 @@ const RoomDetailPage: React.FC = () => {
     );
   }
 
-  const nextImage = () => setImageIndex((i) => (i + 1) % room.images.length);
-  const prevImage = () => setImageIndex((i) => (i - 1 + room.images.length) % room.images.length);
+  const nextImage = () => setImageIndex((i) => (i + 1) % galleryImages.length);
+  const prevImage = () => setImageIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
+  const activeImage = galleryImages[imageIndex] || 'https://via.placeholder.com/800x600?text=Villa';
+  const activeOriginal = room.images[imageIndex] || room.images[0] || '';
 
   return (
     <PublicLayout currentPage="villas">
@@ -53,11 +69,13 @@ const RoomDetailPage: React.FC = () => {
             <AnimatedSection variant="fade-in">
               <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 <img
-                  src={room.images[imageIndex]}
+                  src={activeImage}
                   alt={room.name}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => handleImageError(e, activeOriginal)}
                   className="w-full h-80 md:h-[28rem] object-cover"
                 />
-                {room.images.length > 1 && (
+                {galleryImages.length > 1 && (
                   <>
                     <button
                       type="button"
@@ -79,16 +97,22 @@ const RoomDetailPage: React.FC = () => {
                 )}
               </div>
               <div className="flex gap-2 mt-3 overflow-x-auto">
-                {room.images.map((img, idx) => (
+                {galleryImages.map((img, idx) => (
                   <button
-                    key={img}
+                    key={`${room.images[idx]}-${idx}`}
                     type="button"
                     onClick={() => setImageIndex(idx)}
                     className={`shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                       idx === imageIndex ? 'border-airbnb-red' : 'border-transparent opacity-70'
                     }`}
                   >
-                    <img src={img} alt="" className="h-16 w-24 object-cover" />
+                    <img
+                      src={img}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      onError={(e) => handleImageError(e, room.images[idx] || '')}
+                      className="h-16 w-24 object-cover"
+                    />
                   </button>
                 ))}
               </div>

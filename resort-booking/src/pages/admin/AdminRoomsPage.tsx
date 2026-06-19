@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminCardActions from '../../components/admin/AdminCardActions';
 import AdminVillaDetailsModal from '../../components/admin/AdminVillaDetailsModal';
+import NormalizedImage from '../../components/ui/NormalizedImage';
 import { useSiteData } from '../../context/SiteDataContext';
-import { getPrimaryImage } from '../../lib/imageUrl';
 import type { Room } from '../../types/site';
 
 const emptyRoom = (): Omit<Room, 'id'> => ({
@@ -112,24 +113,23 @@ const AdminRoomsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rooms.map((room) => (
           <div key={room.id} className="bg-white rounded-xl overflow-hidden shadow-md">
-            <img src={getPrimaryImage(room.images, 'https://via.placeholder.com/400x300?text=Villa')} alt={room.name} className="w-full h-48 object-cover" />
+            <NormalizedImage
+              urls={room.images}
+              fallback="https://via.placeholder.com/400x300?text=Villa"
+              alt={room.name}
+              className="w-full h-48 object-cover"
+            />
             <div className="p-4">
               <div className="flex justify-between items-start gap-2 mb-2">
                 <h3 className="font-bold text-gray-900">{room.name}</h3>
                 <StatusPill status={room.status} />
               </div>
               <p className="text-base text-gray-900 mb-3">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setViewing(room)} className="text-sm font-medium text-red-600 hover:text-red-700">
-                  View
-                </button>
-                <button type="button" onClick={() => openEdit(room)} className="text-base font-medium text-blue-600 hover:text-blue-700">
-                  Edit
-                </button>
-                <button type="button" onClick={() => window.confirm('Delete villa?') && deleteRoom(room.id)} className="text-sm text-gray-900 hover:text-red-600">
-                  Delete
-                </button>
-              </div>
+              <AdminCardActions
+                onView={() => setViewing(room)}
+                onEdit={() => openEdit(room)}
+                onDelete={() => window.confirm('Delete villa?') && deleteRoom(room.id)}
+              />
             </div>
           </div>
         ))}

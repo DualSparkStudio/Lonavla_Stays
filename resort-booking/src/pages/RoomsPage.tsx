@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
+import NormalizedImage from '../components/ui/NormalizedImage';
 import { useSiteData } from '../context/SiteDataContext';
 import { formatPrice } from '../data/resort';
-import { getPrimaryImage } from '../lib/imageUrl';
 
 const RoomsPage: React.FC = () => {
   const { rooms, settings } = useSiteData();
@@ -127,8 +127,9 @@ const RoomsPage: React.FC = () => {
                 className="room-card block bg-white rounded-xl overflow-hidden border border-gray-100 shadow-md h-full"
               >
                 <div className="relative overflow-hidden">
-                  <img
-                    src={getPrimaryImage(room.images, 'https://via.placeholder.com/800x600?text=Villa')}
+                  <NormalizedImage
+                    urls={room.images}
+                    fallback="https://via.placeholder.com/800x600?text=Villa"
                     alt={room.name}
                     className="room-card-image w-full h-72 object-cover"
                   />

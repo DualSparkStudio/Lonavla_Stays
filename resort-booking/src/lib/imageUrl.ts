@@ -1,5 +1,6 @@
 const DRIVE_FILE_ID_PATTERNS = [
   /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i,
+  /drive\.google\.com\/open\?[^#]*\bid=([a-zA-Z0-9_-]+)/i,
   /[?&]id=([a-zA-Z0-9_-]+)/i,
 ];
 
@@ -11,6 +12,10 @@ function extractDriveFileId(url: string): string | null {
   return null;
 }
 
+function driveEmbedUrl(fileId: string): string {
+  return `https://drive.google.com/uc?export=view&id=${fileId}`;
+}
+
 /** Converts common share links into image-renderable URLs. */
 export function normalizeImageUrl(url?: string): string {
   const raw = (url || '').trim();
@@ -19,14 +24,32 @@ export function normalizeImageUrl(url?: string): string {
   if (/drive\.google\.com|docs\.google\.com|drive\.usercontent\.google\.com/i.test(raw)) {
     const fileId = extractDriveFileId(raw);
     if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+      return driveEmbedUrl(fileId);
     }
+  }
+
+  // Cloudinary: use optimized delivery when a transform URL is not already present
+  if (/res\.cloudinary\.com/i.test(raw) && !/\/upload\/[^/]+\//.test(raw)) {
+    return raw.replace('/upload/', '/upload/f_auto,q_auto/');
   }
 
   return raw;
 }
 
+export function normalizeImageUrls(urls?: string[]): string[] {
+  if (!urls?.length) return [];
+  return urls.map(normalizeImageUrl).filter(Boolean);
+}
+
 export function getPrimaryImage(urls?: string[], fallback = 'https://via.placeholder.com/800x600?text=Image'): string {
-  if (!urls?.length) return fallback;
-  return normalizeImageUrl(urls[0]) || fallback;
+  const normalized = normalizeImageUrls(urls);
+  return normalized[0] || fallback;
+}
+
+/** Alternate Google Drive URL when the primary embed fails to load. */
+export function driveImageFallbackUrl(url?: string): string | undefined {
+  const raw = (url || '').trim();
+  const fileId = extractDriveFileId(raw);
+  if (!fileId) return undefined;
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1920`;
 }

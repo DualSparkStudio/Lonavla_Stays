@@ -15,6 +15,7 @@ import {
 import PublicLayout from '../components/layout/PublicLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import NormalizedImage from '../components/ui/NormalizedImage';
 import { notifyBookingByEmail } from '../lib/bookingEmail';
 import { saveBookingConfirmation } from '../lib/bookingConfirmation';
 import { checkRoomAvailability } from '../lib/availability';
@@ -318,8 +319,9 @@ const BookingPage: React.FC = () => {
               {/* Room summary */}
               <div className="p-6 md:p-8 border-b border-gray-100">
                 <div className="flex flex-col md:flex-row gap-6">
-                  <img
-                    src={getPrimaryImage(villa.images, 'https://via.placeholder.com/900x500?text=Villa')}
+                  <NormalizedImage
+                    urls={villa.images}
+                    fallback="https://via.placeholder.com/900x500?text=Villa"
                     alt={villa.name}
                     className="w-full md:w-56 h-44 md:h-40 object-cover rounded-xl shrink-0"
                   />

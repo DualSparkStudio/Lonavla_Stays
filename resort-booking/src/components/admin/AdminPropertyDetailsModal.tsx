@@ -7,6 +7,7 @@ import {
   TagIcon,
 } from '@heroicons/react/24/outline';
 import { formatSalePrice, getCategoryLabel } from '../../data/propertiesForSale';
+import { normalizeImageUrl } from '../../lib/imageUrl';
 import type { PropertyForSale } from '../../types/site';
 import {
   AdminDetailField,
@@ -42,11 +43,11 @@ const AdminPropertyDetailsModal: React.FC<AdminPropertyDetailsModalProps> = ({ p
     >
       {property.images[0] && (
         <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-          <img src={property.images[0]} alt={property.title} className="w-full h-48 object-cover" />
+          <img src={normalizeImageUrl(property.images[0])} alt={property.title} className="w-full h-48 object-cover" />
           {property.images.length > 1 && (
             <div className="flex gap-2 p-2 bg-gray-50 overflow-x-auto">
               {property.images.slice(1, 5).map((img) => (
-                <img key={img} src={img} alt="" className="h-14 w-20 rounded-lg object-cover shrink-0 border border-gray-200" />
+                <img key={img} src={normalizeImageUrl(img)} alt="" className="h-14 w-20 rounded-lg object-cover shrink-0 border border-gray-200" />
               ))}
               {property.images.length > 5 && (
                 <span className="text-xs text-gray-500 self-center px-2">+{property.images.length - 5} more</span>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminCardActions from '../../components/admin/AdminCardActions';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import BookingDetailsModal from '../../components/BookingDetailsModal';
 import { notifyBookingByEmail } from '../../lib/bookingEmail';
@@ -201,22 +202,10 @@ const AdminBookingsPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setViewing(b)}
-                        className="text-sm font-medium text-red-600 hover:text-red-700"
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => window.confirm('Delete this booking?') && deleteBooking(b.id)}
-                        className="text-sm text-gray-900 hover:text-red-600"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    <AdminCardActions
+                      onView={() => setViewing(b)}
+                      onDelete={() => window.confirm('Delete this booking?') && deleteBooking(b.id)}
+                    />
                   </td>
                 </tr>
               ))}

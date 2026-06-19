@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import PublicLayout from '../components/layout/PublicLayout';
 import HeroExplorer from '../components/home/HeroExplorer';
+import NormalizedImage from '../components/ui/NormalizedImage';
 import { formatSalePrice } from '../data/propertiesForSale';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
-import { getPrimaryImage } from '../lib/imageUrl';
 
 const PublicHomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -54,8 +54,9 @@ const PublicHomePage: React.FC = () => {
                 onClick={() => navigate(`/villas/${room.id}`)}
               >
                 <div className="relative overflow-hidden">
-                  <img
-                    src={getPrimaryImage(room.images, 'https://via.placeholder.com/800x600?text=Villa')}
+                  <NormalizedImage
+                    urls={room.images}
+                    fallback="https://via.placeholder.com/800x600?text=Villa"
                     alt={room.name}
                     loading={index < 2 ? 'eager' : 'lazy'}
                     decoding="async"
@@ -109,8 +110,9 @@ const PublicHomePage: React.FC = () => {
                   role="button"
                   tabIndex={0}
                 >
-                  <img
-                    src={getPrimaryImage(property.images, 'https://via.placeholder.com/800x600?text=Property')}
+                  <NormalizedImage
+                    urls={property.images}
+                    fallback="https://via.placeholder.com/800x600?text=Property"
                     alt={property.title}
                     loading="lazy"
                     decoding="async"

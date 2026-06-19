@@ -11,9 +11,11 @@ import {
 } from '@heroicons/react/24/outline';
 import PublicLayout from '../components/layout/PublicLayout';
 import Button from '../components/ui/Button';
+import NormalizedImage from '../components/ui/NormalizedImage';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { useSiteData } from '../context/SiteDataContext';
 import { loadBookingConfirmation, type BookingConfirmationData } from '../lib/bookingConfirmation';
+import { getPrimaryImage } from '../lib/imageUrl';
 import {
   breakdownFromConfirmation,
   breakdownFromStoredBooking,
@@ -47,7 +49,7 @@ const BookingConfirmationPage: React.FC = () => {
       guestPhone: '',
       roomId: stored.roomId,
       roomName: stored.roomName,
-      roomImage: room?.images[0],
+      roomImage: getPrimaryImage(room?.images),
       checkIn: stored.checkIn,
       checkOut: stored.checkOut,
       guests: stored.guests,
@@ -89,7 +91,7 @@ const BookingConfirmationPage: React.FC = () => {
   }
 
   const room = getRoomById(data.roomId);
-  const villaImage = data.roomImage || room?.images[0];
+  const villaImage = data.roomImage || getPrimaryImage(room?.images);
   const displayId = data.bookingRef.replace(/^LON/i, '') || data.bookingRef;
   return (
     <PublicLayout currentPage="villas">
@@ -181,13 +183,14 @@ const BookingConfirmationPage: React.FC = () => {
                   <h2 className="font-bold text-gray-900">Villa Details</h2>
                 </div>
                 <div className="flex gap-4 items-center">
-                  {villaImage && (
-                    <img
+                  {(villaImage || room?.images?.length) ? (
+                    <NormalizedImage
                       src={villaImage}
+                      urls={room?.images}
                       alt={data.roomName}
                       className="h-20 w-28 rounded-lg object-cover shrink-0 border border-amber-200"
                     />
-                  )}
+                  ) : null}
                   <div>
                     <p className="font-bold text-gray-900 text-xl">{data.roomName}</p>
                     <p className="text-base text-gray-900 mt-1">
