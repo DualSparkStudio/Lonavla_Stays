@@ -54,6 +54,7 @@ type BookingRow = {
   guest_name: string;
   guest_email: string;
   guest_phone: string | null;
+  created_at: string;
   villas?: { name: string; legacy_id: string | null } | null;
 };
 
@@ -153,7 +154,7 @@ function mapBookingRow(row: BookingRow): AdminBooking {
     total: Number(row.total_amount),
     status,
     bookingRef: row.booking_ref,
-    bookedAt: row.check_in,
+    bookedAt: row.created_at,
   };
 }
 
@@ -228,7 +229,7 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
 const VILLA_COLUMNS =
   'id, legacy_id, name, room_type, description, price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url';
 const BOOKING_COLUMNS =
-  'id, villa_id, booking_ref, check_in, check_out, adults, children, total_amount, status, guest_name, guest_email, villas(name, legacy_id)';
+  'id, villa_id, booking_ref, check_in, check_out, adults, children, total_amount, status, guest_name, guest_email, created_at, villas(name, legacy_id)';
 const BLOCKED_COLUMNS = 'id, villa_id, start_date, end_date, reason, notes, source, created_at';
 
 function bookingDateFilters() {
