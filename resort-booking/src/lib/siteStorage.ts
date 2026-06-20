@@ -16,7 +16,12 @@ import { propertiesForSale as defaultPropertiesForSale } from '../data/propertie
 import type { SiteData, SiteSettings, Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, BlockedDate } from '../types/site';
 
 const STORAGE_KEY = 'lonavala-stays-site-data-v1';
-const SESSION_CACHE_KEY = 'lonavala-stays-session-site-data';
+const LEGACY_SESSION_CACHE_KEY = 'lonavala-stays-session-site-data';
+const SESSION_CACHE_KEY = 'lonavala-stays-session-site-data-v2';
+/** Session cache is for in-tab navigation only — never bootstrap from stale mobile sessions. */
+const SESSION_CACHE_TTL_MS = 2 * 60 * 1000;
+
+type SessionSiteDataEnvelope = { cachedAt: number; data: Partial<SiteData> };
 
 export const defaultSiteSettings = (): SiteSettings => ({
   resortName: RESORT_NAME,
@@ -229,12 +234,31 @@ export function dedupeBookings(bookings: AdminBooking[]): AdminBooking[] {
   return result;
 }
 
+export function purgeLegacySessionSiteData(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(LEGACY_SESSION_CACHE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function readSessionSiteData(): SiteData | null {
   if (typeof window === 'undefined') return null;
   try {
+    purgeLegacySessionSiteData();
     const raw = sessionStorage.getItem(SESSION_CACHE_KEY);
     if (!raw) return null;
-    return mergeWithDefaults(JSON.parse(raw) as Partial<SiteData>);
+    const parsed = JSON.parse(raw) as SessionSiteDataEnvelope | Partial<SiteData>;
+    if (!('cachedAt' in parsed) || typeof parsed.cachedAt !== 'number') {
+      sessionStorage.removeItem(SESSION_CACHE_KEY);
+      return null;
+    }
+    if (Date.now() - parsed.cachedAt > SESSION_CACHE_TTL_MS) {
+      sessionStorage.removeItem(SESSION_CACHE_KEY);
+      return null;
+    }
+    return mergeWithDefaults(parsed.data);
   } catch {
     return null;
   }
@@ -243,7 +267,8 @@ export function readSessionSiteData(): SiteData | null {
 export function writeSessionSiteData(data: SiteData): void {
   if (typeof window === 'undefined') return;
   try {
-    sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(data));
+    const envelope: SessionSiteDataEnvelope = { cachedAt: Date.now(), data };
+    sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(envelope));
   } catch {
     /* session quota */
   }

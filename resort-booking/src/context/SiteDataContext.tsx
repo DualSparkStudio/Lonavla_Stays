@@ -31,7 +31,7 @@ import {
   createDefaultSiteData,
   createEmptyCatalogSiteData,
   loadSiteData,
-  readSessionSiteData,
+  purgeLegacySessionSiteData,
   resetSiteData,
   saveSiteData,
   writeSessionSiteData,
@@ -117,9 +117,10 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const queryClient = useQueryClient();
   const [localData, setLocalData] = useState<SiteData>(() => {
     if (!isSupabaseConfigured) return loadSiteData();
-    return readSessionSiteData() ?? createEmptyCatalogSiteData();
+    purgeLegacySessionSiteData();
+    return createEmptyCatalogSiteData();
   });
-  const hadSessionCache = useRef(Boolean(readSessionSiteData()));
+  const publicDataLoaded = useRef(false);
   const [dataSource, setDataSource] = useState<'supabase' | 'local'>(isSupabaseConfigured ? 'supabase' : 'local');
   const [adminLoaded, setAdminLoaded] = useState(false);
   const bookingSyncInFlight = useRef(new Set<string>());
@@ -128,8 +129,11 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     queryKey: ['site-data', 'public'],
     queryFn: fetchPublicSiteDataFromSupabase,
     enabled: isSupabaseConfigured,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 1,
   });
 
@@ -152,7 +156,7 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           bookings: adminQuery.data?.bookings ?? publicQuery.data!.bookings,
         };
         writeSessionSiteData(next);
-        hadSessionCache.current = true;
+        publicDataLoaded.current = true;
         return next;
       });
     }
@@ -169,6 +173,29 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   ]);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const refreshPublicData = () => {
+      void queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] });
+    };
+
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) refreshPublicData();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshPublicData();
+    };
+
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [queryClient]);
+
+  useEffect(() => {
     if (!isSupabaseConfigured || dataSource !== 'local') return;
     const onUpdate = () => setLocalData(loadSiteData());
     window.addEventListener('site-data-updated', onUpdate);
@@ -181,10 +208,7 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const data = localData;
   const loading =
-    isSupabaseConfigured &&
-    publicQuery.isLoading &&
-    !hadSessionCache.current &&
-    !publicQuery.data;
+    isSupabaseConfigured && !publicDataLoaded.current && (publicQuery.isLoading || publicQuery.isFetching);
 
   const patchData = useCallback(
     (updater: (prev: SiteData) => SiteData, options?: { silent?: boolean }) => {
