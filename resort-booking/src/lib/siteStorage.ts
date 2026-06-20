@@ -202,6 +202,16 @@ export function createDefaultSiteData(): SiteData {
   };
 }
 
+/** Empty catalog for Supabase bootstrap — avoids flashing demo listings before fetch. */
+export function createEmptyCatalogSiteData(): SiteData {
+  return {
+    ...createDefaultSiteData(),
+    rooms: [],
+    propertiesForSale: [],
+    facilities: [],
+  };
+}
+
 /** Removes duplicate rows from double payment submit (same stay or same booking ref). */
 export function dedupeBookings(bookings: AdminBooking[]): AdminBooking[] {
   const seenRef = new Set<string>();
@@ -239,10 +249,13 @@ export function writeSessionSiteData(data: SiteData): void {
   }
 }
 
+function pickArray<T>(parsed: T[] | undefined, defaults: T[]): T[] {
+  return Array.isArray(parsed) ? parsed : defaults;
+}
+
 function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
   const defaults = createDefaultSiteData();
   const rawBookings = parsed.bookings ?? defaults.bookings;
-  const rooms = parsed.rooms?.length ? parsed.rooms : defaults.rooms;
   return {
     settings: {
       ...defaults.settings,
@@ -258,12 +271,12 @@ function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
         ? parsed.settings.importantInfoSections
         : defaults.settings.importantInfoSections,
     },
-    rooms,
-    propertiesForSale: parsed.propertiesForSale?.length ? parsed.propertiesForSale : defaults.propertiesForSale,
-    facilities: parsed.facilities?.length ? parsed.facilities : defaults.facilities,
+    rooms: pickArray(parsed.rooms, defaults.rooms),
+    propertiesForSale: pickArray(parsed.propertiesForSale, defaults.propertiesForSale),
+    facilities: pickArray(parsed.facilities, defaults.facilities),
     bookings: dedupeBookings(rawBookings),
     blockedDates: parsed.blockedDates ?? defaults.blockedDates,
-    users: parsed.users?.length ? parsed.users : defaults.users,
+    users: pickArray(parsed.users, defaults.users),
     contactMessages: parsed.contactMessages ?? defaults.contactMessages,
   };
 }

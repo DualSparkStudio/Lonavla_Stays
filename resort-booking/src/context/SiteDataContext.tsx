@@ -29,6 +29,7 @@ import {
 } from '../lib/siteDataSupabase';
 import {
   createDefaultSiteData,
+  createEmptyCatalogSiteData,
   loadSiteData,
   readSessionSiteData,
   resetSiteData,
@@ -116,7 +117,7 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const queryClient = useQueryClient();
   const [localData, setLocalData] = useState<SiteData>(() => {
     if (!isSupabaseConfigured) return loadSiteData();
-    return readSessionSiteData() ?? createDefaultSiteData();
+    return readSessionSiteData() ?? createEmptyCatalogSiteData();
   });
   const hadSessionCache = useRef(Boolean(readSessionSiteData()));
   const [dataSource, setDataSource] = useState<'supabase' | 'local'>(isSupabaseConfigured ? 'supabase' : 'local');
@@ -190,6 +191,9 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLocalData((prev) => {
         const next = updater(prev);
         persistIfLocal(next, dataSource, options?.silent);
+        if (dataSource === 'supabase') {
+          writeSessionSiteData(next);
+        }
         return next;
       });
     },
@@ -313,10 +317,12 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         propertiesForSale: prev.propertiesForSale.filter((p) => p.id !== id),
       }));
       if (dataSource === 'supabase') {
-        deletePropertyFromSupabase(id).catch((e) => logRemoteError('deletePropertyForSale', e));
+        deletePropertyFromSupabase(id)
+          .then(() => queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] }))
+          .catch((e) => logRemoteError('deletePropertyForSale', e));
       }
     },
-    [patchData, dataSource],
+    [patchData, dataSource, queryClient],
   );
 
   const setFacilities = useCallback(

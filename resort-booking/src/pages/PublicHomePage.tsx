@@ -94,6 +94,7 @@ const PublicHomePage: React.FC = () => {
         </AnimatedSection>
       </div>
 
+      {featuredForSale.length > 0 && (
       <div className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
@@ -129,6 +130,7 @@ const PublicHomePage: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       <div className="bg-gray-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
