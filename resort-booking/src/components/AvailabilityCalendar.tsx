@@ -128,7 +128,11 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   const handleDateClick = useCallback(
     (dateStr: string) => {
       if (dateStr < TODAY) return;
-      if (isDateInBlockedOrBookedRange(dateStr, roomBookings, roomBlocks, roomId)) {
+      // Check-out may fall on the first day of a booking/block (turnover day).
+      if (
+        !awaitingCheckOut &&
+        isDateInBlockedOrBookedRange(dateStr, roomBookings, roomBlocks, roomId)
+      ) {
         notify.error('This date is not available.');
         return;
       }
@@ -176,17 +180,20 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         return;
       }
 
-      if (
-        isDateInBlockedOrBookedRange(start, roomBookings, roomBlocks, roomId) ||
-        isDateInBlockedOrBookedRange(end, roomBookings, roomBlocks, roomId)
-      ) {
-        notify.error('Range includes unavailable dates.');
+      if (isDateInBlockedOrBookedRange(start, roomBookings, roomBlocks, roomId)) {
+        notify.error('Check-in falls on an unavailable date.');
+        return;
+      }
+
+      const result = checkRoomAvailability(roomId, start, end, bookings, blockedDates);
+      if (!result.available) {
+        notify.error(result.reason ?? 'Range includes unavailable dates.');
         return;
       }
 
       applyRange(start, end);
     },
-    [handleDateClick, roomBookings, roomBlocks, roomId, applyRange],
+    [handleDateClick, roomBookings, roomBlocks, roomId, applyRange, bookings, blockedDates],
   );
 
   const selectAllow = useCallback(
@@ -194,16 +201,11 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       const start = format(selectInfo.start, 'yyyy-MM-dd');
       const end = format(addDays(selectInfo.end, -1), 'yyyy-MM-dd');
       if (start < TODAY) return false;
-      let cursor = parseISO(start);
-      const last = parseISO(end);
-      while (cursor <= last) {
-        const d = format(cursor, 'yyyy-MM-dd');
-        if (isDateInBlockedOrBookedRange(d, roomBookings, roomBlocks, roomId)) return false;
-        cursor = addDays(cursor, 1);
-      }
-      return true;
+      if (isDateInBlockedOrBookedRange(start, roomBookings, roomBlocks, roomId)) return false;
+      if (end <= start) return true;
+      return checkRoomAvailability(roomId, start, end, bookings, blockedDates).available;
     },
-    [roomBookings, roomBlocks, roomId],
+    [roomBookings, roomBlocks, roomId, bookings, blockedDates],
   );
 
   const dayCellClassNames = useCallback(
@@ -227,13 +229,21 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     [selectedStartDate, selectedEndDate, complete],
   );
 
-  const handleEventClick = useCallback((info: EventClickArg) => {
-    info.jsEvent.preventDefault();
-    const type = info.event.extendedProps.type as string | undefined;
-    if (type === 'booking' || type === 'blocked') {
-      notify.info('This date is unavailable.');
-    }
-  }, []);
+  const handleEventClick = useCallback(
+    (info: EventClickArg) => {
+      info.jsEvent.preventDefault();
+      const type = info.event.extendedProps.type as string | undefined;
+      if (type === 'booking' || type === 'blocked') {
+        const dateStr = format(info.event.start!, 'yyyy-MM-dd');
+        if (awaitingCheckOut) {
+          handleDateClick(dateStr);
+          return;
+        }
+        notify.info('This date is unavailable for check-in.');
+      }
+    },
+    [awaitingCheckOut, handleDateClick],
+  );
 
   const wrapperClass = embedded
     ? 'availability-calendar availability-calendar--embedded'
@@ -243,7 +253,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     <div className={wrapperClass}>
       <p className="mb-2 text-sm text-gray-900 leading-snug">
         {awaitingCheckOut
-          ? 'Tap your check-out date (or drag a range).'
+          ? 'Tap your check-out date — booked or blocked days can be used as check-out (turnover day).'
           : 'Tap check-in, then check-out (or drag a range).'}{' '}
         <span className="text-gray-900">Gray = blocked · Pink = booked</span>
       </p>

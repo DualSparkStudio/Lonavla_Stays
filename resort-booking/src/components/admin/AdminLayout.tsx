@@ -12,6 +12,7 @@ const adminNavLinks = [
   { to: '/admin/for-sale', page: 'for-sale', label: 'For sale' },
   { to: '/admin/bookings', page: 'bookings', label: 'Bookings' },
   { to: '/admin/calendar', page: 'calendar', label: 'Calendar' },
+  { to: '/admin/other', page: 'other', label: 'Other' },
 ] as const;
 
 type AdminLayoutProps = {

@@ -143,7 +143,7 @@ const RoomsPage: React.FC = () => {
                     <span className="text-lg font-bold text-gray-800">★ {room.rating}</span>
                   </div>
                   <p className="text-lg text-gray-900 font-medium mb-2">
-                    {room.location} · Up to {room.max_guests} guests
+                    {room.location} · {room.max_guests} guests included
                   </p>
                   <p className="text-lg text-gray-900 mb-4 line-clamp-2">{room.description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">

@@ -23,6 +23,9 @@ const AdminForSalePage = lazy(() => import('./pages/admin/AdminForSalePage'));
 const AdminBookingsPage = lazy(() => import('./pages/admin/AdminBookingsPage'));
 const AdminCalendarPage = lazy(() => import('./pages/admin/AdminCalendarPage'));
 const AdminProfilePage = lazy(() => import('./pages/admin/AdminProfilePage'));
+const AdminOtherPage = lazy(() => import('./pages/admin/AdminOtherPage'));
+const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
+const HouseRulesPage = lazy(() => import('./pages/HouseRulesPage'));
 
 const PageLoader = () => (
   <div className="min-h-[50vh] flex items-center justify-center text-gray-900">Loading…</div>
@@ -49,6 +52,8 @@ function App() {
           <Route path="/facilities" element={<FacilitiesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<TermsAndConditionsPage />} />
+          <Route path="/house-rules" element={<HouseRulesPage />} />
           <Route path="/booking/confirmation/:bookingRef" element={<BookingConfirmationPage />} />
           <Route path="/booking/:roomId" element={<BookingPage />} />
           <Route path="/bookings" element={<UserBookingsPage />} />
@@ -62,6 +67,7 @@ function App() {
             <Route path="/admin/for-sale" element={<AdminForSalePage />} />
             <Route path="/admin/bookings" element={<AdminBookingsPage />} />
             <Route path="/admin/calendar" element={<AdminCalendarPage />} />
+            <Route path="/admin/other" element={<AdminOtherPage />} />
             <Route path="/admin/profile" element={<AdminProfilePage />} />
           </Route>
 

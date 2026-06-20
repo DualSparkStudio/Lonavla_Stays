@@ -22,11 +22,6 @@ const emptyRoom = (): Omit<Room, 'id'> => ({
   status: 'available',
   amenities: [],
   images: [''],
-  check_in_time: '',
-  check_out_time: '',
-  refundable_security_deposit: 0,
-  extra_guest_limit: 0,
-  extra_guest_cost: 0,
   mapEmbedUrl: '',
 });
 
@@ -73,11 +68,6 @@ const AdminRoomsPage: React.FC = () => {
       amenities: draft.amenities.filter(Boolean),
       images: draft.images.filter((img) => img.trim()),
       mapEmbedUrl: draft.mapEmbedUrl?.trim() || undefined,
-      check_in_time: draft.check_in_time?.trim() || undefined,
-      check_out_time: draft.check_out_time?.trim() || undefined,
-      refundable_security_deposit: draft.refundable_security_deposit || 0,
-      extra_guest_limit: draft.extra_guest_limit || 0,
-      extra_guest_cost: draft.extra_guest_cost || 0,
     };
     if (isNew) addRoom(payload);
     else if (editing) updateRoom(editing.id, payload);
@@ -124,7 +114,8 @@ const AdminRoomsPage: React.FC = () => {
                 <h3 className="font-bold text-gray-900">{room.name}</h3>
                 <StatusPill status={room.status} />
               </div>
-              <p className="text-base text-gray-900 mb-3">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
+              <p className="text-base text-gray-900 mb-1">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
+              <p className="text-sm text-gray-600 mb-3">{room.max_guests} guests included in base price</p>
               <AdminCardActions
                 onView={() => setViewing(room)}
                 onEdit={() => openEdit(room)}
@@ -158,26 +149,11 @@ const AdminRoomsPage: React.FC = () => {
             <AdminFormField label="Price per night (INR)">
               <input type="number" min={0} value={draft.price_per_night || ''} onChange={(e) => setDraft({ ...draft, price_per_night: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
-            <AdminFormField label="Max guests">
+            <AdminFormField label="Guests included in base price" hint="Extra guests above this count are charged at the site-wide extra person rate">
               <input type="number" min={1} value={draft.max_guests || ''} onChange={(e) => setDraft({ ...draft, max_guests: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Villa code" hint="Internal reference, e.g. GW-02">
               <input value={draft.room_number} onChange={(e) => setDraft({ ...draft, room_number: e.target.value })} className={adminInputClass} />
-            </AdminFormField>
-            <AdminFormField label="Standard check-in time" hint="e.g. 2:00 PM (optional)">
-              <input value={draft.check_in_time || ''} onChange={(e) => setDraft({ ...draft, check_in_time: e.target.value })} className={adminInputClass} />
-            </AdminFormField>
-            <AdminFormField label="Standard check-out time" hint="e.g. 11:00 AM (optional)">
-              <input value={draft.check_out_time || ''} onChange={(e) => setDraft({ ...draft, check_out_time: e.target.value })} className={adminInputClass} />
-            </AdminFormField>
-            <AdminFormField label="Refundable security deposit (INR)" hint="Optional refundable amount taken at check-in">
-              <input type="number" min={0} value={draft.refundable_security_deposit || ''} onChange={(e) => setDraft({ ...draft, refundable_security_deposit: Number(e.target.value) })} className={adminInputClass} />
-            </AdminFormField>
-            <AdminFormField label="Extra guests allowed" hint="Allowed beyond max guests (optional)">
-              <input type="number" min={0} value={draft.extra_guest_limit || ''} onChange={(e) => setDraft({ ...draft, extra_guest_limit: Number(e.target.value) })} className={adminInputClass} />
-            </AdminFormField>
-            <AdminFormField label="Additional cost per extra guest (INR/night)" hint="Used when extra guests are added">
-              <input type="number" min={0} value={draft.extra_guest_cost || ''} onChange={(e) => setDraft({ ...draft, extra_guest_cost: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
             <AdminFormField label="Availability status">
               <select value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as Room['status'] })} className={adminInputClass}>

@@ -60,14 +60,13 @@ export default function AdminSiteSettingsPage() {
         <button
           type="button"
           onClick={() => {
-            if (window.confirm('Reset ALL site data to defaults? This cannot be undone.')) {
+            if (window.confirm('Reload all site content from Supabase? Unsaved local edits will be discarded.')) {
               resetAllData();
-              window.location.reload();
             }
           }}
           className="text-sm text-red-600 font-medium hover:underline"
         >
-          Reset all data to defaults
+          Reload from database
         </button>
       </div>
 

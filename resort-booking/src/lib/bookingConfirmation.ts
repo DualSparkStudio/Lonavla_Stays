@@ -10,16 +10,16 @@ export type BookingConfirmationData = {
   checkIn: string;
   checkOut: string;
   guests: number;
+  guestsIncluded?: number;
+  extraGuests?: number;
   nights: number;
   basePrice: number;
-  extraAdults?: number;
-  children?: number;
-  extraAdultsCharge?: number;
-  childrenCharge?: number;
-  subtotal: number;
-  gst: number;
-  gstPercent: number;
+  extraGuestsCharge?: number;
+  /** @deprecated use extraGuestsCharge */
+  adultsCharge?: number;
   total: number;
+  amountPaid?: number;
+  balanceDue?: number;
   paymentCompleted: boolean;
 };
 

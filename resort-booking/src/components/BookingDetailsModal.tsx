@@ -120,7 +120,12 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({ booking, room
           },
           settings,
         );
-    return buildBookingPriceBreakdown(breakdownInput);
+    return buildBookingPriceBreakdown({
+      ...breakdownInput,
+      paymentCompleted:
+        confirmation?.paymentCompleted ??
+        (booking.status === 'confirmed' || booking.status === 'completed'),
+    });
   }, [booking, settings]);
 
   if (!booking) return null;

@@ -38,7 +38,7 @@ export type SiteSettings = {
   checkOutTime: string;
   /** GST percentage applied to villa bookings */
   gstPercent: number;
-  /** Per-night charge for each extra adult beyond the included guests */
+  /** Per-night charge for each guest above the villa's included guest count */
   extraPersonCharge: number;
   heroTitle: string;
   heroSubtitle: string;
@@ -54,6 +54,8 @@ export type SiteSettings = {
   forSalePageSubtitle: string;
   contactPageSubtitle: string;
   houseRulesSections: InfoSection[];
+  termsAndConditionsSections: InfoSection[];
+  /** @deprecated use termsAndConditionsSections */
   importantInfoSections: InfoSection[];
 };
 
@@ -72,13 +74,27 @@ export type AdminBooking = {
   bookedAt: string;
   nights?: number;
   basePrice?: number;
-  extraAdults?: number;
-  children?: number;
+  guestsIncluded?: number;
+  extraGuests?: number;
+  extraGuestsCharge?: number;
+  /** @deprecated use extraGuestsCharge */
+  adultsCharge?: number;
+  /** @deprecated use extraGuestsCharge */
   extraAdultsCharge?: number;
-  childrenCharge?: number;
   pricingSubtotal?: number;
+  amountPaid?: number;
+  /** @deprecated no longer applied */
   gst?: number;
+  /** @deprecated no longer applied */
   gstPercent?: number;
+  /** @deprecated */
+  adults?: number;
+  /** @deprecated */
+  extraAdults?: number;
+  /** @deprecated */
+  children?: number;
+  /** @deprecated */
+  childrenCharge?: number;
 };
 
 export type BlockedDate = {

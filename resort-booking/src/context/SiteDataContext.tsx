@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { notify } from '../lib/notify';
 import { isSupabaseConfigured } from '../lib/supabase';
 import {
   deleteBlockedDateFromSupabase,
@@ -28,13 +29,8 @@ import {
   updateBookingInSupabase,
 } from '../lib/siteDataSupabase';
 import {
-  createDefaultSiteData,
   createEmptyCatalogSiteData,
-  loadSiteData,
-  purgeLegacySessionSiteData,
-  resetSiteData,
-  saveSiteData,
-  writeSessionSiteData,
+  purgeLocalSiteData,
   type AdminBooking,
   type BlockedDate,
   type ContactMessage,
@@ -88,11 +84,12 @@ type SiteDataContextValue = SiteDataActions & {
   blockedDates: BlockedDate[];
   contactMessages: ContactMessage[];
   loading: boolean;
-  dataSource: 'supabase' | 'local';
+  error: string | null;
+  dataSource: 'supabase';
 };
 
 const SiteDataStateContext = createContext<SiteData | null>(null);
-const SiteDataMetaContext = createContext<{ loading: boolean; dataSource: 'supabase' | 'local' } | null>(
+const SiteDataMetaContext = createContext<{ loading: boolean; error: string | null; dataSource: 'supabase' } | null>(
   null,
 );
 const SiteDataActionsContext = createContext<SiteDataActions | null>(null);
@@ -105,25 +102,47 @@ function logRemoteError(label: string, error: unknown) {
       ? String((error as { message: string }).message)
       : String(error);
   console.error(`[Supabase] ${label}:`, message, error);
+  if (message.toLowerCase().includes('row-level security') || message.includes('policy')) {
+    notify.error(
+      `Save blocked by database permissions. Run supabase/rls-cms-policies.sql in Supabase SQL Editor.`,
+    );
+    return;
+  }
+  notify.error(`Could not save to database (${label}): ${message}`);
 }
 
-function persistIfLocal(next: SiteData, dataSource: 'supabase' | 'local', silent = false) {
-  if (dataSource === 'local') {
-    saveSiteData(next, { silent });
-  }
+function SupabaseRequiredScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-md text-center space-y-3">
+        <h1 className="text-xl font-bold text-gray-900">Supabase not configured</h1>
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Set <code className="text-pink-600">VITE_SUPABASE_URL</code> and{' '}
+          <code className="text-pink-600">VITE_SUPABASE_ANON_KEY</code> in your environment. Villas,
+          listings, and site content load only from Supabase — there is no local demo fallback.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  if (!isSupabaseConfigured) {
+    return <SupabaseRequiredScreen />;
+  }
+  return <ConnectedSiteDataProvider>{children}</ConnectedSiteDataProvider>;
+};
+
+const ConnectedSiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const [localData, setLocalData] = useState<SiteData>(() => {
-    if (!isSupabaseConfigured) return loadSiteData();
-    purgeLegacySessionSiteData();
-    return createEmptyCatalogSiteData();
-  });
+  const [localData, setLocalData] = useState<SiteData>(() => createEmptyCatalogSiteData());
   const publicDataLoaded = useRef(false);
-  const [dataSource, setDataSource] = useState<'supabase' | 'local'>(isSupabaseConfigured ? 'supabase' : 'local');
   const [adminLoaded, setAdminLoaded] = useState(false);
   const bookingSyncInFlight = useRef(new Set<string>());
+
+  useEffect(() => {
+    purgeLocalSiteData();
+  }, []);
 
   const publicQuery = useQuery({
     queryKey: ['site-data', 'public'],
@@ -146,23 +165,13 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
     if (publicQuery.isSuccess && publicQuery.data) {
-      setDataSource('supabase');
-      setLocalData((prev) => {
-        const next = {
-          ...publicQuery.data!,
-          contactMessages: adminQuery.data?.contactMessages ?? prev.contactMessages,
-          bookings: adminQuery.data?.bookings ?? publicQuery.data!.bookings,
-        };
-        writeSessionSiteData(next);
-        publicDataLoaded.current = true;
-        return next;
-      });
-    }
-    if (publicQuery.isError) {
-      setDataSource('local');
-      setLocalData(loadSiteData());
+      setLocalData((prev) => ({
+        ...publicQuery.data!,
+        contactMessages: adminQuery.data?.contactMessages ?? prev.contactMessages,
+        bookings: adminQuery.data?.bookings ?? publicQuery.data!.bookings,
+      }));
+      publicDataLoaded.current = true;
     }
   }, [
     publicQuery.isSuccess,
@@ -195,34 +204,18 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [queryClient]);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || dataSource !== 'local') return;
-    const onUpdate = () => setLocalData(loadSiteData());
-    window.addEventListener('site-data-updated', onUpdate);
-    window.addEventListener('storage', onUpdate);
-    return () => {
-      window.removeEventListener('site-data-updated', onUpdate);
-      window.removeEventListener('storage', onUpdate);
-    };
-  }, [dataSource]);
-
   const data = localData;
+  const fetchError = publicQuery.isError
+    ? publicQuery.error instanceof Error
+      ? publicQuery.error.message
+      : 'Failed to load site data from Supabase.'
+    : null;
   const loading =
-    isSupabaseConfigured && !publicDataLoaded.current && (publicQuery.isLoading || publicQuery.isFetching);
+    !publicDataLoaded.current && (publicQuery.isLoading || publicQuery.isFetching) && !fetchError;
 
-  const patchData = useCallback(
-    (updater: (prev: SiteData) => SiteData, options?: { silent?: boolean }) => {
-      setLocalData((prev) => {
-        const next = updater(prev);
-        persistIfLocal(next, dataSource, options?.silent);
-        if (dataSource === 'supabase') {
-          writeSessionSiteData(next);
-        }
-        return next;
-      });
-    },
-    [dataSource],
-  );
+  const patchData = useCallback((updater: (prev: SiteData) => SiteData) => {
+    setLocalData((prev) => updater(prev));
+  }, []);
 
   const ensureAdminData = useCallback(() => {
     if (!adminLoaded) setAdminLoaded(true);
@@ -230,34 +223,38 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [adminLoaded, queryClient]);
 
   const refreshSiteData = useCallback(() => {
-    if (isSupabaseConfigured) {
-      void queryClient.invalidateQueries({ queryKey: ['site-data'] });
-      return;
-    }
-    setLocalData(loadSiteData());
+    void queryClient.invalidateQueries({ queryKey: ['site-data'] });
   }, [queryClient]);
+
+  const syncCatalogWrite = useCallback(
+    (label: string, task: () => Promise<void>) => {
+      task()
+        .then(() => {
+          notify.success('Saved to database');
+          void queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] });
+        })
+        .catch((e) => logRemoteError(label, e));
+    },
+    [queryClient],
+  );
 
   const updateSettings = useCallback(
     (patch: Partial<SiteSettings>) => {
       patchData((prev) => {
         const settings = { ...prev.settings, ...patch };
-        if (dataSource === 'supabase') {
-          upsertSiteSettingsToSupabase(settings).catch((e) => logRemoteError('updateSettings', e));
-        }
+        upsertSiteSettingsToSupabase(settings).catch((e) => logRemoteError('updateSettings', e));
         return { ...prev, settings };
       });
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const setRooms = useCallback(
     (rooms: Room[]) => {
       patchData((prev) => ({ ...prev, rooms }));
-      if (dataSource === 'supabase') {
-        Promise.all(rooms.map((r) => upsertVillaToSupabase(r))).catch((e) => logRemoteError('setRooms', e));
-      }
+      Promise.all(rooms.map((r) => upsertVillaToSupabase(r))).catch((e) => logRemoteError('setRooms', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const addRoom = useCallback(
@@ -265,11 +262,9 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const id = room.id ?? newId();
       const full = { ...room, id } as Room;
       patchData((prev) => ({ ...prev, rooms: [...prev.rooms, full] }));
-      if (dataSource === 'supabase') {
-        upsertVillaToSupabase(full).catch((e) => logRemoteError('addRoom', e));
-      }
+      syncCatalogWrite('addRoom', () => upsertVillaToSupabase(full));
     },
-    [patchData, dataSource],
+    [patchData, syncCatalogWrite],
   );
 
   const updateRoom = useCallback(
@@ -277,35 +272,31 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       patchData((prev) => {
         const rooms = prev.rooms.map((r) => (r.id === id ? { ...r, ...patch } : r));
         const updated = rooms.find((r) => r.id === id);
-        if (dataSource === 'supabase' && updated) {
-          upsertVillaToSupabase(updated).catch((e) => logRemoteError('updateRoom', e));
+        if (updated) {
+          syncCatalogWrite('updateRoom', () => upsertVillaToSupabase(updated));
         }
         return { ...prev, rooms };
       });
     },
-    [patchData, dataSource],
+    [patchData, syncCatalogWrite],
   );
 
   const deleteRoom = useCallback(
     (id: string) => {
       patchData((prev) => ({ ...prev, rooms: prev.rooms.filter((r) => r.id !== id) }));
-      if (dataSource === 'supabase') {
-        deleteVillaFromSupabase(id).catch((e) => logRemoteError('deleteRoom', e));
-      }
+      syncCatalogWrite('deleteRoom', () => deleteVillaFromSupabase(id));
     },
-    [patchData, dataSource],
+    [patchData, syncCatalogWrite],
   );
 
   const setPropertiesForSale = useCallback(
     (propertiesForSale: PropertyForSale[]) => {
       patchData((prev) => ({ ...prev, propertiesForSale }));
-      if (dataSource === 'supabase') {
-        Promise.all(propertiesForSale.map((p) => upsertPropertyToSupabase(p))).catch((e) =>
-          logRemoteError('setPropertiesForSale', e),
-        );
-      }
+      Promise.all(propertiesForSale.map((p) => upsertPropertyToSupabase(p))).catch((e) =>
+        logRemoteError('setPropertiesForSale', e),
+      );
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const addPropertyForSale = useCallback(
@@ -313,11 +304,9 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const id = item.id ?? `sale-${newId()}`;
       const full = { ...item, id } as PropertyForSale;
       patchData((prev) => ({ ...prev, propertiesForSale: [...prev.propertiesForSale, full] }));
-      if (dataSource === 'supabase') {
-        upsertPropertyToSupabase(full).catch((e) => logRemoteError('addPropertyForSale', e));
-      }
+      syncCatalogWrite('addPropertyForSale', () => upsertPropertyToSupabase(full));
     },
-    [patchData, dataSource],
+    [patchData, syncCatalogWrite],
   );
 
   const updatePropertyForSale = useCallback(
@@ -325,13 +314,13 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       patchData((prev) => {
         const propertiesForSale = prev.propertiesForSale.map((p) => (p.id === id ? { ...p, ...patch } : p));
         const updated = propertiesForSale.find((p) => p.id === id);
-        if (dataSource === 'supabase' && updated) {
-          upsertPropertyToSupabase(updated).catch((e) => logRemoteError('updatePropertyForSale', e));
+        if (updated) {
+          syncCatalogWrite('updatePropertyForSale', () => upsertPropertyToSupabase(updated));
         }
         return { ...prev, propertiesForSale };
       });
     },
-    [patchData, dataSource],
+    [patchData, syncCatalogWrite],
   );
 
   const deletePropertyForSale = useCallback(
@@ -340,25 +329,19 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prev,
         propertiesForSale: prev.propertiesForSale.filter((p) => p.id !== id),
       }));
-      if (dataSource === 'supabase') {
-        deletePropertyFromSupabase(id)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] }))
-          .catch((e) => logRemoteError('deletePropertyForSale', e));
-      }
+      syncCatalogWrite('deletePropertyForSale', () => deletePropertyFromSupabase(id));
     },
-    [patchData, dataSource, queryClient],
+    [patchData, syncCatalogWrite],
   );
 
   const setFacilities = useCallback(
     (facilities: Facility[]) => {
       patchData((prev) => ({ ...prev, facilities }));
-      if (dataSource === 'supabase') {
-        Promise.all(facilities.map((f) => upsertFacilityToSupabase(f))).catch((e) =>
-          logRemoteError('setFacilities', e),
-        );
-      }
+      Promise.all(facilities.map((f) => upsertFacilityToSupabase(f))).catch((e) =>
+        logRemoteError('setFacilities', e),
+      );
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const addFacility = useCallback(
@@ -366,11 +349,9 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const id = facility.id ?? newId();
       const full: Facility = { ...facility, id };
       patchData((prev) => ({ ...prev, facilities: [...prev.facilities, full] }));
-      if (dataSource === 'supabase') {
-        upsertFacilityToSupabase(full).catch((e) => logRemoteError('addFacility', e));
-      }
+      upsertFacilityToSupabase(full).catch((e) => logRemoteError('addFacility', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const updateFacility = useCallback(
@@ -378,47 +359,42 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       patchData((prev) => {
         const facilities = prev.facilities.map((f) => (f.id === id ? { ...f, ...patch } : f));
         const updated = facilities.find((f) => f.id === id);
-        if (dataSource === 'supabase' && updated) {
+        if (updated) {
           upsertFacilityToSupabase(updated).catch((e) => logRemoteError('updateFacility', e));
         }
         return { ...prev, facilities };
       });
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const deleteFacility = useCallback(
     (id: string) => {
       patchData((prev) => ({ ...prev, facilities: prev.facilities.filter((f) => f.id !== id) }));
-      if (dataSource === 'supabase') {
-        deleteFacilityFromSupabase(id).catch((e) => logRemoteError('deleteFacility', e));
-      }
+      deleteFacilityFromSupabase(id).catch((e) => logRemoteError('deleteFacility', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const syncBookingToSupabase = useCallback(
     (full: AdminBooking, payment?: PaymentMeta) => {
-      if (dataSource !== 'supabase' || bookingSyncInFlight.current.has(full.bookingRef)) return;
+      if (bookingSyncInFlight.current.has(full.bookingRef)) return;
       bookingSyncInFlight.current.add(full.bookingRef);
 
       insertBookingToSupabase(full, payment)
         .then((dbId) => {
           if (!dbId) return;
-          patchData(
-            (current) => ({
-              ...current,
-              bookings: current.bookings.map((b) =>
-                b.bookingRef === full.bookingRef ? { ...b, id: dbId } : b,
-              ),
-            }),
-            { silent: true },
-          );
+          patchData((current) => ({
+            ...current,
+            bookings: current.bookings.map((b) =>
+              b.bookingRef === full.bookingRef ? { ...b, id: dbId } : b,
+            ),
+          }));
         })
         .catch((e) => logRemoteError('addBooking', e))
         .finally(() => bookingSyncInFlight.current.delete(full.bookingRef));
     },
-    [dataSource, patchData],
+    [patchData],
   );
 
   const addBooking = useCallback(
@@ -452,23 +428,19 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     (id: string, patch: Partial<AdminBooking>) => {
       patchData((prev) => {
         const bookings = prev.bookings.map((b) => (b.id === id ? { ...b, ...patch } : b));
-        if (dataSource === 'supabase') {
-          updateBookingInSupabase(id, patch).catch((e) => logRemoteError('updateBooking', e));
-        }
+        updateBookingInSupabase(id, patch).catch((e) => logRemoteError('updateBooking', e));
         return { ...prev, bookings };
       });
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const deleteBooking = useCallback(
     (id: string) => {
       patchData((prev) => ({ ...prev, bookings: prev.bookings.filter((b) => b.id !== id) }));
-      if (dataSource === 'supabase') {
-        deleteBookingFromSupabase(id).catch((e) => logRemoteError('deleteBooking', e));
-      }
+      deleteBookingFromSupabase(id).catch((e) => logRemoteError('deleteBooking', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const blockDates = useCallback(
@@ -482,39 +454,30 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       patchData((prev) => ({ ...prev, blockedDates: [...prev.blockedDates, optimistic] }));
 
-      if (dataSource === 'supabase') {
-        insertBlockedDateToSupabase(optimistic)
-          .then((saved) => {
-            patchData(
-              (prev) => ({
-                ...prev,
-                blockedDates: prev.blockedDates.map((b) =>
-                  b.id === optimistic.id ? saved : b,
-                ),
-              }),
-              { silent: true },
-            );
-          })
-          .catch((e) => {
-            logRemoteError('blockDates', e);
-            patchData((prev) => ({
-              ...prev,
-              blockedDates: prev.blockedDates.filter((b) => b.id !== optimistic.id),
-            }));
-          });
-      }
+      insertBlockedDateToSupabase(optimistic)
+        .then((saved) => {
+          patchData((prev) => ({
+            ...prev,
+            blockedDates: prev.blockedDates.map((b) => (b.id === optimistic.id ? saved : b)),
+          }));
+        })
+        .catch((e) => {
+          logRemoteError('blockDates', e);
+          patchData((prev) => ({
+            ...prev,
+            blockedDates: prev.blockedDates.filter((b) => b.id !== optimistic.id),
+          }));
+        });
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const deleteBlockedDate = useCallback(
     (id: string) => {
       patchData((prev) => ({ ...prev, blockedDates: prev.blockedDates.filter((b) => b.id !== id) }));
-      if (dataSource === 'supabase') {
-        deleteBlockedDateFromSupabase(id).catch((e) => logRemoteError('deleteBlockedDate', e));
-      }
+      deleteBlockedDateFromSupabase(id).catch((e) => logRemoteError('deleteBlockedDate', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const addContactMessage = useCallback(
@@ -527,23 +490,18 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       patchData((prev) => ({ ...prev, contactMessages: [optimistic, ...prev.contactMessages] }));
 
-      if (dataSource === 'supabase') {
-        insertContactMessageToSupabase(optimistic)
-          .then((saved) => {
-            patchData(
-              (prev) => ({
-                ...prev,
-                contactMessages: prev.contactMessages.map((m) =>
-                  m.id === optimistic.id ? saved : m,
-                ),
-              }),
-              { silent: true },
-            );
-          })
-          .catch((e) => logRemoteError('addContactMessage', e));
-      }
+      insertContactMessageToSupabase(optimistic)
+        .then((saved) => {
+          patchData((prev) => ({
+            ...prev,
+            contactMessages: prev.contactMessages.map((m) =>
+              m.id === optimistic.id ? saved : m,
+            ),
+          }));
+        })
+        .catch((e) => logRemoteError('addContactMessage', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const deleteContactMessage = useCallback(
@@ -552,18 +510,14 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prev,
         contactMessages: prev.contactMessages.filter((m) => m.id !== id),
       }));
-      if (dataSource === 'supabase') {
-        deleteContactMessageFromSupabase(id).catch((e) => logRemoteError('deleteContactMessage', e));
-      }
+      deleteContactMessageFromSupabase(id).catch((e) => logRemoteError('deleteContactMessage', e));
     },
-    [patchData, dataSource],
+    [patchData],
   );
 
   const resetAllData = useCallback(() => {
-    setDataSource('local');
-    const reset = resetSiteData();
-    setLocalData(reset);
-  }, []);
+    void queryClient.invalidateQueries({ queryKey: ['site-data'] });
+  }, [queryClient]);
 
   const getRoomById = useCallback((id: string) => data.rooms.find((r) => r.id === id), [data.rooms]);
 
@@ -629,14 +583,49 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     ],
   );
 
-  const meta = useMemo(() => ({ loading, dataSource }), [loading, dataSource]);
+  const meta = useMemo(
+    () => ({ loading, error: fetchError, dataSource: 'supabase' as const }),
+    [loading, fetchError],
+  );
 
   return (
     <SiteDataStateContext.Provider value={data}>
       <SiteDataMetaContext.Provider value={meta}>
         <SiteDataActionsContext.Provider value={actions}>
           {children}
-          {loading && (
+          {fetchError && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/95 px-4">
+              <div className="max-w-lg text-center space-y-4">
+                <p className="text-gray-900 font-semibold">Could not load site data</p>
+                <p className="text-sm text-gray-600 text-left whitespace-pre-wrap">{fetchError}</p>
+                {(fetchError.includes('schema cache') ||
+                  fetchError.includes('does not exist') ||
+                  fetchError.includes('relationship')) && (
+                  <div className="text-left text-sm text-gray-700 bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
+                    <p className="font-semibold text-amber-900">Database not set up yet</p>
+                    <p>
+                      In Supabase Dashboard, open the project that matches{' '}
+                      <code className="text-pink-600">VITE_SUPABASE_URL</code>, then SQL Editor → run{' '}
+                      <code className="text-pink-600">supabase/install-fresh.sql</code> (entire file).
+                      Then run <code className="text-pink-600">supabase/verify-schema.sql</code> to confirm.
+                    </p>
+                    <p>
+                      On Netlify, update env vars to the same project URL/key and redeploy (VITE_ vars are
+                      baked in at build time).
+                    </p>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => void queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] })}
+                  className="rounded-lg bg-[#FF385C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#E31C5F]"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+          {loading && !fetchError && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/85 text-gray-900">
               Loading site data…
             </div>
@@ -704,6 +693,7 @@ export function useSiteData(): SiteDataContextValue {
       blockedDates: data.blockedDates,
       contactMessages: data.contactMessages,
       loading: meta.loading,
+      error: meta.error,
       dataSource: meta.dataSource,
       ...actions,
     }),
@@ -726,12 +716,13 @@ export function useSiteDataOptional(): SiteDataContextValue {
       blockedDates: data.blockedDates,
       contactMessages: data.contactMessages,
       loading: meta.loading,
+      error: meta.error,
       dataSource: meta.dataSource,
       ...actions,
     };
   }
 
-  const fallback = createDefaultSiteData();
+  const fallback = createEmptyCatalogSiteData();
   const noop = () => {};
   return {
     data: fallback,
@@ -742,8 +733,9 @@ export function useSiteDataOptional(): SiteDataContextValue {
     bookings: fallback.bookings,
     blockedDates: fallback.blockedDates,
     contactMessages: fallback.contactMessages,
-    loading: false,
-    dataSource: 'local',
+    loading: true,
+    error: null,
+    dataSource: 'supabase',
     updateSettings: noop,
     setRooms: noop,
     addRoom: noop,

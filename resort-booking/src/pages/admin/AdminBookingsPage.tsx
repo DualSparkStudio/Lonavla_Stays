@@ -48,9 +48,6 @@ const AdminBookingsPage: React.FC = () => {
     });
 
     const nights = checkIn && checkOut ? Math.max(0, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)) : 0;
-    const gstPercent = settings.gstPercent ?? 18;
-    const subtotal = Math.round(total / (1 + gstPercent / 100));
-    const gst = total - subtotal;
 
     notifyBookingByEmail({
       bookingRef,
@@ -62,12 +59,8 @@ const AdminBookingsPage: React.FC = () => {
       checkOut,
       guests,
       nights,
-      basePrice: subtotal,
-      extraAdultsCharge: 0,
-      childrenCharge: 0,
-      subtotal,
-      gst,
-      gstPercent,
+      basePrice: total,
+      extraGuestsCharge: 0,
       total,
       guestPhone: '',
       paymentCompleted: false,

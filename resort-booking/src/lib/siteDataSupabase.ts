@@ -1,6 +1,6 @@
 import { addYears, format, subDays } from 'date-fns';
 import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from '../data/resort';
-import { createDefaultSiteData, defaultSiteSettings } from './siteStorage';
+import { defaultSiteSettings } from './siteStorage';
 import { supabase } from './supabase';
 import {
   buildVillaUuidCache,
@@ -249,18 +249,15 @@ function mapFetchedSiteData(
   const legacyByUuid = new Map(villas.map((v) => [v.id, villaPublicId(v)]));
   setVillaUuidCache(buildVillaUuidCache(villas, villaPublicId));
 
-  const defaults = createDefaultSiteData();
-  const rooms = villas.length > 0 ? villas.map(mapVillaToRoom) : defaults.rooms;
-
   return {
     settings: parseSiteSettings(settingsData),
-    rooms,
+    rooms: villas.map(mapVillaToRoom),
     bookings: bookings.map(mapBookingRow),
     blockedDates: blocked.map((r) => mapBlockedRow(r, legacyByUuid)),
     facilities: facilities.map(mapFacilityRow),
     propertiesForSale: properties.map(mapPropertyRow),
     contactMessages: messages.map(mapContactRow),
-    users: defaults.users,
+    users: [],
   };
 }
 
@@ -407,8 +404,8 @@ export async function upsertVillaToSupabase(room: Room): Promise<void> {
     status: room.status,
     amenities: room.amenities,
     images: room.images,
-    check_in_time: DEFAULT_CHECK_IN_TIME,
-    check_out_time: DEFAULT_CHECK_OUT_TIME,
+    check_in_time: room.check_in_time?.trim() || DEFAULT_CHECK_IN_TIME,
+    check_out_time: room.check_out_time?.trim() || DEFAULT_CHECK_OUT_TIME,
     map_embed_url: room.mapEmbedUrl ?? null,
     is_active: true,
   };

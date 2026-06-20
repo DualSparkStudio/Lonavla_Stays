@@ -69,7 +69,7 @@ const PublicHomePage: React.FC = () => {
                 <div className="p-5">
                   <h3 className="font-heading text-lg text-airbnb-red leading-snug uppercase tracking-wide">{room.name}</h3>
                   <p className="text-gray-900 text-lg font-medium mb-2 mt-2">
-                    {room.location} · Up to {room.max_guests} guests
+                    {room.location} · {room.max_guests} guests included
                   </p>
                   <p className="text-gray-900 text-lg mb-3 line-clamp-2">{room.description}</p>
                   <div className="flex justify-between items-center">

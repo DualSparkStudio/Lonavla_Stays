@@ -1,5 +1,11 @@
 import { createTransporter, formatSmtpAuthError, getSmtpConfig } from './smtp';
 
+import {
+  BOOKING_ADVANCE_PAYMENT_PERCENT,
+  calcAmountDueNow,
+  calcBalanceDue,
+} from '../src/lib/bookingPricing';
+
 export type BookingEmailPayload = {
   bookingRef: string;
   guestName: string;
@@ -11,14 +17,16 @@ export type BookingEmailPayload = {
   guests: number;
   nights: number;
   basePrice: number;
-  extraAdults?: number;
-  children?: number;
+  guestsIncluded?: number;
+  extraGuests?: number;
+  extraGuestsCharge?: number;
+  /** @deprecated use extraGuestsCharge */
+  adultsCharge?: number;
+  /** @deprecated */
   extraAdultsCharge?: number;
-  childrenCharge?: number;
-  subtotal: number;
-  gst: number;
-  gstPercent: number;
   total: number;
+  amountPaid?: number;
+  balanceDue?: number;
   paymentId?: string;
   paymentCompleted?: boolean;
   resortName?: string;
@@ -99,30 +107,29 @@ function priceRowWithDetail(label: string, amount: number, detail?: string, emph
 }
 
 function buildPriceBreakdownHtml(payload: BookingEmailPayload) {
-  const extraAdultsCharge = payload.extraAdultsCharge ?? 0;
-  const childrenCharge = payload.childrenCharge ?? 0;
-  const basePrice =
-    payload.basePrice ?? Math.max(0, payload.subtotal - extraAdultsCharge - childrenCharge);
+  const extraGuestsCharge =
+    payload.extraGuestsCharge ?? payload.adultsCharge ?? payload.extraAdultsCharge ?? 0;
+  const basePrice = payload.basePrice ?? Math.max(0, payload.total - extraGuestsCharge);
   const nights = Math.max(1, payload.nights);
-  const extraAdults = payload.extraAdults ?? 0;
-  const children = payload.children ?? 0;
-  const adultRate = unitRate(extraAdultsCharge, extraAdults, nights);
-  const childRate = unitRate(childrenCharge, children, nights);
+  const extraGuests = payload.extraGuests ?? 0;
+  const amountPaid = payload.amountPaid ?? calcAmountDueNow(payload.total);
+  const balanceDue = payload.balanceDue ?? calcBalanceDue(payload.total, amountPaid);
 
-  let rows = priceRowWithDetail('Base price', basePrice);
-  if (extraAdultsCharge > 0) {
-    const detail = extraAdults > 0 ? `${extraAdults} × ${formatInr(adultRate)}` : undefined;
-    rows += priceRowWithDetail('Extra adults', extraAdultsCharge, detail);
+  let rows = priceRowWithDetail('Villa price', basePrice);
+  if (extraGuestsCharge > 0) {
+    const detail =
+      extraGuests > 0 ? `${extraGuests} extra guest${extraGuests !== 1 ? 's' : ''}` : undefined;
+    rows += priceRowWithDetail('Extra guests', extraGuestsCharge, detail);
   }
-  if (childrenCharge > 0) {
-    const detail = children > 0 ? `${children} × ${formatInr(childRate)}` : undefined;
-    rows += priceRowWithDetail('Children above 5', childrenCharge, detail);
-  }
-  rows += `<div style="border-top:1px solid #e5e7eb;margin:10px 0 8px;"></div>`;
-  rows += priceRowWithDetail('Subtotal', payload.subtotal);
-  rows += priceRowWithDetail(`GST (${payload.gstPercent}%)`, payload.gst);
   rows += `<div style="border-top:1px solid #d1d5db;margin:10px 0 8px;"></div>`;
   rows += priceRowWithDetail('Total amount', payload.total, undefined, true);
+  rows += priceRowWithDetail(
+    `Paid (${BOOKING_ADVANCE_PAYMENT_PERCENT}%)`,
+    amountPaid,
+    undefined,
+    false,
+  );
+  rows += priceRowWithDetail('Balance due at check-in', balanceDue);
 
   return `<div style="margin:20px 0 24px;padding:18px 20px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;">
     ${sectionTitle('💳', 'Price breakdown')}

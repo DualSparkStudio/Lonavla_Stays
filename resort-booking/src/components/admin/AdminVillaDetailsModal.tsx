@@ -66,7 +66,7 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
           <AdminDetailField label="Villa type" value={villa.room_type} />
           <AdminDetailField label="Villa code" value={villa.room_number} />
           <AdminDetailField label="Status" value={<StatusPill status={villa.status} />} />
-          <AdminDetailField label="Max guests" value={villa.max_guests} />
+          <AdminDetailField label="Guests in base price" value={villa.max_guests} />
           <AdminDetailField
             label="Price per night"
             value={formatPrice(villa.price_per_night)}

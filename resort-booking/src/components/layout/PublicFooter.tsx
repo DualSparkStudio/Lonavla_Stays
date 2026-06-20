@@ -25,6 +25,8 @@ const PublicFooter: React.FC = () => {
                 { name: 'Facilities', path: '/facilities' },
                 { name: 'About', path: '/about' },
                 { name: 'Contact', path: '/contact' },
+                { name: 'House rules', path: '/house-rules' },
+                { name: 'Terms & conditions', path: '/terms' },
               ].map((link) => (
                 <li key={link.name}>
                   <Link to={link.path} className="text-gray-900 hover:text-airbnb-red transition-colors font-medium">
@@ -71,7 +73,12 @@ const PublicFooter: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-300 mt-8 pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left text-gray-900 text-base">
-          <p>© {new Date().getFullYear()} {settings.resortName}. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {settings.resortName}. All rights reserved.{' '}
+            <Link to="/terms" className="text-airbnb-red hover:underline font-medium">
+              Terms &amp; conditions
+            </Link>
+          </p>
           <p>
             Crafted by{' '}
             <a

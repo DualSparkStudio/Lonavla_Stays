@@ -14,6 +14,11 @@ export function bookingEventEnd(checkOut: string): string {
   return format(addDays(parseISO(checkOut), 1), 'yyyy-MM-dd');
 }
 
+/** Admin blocks store an inclusive last day; stays use an exclusive check-out. */
+export function blockedRangeExclusiveEnd(endDate: string): string {
+  return format(addDays(parseISO(endDate), 1), 'yyyy-MM-dd');
+}
+
 export function rangesOverlap(
   rangeStart: string,
   rangeEnd: string,
@@ -72,7 +77,8 @@ export function checkRoomAvailability(
 
   for (const block of blockedDates) {
     if (block.roomId !== roomId || block.source !== 'manual') continue;
-    if (rangesOverlap(checkIn, checkOut, block.startDate, block.endDate)) {
+    const blockEndExclusive = blockedRangeExclusiveEnd(block.endDate);
+    if (rangesOverlap(checkIn, checkOut, block.startDate, blockEndExclusive)) {
       conflicts.push(`Blocked: ${block.reason} (${block.startDate} – ${block.endDate})`);
     }
   }

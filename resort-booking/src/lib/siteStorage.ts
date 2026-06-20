@@ -76,7 +76,7 @@ export const defaultSiteSettings = (): SiteSettings => ({
     {
       title: 'Check-in & check-out',
       items: [
-        'Standard check-in is from 2:00 PM and check-out is by 11:00 AM.',
+        'Standard check-in is from 1:00 PM onwards and check-out is by 11:00 AM sharp.',
         'Early check-in or late check-out may be available on request, subject to availability.',
         'A valid government-issued photo ID is required for all guests at check-in.',
       ],
@@ -106,11 +106,43 @@ export const defaultSiteSettings = (): SiteSettings => ({
       ],
     },
   ],
+  termsAndConditionsSections: [
+    {
+      title: 'Payments & deposits',
+      items: [
+        '40% of the total booking amount is collected online at checkout; the balance is due at check-in.',
+        'Any deductions for damages or policy violations will be communicated with supporting details.',
+      ],
+    },
+    {
+      title: 'Cancellation & changes',
+      items: [
+        'Cancellation and rescheduling terms depend on your booking date and villa. Refer to your confirmation email for the applicable policy.',
+        'For date changes, contact us as early as possible—peak weekends and holidays may have stricter terms.',
+      ],
+    },
+    {
+      title: 'Safety & emergencies',
+      items: [
+        'Lonavala weather can change quickly—carry warm layers in monsoon and winter months.',
+        'In case of emergency, contact our team immediately using the phone number on your booking confirmation.',
+        'Swimming pools, bonfires, and hillside paths involve inherent risks—follow on-site instructions and supervise children.',
+      ],
+    },
+    {
+      title: 'Local guidelines',
+      items: [
+        'Alcohol consumption must comply with local laws. Guests are responsible for their own conduct.',
+        'Pets are welcome only at villas explicitly marked as pet-friendly—confirm before you book.',
+        'Parking is limited at some properties; inform us in advance if you are bringing multiple vehicles.',
+      ],
+    },
+  ],
   importantInfoSections: [
     {
       title: 'Payments & deposits',
       items: [
-        'Full payment terms are shared at booking. A security deposit may be collected before check-in for select villas.',
+        '40% of the total booking amount is collected online at checkout; the balance is due at check-in.',
         'Any deductions for damages or policy violations will be communicated with supporting details.',
       ],
     },
@@ -207,14 +239,30 @@ export function createDefaultSiteData(): SiteData {
   };
 }
 
-/** Empty catalog for Supabase bootstrap — avoids flashing demo listings before fetch. */
+/** Empty in-memory state while Supabase loads — no demo villas or listings. */
 export function createEmptyCatalogSiteData(): SiteData {
   return {
-    ...createDefaultSiteData(),
+    settings: defaultSiteSettings(),
     rooms: [],
     propertiesForSale: [],
     facilities: [],
+    bookings: [],
+    blockedDates: [],
+    users: [],
+    contactMessages: [],
   };
+}
+
+/** Clears legacy browser caches so only Supabase is used for catalog data. */
+export function purgeLocalSiteData(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(SESSION_CACHE_KEY);
+    sessionStorage.removeItem(LEGACY_SESSION_CACHE_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Removes duplicate rows from double payment submit (same stay or same booking ref). */
@@ -292,9 +340,18 @@ function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
       houseRulesSections: parsed.settings?.houseRulesSections?.length
         ? parsed.settings.houseRulesSections
         : defaults.settings.houseRulesSections,
-      importantInfoSections: parsed.settings?.importantInfoSections?.length
-        ? parsed.settings.importantInfoSections
-        : defaults.settings.importantInfoSections,
+      termsAndConditionsSections:
+        parsed.settings?.termsAndConditionsSections?.length
+          ? parsed.settings.termsAndConditionsSections
+          : parsed.settings?.importantInfoSections?.length
+            ? parsed.settings.importantInfoSections
+            : defaults.settings.termsAndConditionsSections,
+      importantInfoSections:
+        parsed.settings?.termsAndConditionsSections?.length
+          ? parsed.settings.termsAndConditionsSections
+          : parsed.settings?.importantInfoSections?.length
+            ? parsed.settings.importantInfoSections
+            : defaults.settings.importantInfoSections,
     },
     rooms: pickArray(parsed.rooms, defaults.rooms),
     propertiesForSale: pickArray(parsed.propertiesForSale, defaults.propertiesForSale),

@@ -16,6 +16,7 @@ export type Room = {
   location: string;
   /** Full street address for this villa property */
   address: string;
+  /** Guests included in the base nightly rate (DB column: max_guests) */
   max_guests: number;
   /** Internal reference code */
   room_number: string;
@@ -38,8 +39,11 @@ export type Room = {
   mapEmbedUrl?: string;
 };
 
-export const DEFAULT_CHECK_IN_TIME = '14:00';
+export const DEFAULT_CHECK_IN_TIME = '13:00';
 export const DEFAULT_CHECK_OUT_TIME = '11:00';
+export const VILLA_CHECK_IN_LABEL = '1:00 PM onwards';
+export const VILLA_CHECK_OUT_LABEL = '11:00 AM sharp';
+export const VILLA_CHECK_IN_OUT_SUMMARY = 'Check-in: 1:00 PM onwards | Check-out: 11:00 AM sharp';
 export const DEFAULT_GST_PERCENT = 18;
 export const DEFAULT_EXTRA_PERSON_CHARGE = 1500;
 

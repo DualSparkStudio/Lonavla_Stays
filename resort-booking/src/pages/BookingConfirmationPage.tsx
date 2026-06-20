@@ -14,12 +14,14 @@ import Button from '../components/ui/Button';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { useSiteData } from '../context/SiteDataContext';
-import { loadBookingConfirmation, type BookingConfirmationData } from '../lib/bookingConfirmation';
+import { VILLA_CHECK_IN_OUT_SUMMARY } from '../data/resort';
 import { getPrimaryImage } from '../lib/imageUrl';
 import {
   breakdownFromConfirmation,
   breakdownFromStoredBooking,
   buildBookingPriceBreakdown,
+  calcAmountDueNow,
+  calcBalanceDue,
 } from '../lib/bookingPricing';
 
 const formatDisplayDate = (iso: string) => format(parseISO(iso), 'MMM d, yyyy');
@@ -53,16 +55,14 @@ const BookingConfirmationPage: React.FC = () => {
       checkIn: stored.checkIn,
       checkOut: stored.checkOut,
       guests: stored.guests,
+      guestsIncluded: pricing.guestsIncluded,
+      extraGuests: pricing.extraGuests,
       nights: pricing.nights,
       basePrice: pricing.basePrice,
-      extraAdults: pricing.extraAdults,
-      children: pricing.children,
-      extraAdultsCharge: pricing.extraAdultsCharge,
-      childrenCharge: pricing.childrenCharge,
-      subtotal: pricing.subtotal,
-      gst: pricing.gst,
-      gstPercent: pricing.gstPercent,
+      extraGuestsCharge: pricing.extraGuestsCharge,
       total: pricing.total,
+      amountPaid: pricing.amountPaid ?? calcAmountDueNow(pricing.total),
+      balanceDue: pricing.balanceDue ?? calcBalanceDue(pricing.total),
       paymentCompleted: stored.status === 'confirmed',
     };
   }, [location.state, bookingRef, bookings, getRoomById, settings]);
@@ -242,15 +242,21 @@ const BookingConfirmationPage: React.FC = () => {
                   <div>
                     <h2 className="font-bold text-xl mb-3">Important information</h2>
                     <ul className="list-disc pl-5 space-y-2 text-base text-sky-50">
-                      <li>Check-in from 2:00 PM · Check-out by 11:00 AM</li>
-                      <li>Please carry a valid government-issued photo ID for all guests</li>
-                      <li>No smoking inside the villa</li>
+                      <li>{VILLA_CHECK_IN_OUT_SUMMARY}</li>
+                      {settings.houseRulesSections.flatMap((s) => s.items).slice(0, 3).map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
                       <li>
                         For changes or cancellations, contact us at least 24 hours before check-in:{' '}
                         <span className="font-semibold text-white">{settings.resortPhone}</span>
                       </li>
                       <li>
                         Email: <span className="font-semibold text-white">{settings.resortEmail}</span>
+                      </li>
+                      <li>
+                        <Link to="/terms" className="font-semibold text-white underline hover:text-sky-100">
+                          Read full terms &amp; conditions
+                        </Link>
                       </li>
                     </ul>
                   </div>

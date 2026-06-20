@@ -29,6 +29,18 @@ const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
         );
       }
 
+      if (line.variant === 'highlight') {
+        return (
+          <div
+            key={line.key}
+            className="flex justify-between items-center gap-3 rounded-lg bg-sky-100 border border-sky-200 px-3 py-2 font-bold text-sky-900"
+          >
+            <span>{line.label}</span>
+            <span>{formatPrice(line.amount)}</span>
+          </div>
+        );
+      }
+
       if (line.variant === 'subtotal') {
         return (
           <div

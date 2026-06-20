@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
-import AdminTime12Input from '../../components/admin/AdminTime12Input';
 import { ADMIN_CREDENTIALS, validateAdminCredentials } from '../../lib/adminAuth';
 import { fetchSmtpStatus, sendTestEmail } from '../../lib/bookingEmail';
 import {
@@ -20,13 +19,11 @@ import {
   type SmtpNotificationSettings,
 } from '../../lib/smtpSettings';
 import { useSiteData } from '../../context/SiteDataContext';
-import { formatPrice, formatTimeLabel } from '../../data/resort';
 
-type ProfileTab = 'profile' | 'booking' | 'smtp';
+type ProfileTab = 'profile' | 'smtp';
 
 function parseProfileTab(value: string | null): ProfileTab {
   if (value === 'smtp') return 'smtp';
-  if (value === 'booking') return 'booking';
   return 'profile';
 }
 
@@ -54,14 +51,6 @@ const AdminProfilePage: React.FC = () => {
   const [smtpError, setSmtpError] = useState('');
   const [smtpLoading, setSmtpLoading] = useState(false);
 
-  const [bookingDraft, setBookingDraft] = useState({
-    checkInTime: settings.checkInTime,
-    checkOutTime: settings.checkOutTime,
-    gstPercent: settings.gstPercent,
-    extraPersonCharge: settings.extraPersonCharge,
-  });
-  const [bookingSaved, setBookingSaved] = useState(false);
-
   useEffect(() => {
     const loaded = loadAdminProfile();
     setProfile({
@@ -71,15 +60,6 @@ const AdminProfilePage: React.FC = () => {
       officeAddress: loaded.officeAddress?.trim() || settings.resortAddress,
     });
   }, [settings.resortAddress, settings.resortEmail, settings.resortPhone]);
-
-  useEffect(() => {
-    setBookingDraft({
-      checkInTime: settings.checkInTime,
-      checkOutTime: settings.checkOutTime,
-      gstPercent: settings.gstPercent,
-      extraPersonCharge: settings.extraPersonCharge,
-    });
-  }, [settings.checkInTime, settings.checkOutTime, settings.gstPercent, settings.extraPersonCharge]);
 
   useEffect(() => {
     const prefs = loadSmtpNotificationSettings();
@@ -112,22 +92,6 @@ const AdminProfilePage: React.FC = () => {
     });
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 3000);
-  };
-
-  const handleBookingSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    const gstPercent = Math.min(100, Math.max(0, Number(bookingDraft.gstPercent) || 0));
-    const extraPersonCharge = Math.max(0, Number(bookingDraft.extraPersonCharge) || 0);
-    const next = {
-      checkInTime: bookingDraft.checkInTime,
-      checkOutTime: bookingDraft.checkOutTime,
-      gstPercent,
-      extraPersonCharge,
-    };
-    updateSettings(next);
-    saveAdminProfile({ ...loadAdminProfile(), ...next });
-    setBookingSaved(true);
-    setTimeout(() => setBookingSaved(false), 3000);
   };
 
   const handlePasswordSave = (e: React.FormEvent) => {
@@ -207,15 +171,12 @@ const AdminProfilePage: React.FC = () => {
     <AdminLayout currentPage="profile">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
-        <p className="text-gray-900">Manage your account, booking defaults, and SMTP email settings.</p>
+        <p className="text-gray-900">Manage your account and SMTP email settings. Booking defaults are under Admin → Other.</p>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8">
         <button type="button" onClick={() => setTab('profile')} className={tabClass('profile')}>
           Profile
-        </button>
-        <button type="button" onClick={() => setTab('booking')} className={tabClass('booking')}>
-          Booking
         </button>
         <button type="button" onClick={() => setTab('smtp')} className={tabClass('smtp')}>
           SMTP
@@ -413,100 +374,6 @@ const AdminProfilePage: React.FC = () => {
               </button>
             </form>
           </div>
-        </div>
-      )}
-
-      {activeTab === 'booking' && (
-        <div className="space-y-6 max-w-2xl">
-          {bookingSaved && (
-            <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-              Booking settings saved successfully.
-            </div>
-          )}
-
-          <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Current defaults</h2>
-            <p className="text-base text-gray-900 mb-4">
-              These apply site-wide to all villas, the booking checkout, confirmation emails, and admin booking views.
-            </p>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-base">
-              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-900 mb-1">Check-in</dt>
-                <dd className="font-semibold text-gray-900">{formatTimeLabel(settings.checkInTime)}</dd>
-              </div>
-              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-900 mb-1">Check-out</dt>
-                <dd className="font-semibold text-gray-900">{formatTimeLabel(settings.checkOutTime)}</dd>
-              </div>
-              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-900 mb-1">GST</dt>
-                <dd className="font-semibold text-gray-900">{settings.gstPercent}%</dd>
-              </div>
-              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <dt className="text-gray-900 mb-1">Extra person</dt>
-                <dd className="font-semibold text-gray-900">{formatPrice(settings.extraPersonCharge)} / night</dd>
-              </div>
-            </dl>
-          </section>
-
-          <form onSubmit={handleBookingSave} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">Booking settings</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AdminFormField label="Check-in time" hint="Shown on villa pages and confirmation emails">
-                <AdminTime12Input
-                  value={bookingDraft.checkInTime}
-                  fallback={{ hour: 2, minute: 0, period: 'PM' }}
-                  onChange={(checkInTime) => setBookingDraft((prev) => ({ ...prev, checkInTime }))}
-                />
-              </AdminFormField>
-              <AdminFormField label="Check-out time" hint="Shown on villa pages and confirmation emails">
-                <AdminTime12Input
-                  value={bookingDraft.checkOutTime}
-                  fallback={{ hour: 11, minute: 0, period: 'AM' }}
-                  onChange={(checkOutTime) => setBookingDraft((prev) => ({ ...prev, checkOutTime }))}
-                />
-              </AdminFormField>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
-              <AdminFormField label="GST (%)" hint="Applied to booking subtotal at checkout">
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  step={0.5}
-                  required
-                  value={bookingDraft.gstPercent}
-                  onChange={(e) => setBookingDraft((prev) => ({ ...prev, gstPercent: Number(e.target.value) }))}
-                  className={adminInputClass}
-                />
-              </AdminFormField>
-              <AdminFormField
-                label="Extra person charge (₹)"
-                hint="Per extra adult per night; children above 5 are charged at 50%"
-              >
-                <input
-                  type="number"
-                  min={0}
-                  step={100}
-                  required
-                  value={bookingDraft.extraPersonCharge}
-                  onChange={(e) =>
-                    setBookingDraft((prev) => ({ ...prev, extraPersonCharge: Number(e.target.value) }))
-                  }
-                  className={adminInputClass}
-                />
-              </AdminFormField>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-lg text-base font-medium transition-colors"
-            >
-              Save booking settings
-            </button>
-          </form>
         </div>
       )}
 

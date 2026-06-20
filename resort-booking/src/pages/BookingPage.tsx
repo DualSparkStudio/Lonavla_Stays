@@ -21,12 +21,12 @@ import { saveBookingConfirmation } from '../lib/bookingConfirmation';
 import { checkRoomAvailability } from '../lib/availability';
 import { verifyRoomAvailabilityRemote } from '../lib/availabilityApi';
 import PriceBreakdown from '../components/PriceBreakdown';
-import { formatPrice } from '../data/resort';
+import { formatPrice, DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME, VILLA_CHECK_IN_LABEL, VILLA_CHECK_OUT_LABEL, VILLA_CHECK_IN_OUT_SUMMARY } from '../data/resort';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 
 const AvailabilityCalendar = lazy(() => import('../components/AvailabilityCalendar'));
-import { buildBookingPriceBreakdown } from '../lib/bookingPricing';
+import { buildBookingPriceBreakdown, computeStayPricing, BOOKING_ADVANCE_PAYMENT_PERCENT } from '../lib/bookingPricing';
 import { getPrimaryImage } from '../lib/imageUrl';
 import {
   createRazorpayOrder,
@@ -37,8 +37,6 @@ import {
   openRazorpayCheckout,
   verifyRazorpayPayment,
 } from '../lib/razorpay';
-
-const BASE_INCLUDED_ADULTS = 2;
 
 const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -72,11 +70,12 @@ const BookingPage: React.FC = () => {
   const initialCheckIn = searchParams.get('checkIn') ?? toDateInputValue(addDays(new Date(), 1));
   const initialCheckOut = searchParams.get('checkOut') ?? toDateInputValue(addDays(new Date(), 3));
 
+  const initialGuests = Math.max(1, Number(searchParams.get('guests')) || 1);
+
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [extraAdults, setExtraAdults] = useState(0);
-  const [children, setChildren] = useState(0);
+  const [guestCount, setGuestCount] = useState(initialGuests);
   const [isProcessing, setIsProcessing] = useState(false);
   const [dateError, setDateError] = useState('');
   const [paymentError, setPaymentError] = useState('');
@@ -92,55 +91,53 @@ const BookingPage: React.FC = () => {
     return differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn));
   }, [checkIn, checkOut]);
 
-  const totalGuests = BASE_INCLUDED_ADULTS + extraAdults + children;
-
-  const gstPercent = settings.gstPercent ?? 18;
+  const guestsIncluded = villa?.max_guests ?? 1;
   const extraPersonCharge = settings.extraPersonCharge ?? 1500;
-  const childChargePerNight = Math.round(extraPersonCharge / 2);
 
   const pricing = useMemo(() => {
     if (!villa || nights < 1) {
-      return { base: 0, extraAdultsCharge: 0, childrenCharge: 0, extraGuests: 0, subtotal: 0, gst: 0, total: 0 };
+      return computeStayPricing({
+        pricePerNight: 0,
+        nights: 0,
+        guestCount: 1,
+        guestsIncluded: 1,
+        extraPersonCharge,
+      });
     }
-    const base = villa.price_per_night * nights;
-    const extraAdultsCharge = extraAdults * extraPersonCharge * nights;
-    const childrenCharge = children * childChargePerNight * nights;
-    const extraGuests = extraAdultsCharge + childrenCharge;
-    const subtotal = base + extraGuests;
-    const gst = Math.round(subtotal * (gstPercent / 100));
-    const total = subtotal + gst;
-    return { base, extraAdultsCharge, childrenCharge, extraGuests, subtotal, gst, total };
-  }, [villa, nights, extraAdults, children, gstPercent, extraPersonCharge, childChargePerNight]);
+    return computeStayPricing({
+      pricePerNight: villa.price_per_night,
+      nights,
+      guestCount,
+      guestsIncluded: villa.max_guests,
+      extraPersonCharge,
+    });
+  }, [villa, nights, guestCount, extraPersonCharge]);
 
   const priceLines = useMemo(
     () =>
       buildBookingPriceBreakdown({
-        nights: Math.max(1, nights),
-        basePrice: pricing.base,
-        extraAdults,
-        children,
-        extraAdultsCharge: pricing.extraAdultsCharge,
-        childrenCharge: pricing.childrenCharge,
-        extraPersonCharge,
-        childChargePerNight,
-        subtotal: pricing.subtotal,
-        gst: pricing.gst,
-        gstPercent,
+        nights: pricing.nights,
+        basePrice: pricing.basePrice,
+        guestCount: pricing.guestCount,
+        guestsIncluded: pricing.guestsIncluded,
+        extraGuests: pricing.extraGuests,
+        extraGuestsCharge: pricing.extraGuestsCharge,
+        extraPersonCharge: pricing.extraPersonCharge,
         total: pricing.total,
+        amountDueNow: pricing.amountDueNow,
+        balanceDue: pricing.balanceDue,
+        showPaymentSplit: true,
       }),
-    [nights, pricing, extraAdults, children, extraPersonCharge, childChargePerNight, gstPercent],
+    [pricing],
   );
-
-  const maxExtraAdults = villa ? Math.max(0, villa.max_guests - BASE_INCLUDED_ADULTS - children) : 0;
-  const maxChildren = villa ? Math.max(0, villa.max_guests - BASE_INCLUDED_ADULTS - extraAdults) : 0;
 
   const validateDates = () => {
     if (!checkIn || !checkOut || checkOut <= checkIn) {
       setDateError('Please select check-in and check-out dates.');
       return false;
     }
-    if (villa && totalGuests > villa.max_guests) {
-      setDateError(`Maximum capacity is ${villa.max_guests} guests.`);
+    if (guestCount < 1) {
+      setDateError('Please enter at least 1 guest.');
       return false;
     }
     if (villa) {
@@ -187,7 +184,7 @@ const BookingPage: React.FC = () => {
 
     try {
       const order = await createRazorpayOrder({
-        amountInr: pricing.total,
+        amountInr: pricing.amountDueNow,
         receipt,
         notes: { villaId: villa.id, villaName: villa.name, checkIn, checkOut },
       });
@@ -200,7 +197,7 @@ const BookingPage: React.FC = () => {
           email: data.email,
           contact: data.phone,
         },
-        notes: { villa: villa.name, guests: String(totalGuests) },
+        notes: { villa: villa.name, guests: String(guestCount) },
       });
 
       await verifyRazorpayPayment({
@@ -218,18 +215,16 @@ const BookingPage: React.FC = () => {
           guestEmail: data.email,
           checkIn,
           checkOut,
-          guests: totalGuests,
+          guests: guestCount,
           total: pricing.total,
           status: 'confirmed',
-          nights,
-          basePrice: pricing.base,
-          extraAdults,
-          children,
-          extraAdultsCharge: pricing.extraAdultsCharge,
-          childrenCharge: pricing.childrenCharge,
-          pricingSubtotal: pricing.subtotal,
-          gst: pricing.gst,
-          gstPercent,
+          nights: pricing.nights,
+          basePrice: pricing.basePrice,
+          guestsIncluded: pricing.guestsIncluded,
+          extraGuests: pricing.extraGuests,
+          extraGuestsCharge: pricing.extraGuestsCharge,
+          pricingSubtotal: pricing.total,
+          amountPaid: pricing.amountDueNow,
         },
         {
           orderId: payment.razorpay_order_id,
@@ -248,17 +243,15 @@ const BookingPage: React.FC = () => {
         roomImage: getPrimaryImage(villa.images),
         checkIn,
         checkOut,
-        guests: totalGuests,
-        nights,
-        basePrice: pricing.base,
-        extraAdults,
-        children,
-        extraAdultsCharge: pricing.extraAdultsCharge,
-        childrenCharge: pricing.childrenCharge,
-        subtotal: pricing.subtotal,
-        gst: pricing.gst,
-        gstPercent,
+        guests: guestCount,
+        guestsIncluded: pricing.guestsIncluded,
+        extraGuests: pricing.extraGuests,
+        nights: pricing.nights,
+        basePrice: pricing.basePrice,
+        extraGuestsCharge: pricing.extraGuestsCharge,
         total: pricing.total,
+        amountPaid: pricing.amountDueNow,
+        balanceDue: pricing.balanceDue,
         paymentCompleted: true,
       };
       saveBookingConfirmation(confirmation);
@@ -269,8 +262,8 @@ const BookingPage: React.FC = () => {
         resortEmail: settings.resortEmail,
         resortAddress: settings.resortAddress,
         resortLocation: settings.resortLocation,
-        checkInTime: settings.checkInTime,
-        checkOutTime: settings.checkOutTime,
+        checkInTime: DEFAULT_CHECK_IN_TIME,
+        checkOutTime: DEFAULT_CHECK_OUT_TIME,
       });
       navigate(`/booking/confirmation/${receipt}`, { state: confirmation, replace: true });
     } catch (error) {
@@ -337,11 +330,15 @@ const BookingPage: React.FC = () => {
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
                         <p className="text-xs text-gray-500 font-medium">Check-in / Check-out</p>
-                        <p className="text-base font-bold text-gray-900">2:00 PM / 11:00 AM</p>
+                        <p className="text-sm font-bold text-gray-900 leading-snug">
+                          {VILLA_CHECK_IN_LABEL}
+                          <br />
+                          {VILLA_CHECK_OUT_LABEL}
+                        </p>
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
-                        <p className="text-xs text-gray-500 font-medium">Max capacity</p>
-                        <p className="text-base font-bold text-gray-900">{villa.max_guests} guests</p>
+                        <p className="text-xs text-gray-500 font-medium">Guests in base price</p>
+                        <p className="text-base font-bold text-gray-900">{villa.max_guests}</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -390,9 +387,7 @@ const BookingPage: React.FC = () => {
                   </div>
 
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-base font-bold text-gray-900 mb-1">
-                      Base adults ({BASE_INCLUDED_ADULTS})
-                    </p>
+                    <p className="text-base font-bold text-gray-900 mb-1">Villa rate</p>
                     <p className="text-xl font-bold text-gray-900">
                       {formatPrice(villa.price_per_night)}
                       <span className="text-base font-medium text-gray-900"> / night</span>
@@ -400,53 +395,30 @@ const BookingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <p className="text-base text-gray-900 mb-2">
-                      <span className="font-bold">Maximum capacity:</span> {villa.max_guests} guests
+                    <label className="block text-base font-bold text-gray-900 mb-2">Guest count</label>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {guestsIncluded} guest{guestsIncluded !== 1 ? 's' : ''} included in base price.
+                      {pricing.extraGuests > 0
+                        ? ` ${pricing.extraGuests} extra at ${formatPrice(extraPersonCharge)}/night each.`
+                        : ` Extra guests above ${guestsIncluded} are ${formatPrice(extraPersonCharge)}/night each.`}
                     </p>
-                    <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5 inline-block">
-                      <p className="text-base font-bold text-emerald-900">
-                        Total guests: {totalGuests}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-base font-bold text-gray-900 mb-2">Extra adults</label>
-                      <p className="text-xs text-gray-500 mb-2">
-                        {formatPrice(extraPersonCharge)} per extra adult per night
-                      </p>
-                      <input
-                        type="number"
-                        min={0}
-                        max={maxExtraAdults}
-                        value={extraAdults}
-                        onChange={(e) => setExtraAdults(Math.min(maxExtraAdults, Math.max(0, Number(e.target.value))))}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-base font-bold text-gray-900 mb-2">
-                        Children above 5 years
-                      </label>
-                      <p className="text-xs text-gray-500 mb-2">
-                        {formatPrice(childChargePerNight)} per child per night
-                      </p>
-                      <input
-                        type="number"
-                        min={0}
-                        max={maxChildren}
-                        value={children}
-                        onChange={(e) => setChildren(Math.min(maxChildren, Math.max(0, Number(e.target.value))))}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium"
-                      />
-                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      value={guestCount}
+                      onChange={(e) => {
+                        const next = Number(e.target.value);
+                        if (Number.isNaN(next)) return;
+                        setGuestCount(Math.max(1, next));
+                      }}
+                      className="w-full max-w-xs px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium"
+                    />
                   </div>
 
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-base text-amber-950">
                     <p className="font-bold mb-2">Booking terms</p>
                     <ul className="list-disc pl-5 space-y-1 text-amber-900">
-                      <li>Check-in from 2:00 PM · Check-out by 11:00 AM</li>
+                      <li>{VILLA_CHECK_IN_OUT_SUMMARY}</li>
                       <li>Valid government ID required at check-in</li>
                       <li>No smoking inside the villa</li>
                       <li>Modifications subject to availability — contact us 24h before arrival</li>
@@ -519,8 +491,11 @@ const BookingPage: React.FC = () => {
                       className="mt-1 h-4 w-4 text-airbnb-red focus:ring-airbnb-red border-gray-300 rounded"
                     />
                     <p className="text-base text-gray-900">
-                      I agree to the booking terms and authorize {settings.resortName} to process this
-                      reservation.
+                      I agree to the{' '}
+                      <Link to="/terms" className="text-airbnb-red font-semibold hover:underline">
+                        terms &amp; conditions
+                      </Link>{' '}
+                      and authorize {settings.resortName} to process this reservation.
                     </p>
                   </div>
                   {form.formState.errors.agreeToTerms && (
@@ -555,7 +530,7 @@ const BookingPage: React.FC = () => {
                     {isProcessing
                       ? 'Processing…'
                       : canPay
-                        ? `Pay online ${formatPrice(pricing.total)}`
+                        ? `Pay ${formatPrice(pricing.amountDueNow)} now (${BOOKING_ADVANCE_PAYMENT_PERCENT}% deposit)`
                         : 'Select dates to continue'}
                   </span>
                 </Button>

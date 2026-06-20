@@ -1,6 +1,27 @@
+﻿-- =============================================================================
+-- RESET old resort schema â†’ prepare for lonavala-stays-setup.sql
+--
+-- Run this ONLY if you previously ran supabase-schema.sql or
+-- migrations/20260604_brick_beam_calendar.sql (rooms / room_id model).
+--
+-- WARNING: Deletes bookings, blocked dates, rooms, and facilities data.
+-- Then run: supabase/lonavala-stays-setup.sql (full file)
 -- =============================================================================
--- The Lonavala Stays — Supabase database setup
--- Run this entire file once in: Supabase Dashboard → SQL Editor → New query → Run
+
+DROP TABLE IF EXISTS public.reviews CASCADE;
+DROP TABLE IF EXISTS public.blocked_dates CASCADE;
+DROP TABLE IF EXISTS public.bookings CASCADE;
+DROP TABLE IF EXISTS public.rooms CASCADE;
+DROP TABLE IF EXISTS public.room_types CASCADE;
+DROP TABLE IF EXISTS public.resort_closures CASCADE;
+DROP TABLE IF EXISTS public.calendar_settings CASCADE;
+DROP TABLE IF EXISTS public.facilities CASCADE;
+DROP TABLE IF EXISTS public.properties_for_sale CASCADE;
+DROP TABLE IF EXISTS public.villas CASCADE;
+DROP TABLE IF EXISTS public.site_settings CASCADE;
+-- =============================================================================
+-- The Lonavala Stays â€” Supabase database setup
+-- Run this entire file once in: Supabase Dashboard â†’ SQL Editor â†’ New query â†’ Run
 --
 -- If you get errors like "villas does not exist" OR "blocked_dates.villa_id does not exist"
 -- you have the OLD rooms/room_id schema. Run FIRST:
@@ -26,7 +47,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 
 -- -----------------------------------------------------------------------------
--- Villas (matches app “rooms” / demo villas)
+-- Villas (matches app â€œroomsâ€ / demo villas)
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.villas (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -109,7 +130,7 @@ CREATE TABLE IF NOT EXISTS public.blocked_dates (
 );
 
 -- -----------------------------------------------------------------------------
--- Site CMS (settings JSON — optional; app can sync from here later)
+-- Site CMS (settings JSON â€” optional; app can sync from here later)
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.site_settings (
   id TEXT PRIMARY KEY DEFAULT 'main',
@@ -370,7 +391,7 @@ ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS map_embed_url TE
 ALTER TABLE public.properties_for_sale DROP COLUMN IF EXISTS price_display;
 
 -- -----------------------------------------------------------------------------
--- SEED DATA — same content as the app’s localStorage demo (safe to re-run)
+-- SEED DATA â€” same content as the appâ€™s localStorage demo (safe to re-run)
 -- Skips rows that already exist (legacy_id / room_number / booking_ref).
 -- -----------------------------------------------------------------------------
 
@@ -392,7 +413,7 @@ INSERT INTO public.villas (
 ),
 (
   '2', 'Garden Wing Villa', 'Family Villa',
-  'Spacious private villa with landscaped gardens and a separate living wing—perfect for families who want their own property in the hills.',
+  'Spacious private villa with landscaped gardens and a separate living wingâ€”perfect for families who want their own property in the hills.',
   9200, 'Tungarli, Lonavala', 'Lane 4, Near Tungarli Lake, Lonavala, Maharashtra 410403',
   5, 'GW-02', 4.8, 89, 'available',
   ARRAY['Private Garden','Living Area','Wi-Fi','Air Conditioning','Parking','BBQ Patio'],
@@ -404,7 +425,7 @@ INSERT INTO public.villas (
 ),
 (
   '3', 'Hillside Premium Villa', 'Premium Villa',
-  'Flagship villa with panoramic hill views, premium interiors, and a large sit-out—our most requested property for special occasions.',
+  'Flagship villa with panoramic hill views, premium interiors, and a large sit-outâ€”our most requested property for special occasions.',
   11500, 'Khandala Hills, Lonavala', 'Plot 8, Khandala View Road, Lonavala, Maharashtra 410401',
   4, 'HP-03', 5.0, 64, 'available',
   ARRAY['Panoramic View','King Bed','Private Pool','Wi-Fi','Chef on Request','Tea/Coffee Bar'],
@@ -416,7 +437,7 @@ INSERT INTO public.villas (
 ),
 (
   '4', 'Garden Cottage Villa', 'Cottage Villa',
-  'Intimate standalone cottage tucked into greenery—romantic, private, and fully self-contained with its own entrance and patio.',
+  'Intimate standalone cottage tucked into greeneryâ€”romantic, private, and fully self-contained with its own entrance and patio.',
   7800, 'Kurvande, Lonavala', 'Cottage 12, Green Meadows Estate, Kurvande, Lonavala 410401',
   2, 'GC-04', 4.7, 52, 'available',
   ARRAY['Private Entry','Garden Patio','Wi-Fi','Air Conditioning','Complimentary Breakfast','Parking'],
@@ -432,11 +453,11 @@ INSERT INTO public.facilities (name, description, image, hours)
 SELECT v.name, v.description, v.image, v.hours
 FROM (VALUES
   ('Private & shared pools', 'Select villas include plunge or infinity pools; others are a short drive from scenic lake spots.', 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop', 'Varies by villa'),
-  ('In-villa wellness', 'Spa and massage partners can be arranged at your villa—no need to leave the property.', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop', 'By appointment'),
+  ('In-villa wellness', 'Spa and massage partners can be arranged at your villaâ€”no need to leave the property.', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop', 'By appointment'),
   ('Chef & dining', 'In-villa meals, barbecue nights, and local Maharashtrian menus on request across the collection.', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=500&fit=crop', 'On request'),
-  ('Outdoor experiences', 'Bonfires, stargazing decks, and terrace evenings—set up at villas with outdoor space.', 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop', 'Seasonal'),
+  ('Outdoor experiences', 'Bonfires, stargazing decks, and terrace eveningsâ€”set up at villas with outdoor space.', 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop', 'Seasonal'),
   ('Nature trails & treks', 'Our team coordinates guided walks and viewpoints near each villa''s neighbourhood.', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop', 'By appointment'),
-  ('Family recreation', 'Board games, indoor lounges, and kid-friendly setups—amenities vary; check each villa listing.', 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop', 'Varies by villa')
+  ('Family recreation', 'Board games, indoor lounges, and kid-friendly setupsâ€”amenities vary; check each villa listing.', 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop', 'Varies by villa')
 ) AS v(name, description, image, hours)
 WHERE NOT EXISTS (SELECT 1 FROM public.facilities LIMIT 1);
 
@@ -451,14 +472,14 @@ VALUES (
     "resortPhone": "+91 98765 43210",
     "resortEmail": "stay@lonavalastays.com",
     "heroTitle": "Escape Into The Hills",
-    "heroSubtitle": "Book luxury villa stays or explore plots & villas for sale across Lonavala—each with its own home and hillside setting.",
+    "heroSubtitle": "Book luxury villa stays or explore plots & villas for sale across Lonavalaâ€”each with its own home and hillside setting.",
     "aboutImage": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=900&h=600&fit=crop",
     "aboutParagraphs": [
-      "The Lonavala Stays curated luxury villas across Lonavala. We are not a single hotel—we curate, operate, and book multiple private villas across Lonavala, Maharashtra, each managed as its own property.",
+      "The Lonavala Stays curated luxury villas across Lonavala. We are not a single hotelâ€”we curate, operate, and book multiple private villas across Lonavala, Maharashtra, each managed as its own property.",
       "Whether you need one villa for a weekend or want to understand how we manage an entire portfolio, our team handles reservations, housekeeping, and guest care villa by villa."
     ],
     "aboutHighlights": [
-      {"title": "Multiple villas, one brand", "text": "We manage a portfolio of standalone villas—each with its own address, style, and amenities—under trusted Lonavala hospitality."},
+      {"title": "Multiple villas, one brand", "text": "We manage a portfolio of standalone villasâ€”each with its own address, style, and amenitiesâ€”under trusted Lonavala hospitality."},
       {"title": "Locally rooted", "text": "Our on-ground team lives in Lonavala. We match you to the right villa and share the best trails, views, and seasonal tips."},
       {"title": "End-to-end management", "text": "From booking and housekeeping to maintenance and guest support, we run every villa so owners and guests enjoy a seamless stay."}
     ],
@@ -469,11 +490,11 @@ VALUES (
       {"name": "Contact", "path": "/contact", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop"}
     ],
     "villasPageTitle": "Our villas",
-    "villasPageSubtitle": "Curated luxury villas across Lonavala. Each listing is a separate private villa—compare locations, capacity, and amenities to find your fit.",
+    "villasPageSubtitle": "Curated luxury villas across Lonavala. Each listing is a separate private villaâ€”compare locations, capacity, and amenities to find your fit.",
     "facilitiesPageTitle": "Our facilities",
-    "facilitiesPageSubtitle": "Experiences and amenities across our villa collection. What is included depends on the villa you book—see each listing for details.",
+    "facilitiesPageSubtitle": "Experiences and amenities across our villa collection. What is included depends on the villa you bookâ€”see each listing for details.",
     "forSalePageTitle": "Plots & villas for sale",
-    "forSalePageSubtitle": "Own a piece of Lonavala. Browse our curated plots and ready villas—view full galleries and descriptions, then contact us to schedule a visit or request documents.",
+    "forSalePageSubtitle": "Own a piece of Lonavala. Browse our curated plots and ready villasâ€”view full galleries and descriptions, then contact us to schedule a visit or request documents.",
     "contactPageSubtitle": "Questions about a villa stay, a plot or villa for sale, availability, or directions? Our team manages every property in our collection."
   }$json$::jsonb
 )
@@ -486,24 +507,24 @@ INSERT INTO public.properties_for_sale (
 ) VALUES
 (
   'sale-villa-1', 'Sunset Ridge Villa', 'villa',
-  'Fully furnished 4 BHK hill villa with valley views, private pool, and clear title—ready to move in or use as a holiday home.',
+  'Fully furnished 4 BHK hill villa with valley views, private pool, and clear titleâ€”ready to move in or use as a holiday home.',
   'Sunset Ridge is a standalone villa on a 8,000 sq ft plot in a gated Lonavala neighbourhood. The home includes a double-height living room, modular kitchen, four en-suite bedrooms, and a heated plunge pool.',
   28500000, false, 'Tiger Valley, Lonavala', 'Survey No. 45, Tiger Valley Road, Lonavala, Maharashtra 410401',
-  '3,200 sq ft built-up · 8,000 sq ft plot', 4, 4, 'available',
+  '3,200 sq ft built-up Â· 8,000 sq ft plot', 4, 4, 'available',
   ARRAY['Clear title','Private pool','Furnished','Valley view','Gated community','Parking for 3 cars'],
   ARRAY['https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop','https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop'], 1
 ),
 (
   'sale-villa-2', 'Mistwood Cottage Estate', 'villa',
-  'Charming 3 BHK stone-and-wood cottage on half an acre—surrounded by native trees, minutes from Tungarli Lake.',
+  'Charming 3 BHK stone-and-wood cottage on half an acreâ€”surrounded by native trees, minutes from Tungarli Lake.',
   'Mistwood Cottage blends colonial architecture with modern comforts. Spread across two levels, the property features a wraparound veranda, fireplace lounge, and landscaped garden with a gazebo.',
   19200000, false, 'Tungarli, Lonavala', 'Lane 7, Near Tungarli Lake, Lonavala, Maharashtra 410403',
-  '2,400 sq ft built-up · 22,000 sq ft land', 3, 3, 'available',
+  '2,400 sq ft built-up Â· 22,000 sq ft land', 3, 3, 'available',
   ARRAY['Heritage style','Large garden','Lake proximity','Approved plans','Servant room','Bore well'],
   ARRAY['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop','https://images.unsplash.com/photo-1605276374101-e4f283423591?w=800&h=600&fit=crop'], 2
 ),
 (
-  'sale-plot-1', 'Hilltop NA Plot — Khandala View', 'plot',
+  'sale-plot-1', 'Hilltop NA Plot â€” Khandala View', 'plot',
   'NA-sanctioned 10,000 sq ft plot with unobstructed Sahyadri views. Ideal for a weekend villa or boutique stay project.',
   'This east-facing NA plot sits on a gentle slope with a 40 ft road access. Electricity and water connections available at the boundary wall.',
   8500000, false, 'Khandala Hills, Lonavala', 'Plot 14, Green Ridge Layout, Khandala View Road, Lonavala 410401',
@@ -512,8 +533,8 @@ INSERT INTO public.properties_for_sale (
   ARRAY['https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop','https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=600&fit=crop'], 3
 ),
 (
-  'sale-plot-2', 'Valley Meadows — Twin Plots', 'plot',
-  'Two adjacent 5,000 sq ft plots in a premium Lonavala layout. Buy one or both—perfect for a family compound or twin villas.',
+  'sale-plot-2', 'Valley Meadows â€” Twin Plots', 'plot',
+  'Two adjacent 5,000 sq ft plots in a premium Lonavala layout. Buy one or bothâ€”perfect for a family compound or twin villas.',
   'Valley Meadows is a boutique plotted development with internal roads, street lighting, and 24/7 security. Each plot has individual 7/12 extract and is ready for construction.',
   4200000, false, 'Kurvande, Lonavala', 'Block C, Valley Meadows, Kurvande, Lonavala 410401',
   '5,000 sq ft each (2 plots available)', NULL, NULL, 'available',
@@ -522,7 +543,7 @@ INSERT INTO public.properties_for_sale (
 ),
 (
   'sale-plot-3', 'Riverside Agricultural Land', 'plot',
-  '1.2 acre riverside land with conversion potential—suited for farmhouse, agro-tourism, or long-term investment.',
+  '1.2 acre riverside land with conversion potentialâ€”suited for farmhouse, agro-tourism, or long-term investment.',
   'A scenic parcel along a seasonal stream, bordered by mature trees. Currently agricultural; conversion documentation in progress.',
   0, true, 'Dhamandri, Lonavala outskirts', 'Gat No. 892, Dhamandri Village, Maval Taluka, Pune District',
   '1.2 acres (approx. 52,000 sq ft)', NULL, NULL, 'available',
@@ -540,7 +561,7 @@ INSERT INTO public.properties_for_sale (
 )
 ON CONFLICT (legacy_id) DO NOTHING;
 
--- Sample bookings (admin calendar / demo — same as localStorage)
+-- Sample bookings (admin calendar / demo â€” same as localStorage)
 INSERT INTO public.bookings (
   villa_id, booking_ref, check_in, check_out, adults, children,
   total_amount, base_amount, taxes, status, payment_status,

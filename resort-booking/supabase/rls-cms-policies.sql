@@ -1,6 +1,10 @@
 -- Run once in Supabase SQL Editor if admin CMS edits fail (local admin login is not Supabase auth).
 -- Tighten these policies later when using Supabase Auth + role = 'admin'.
 
+ALTER TABLE public.villas
+  ADD COLUMN IF NOT EXISTS check_in_time TEXT NOT NULL DEFAULT '14:00',
+  ADD COLUMN IF NOT EXISTS check_out_time TEXT NOT NULL DEFAULT '11:00';
+
 DROP POLICY IF EXISTS "Villas CMS write" ON public.villas;
 CREATE POLICY "Villas CMS write" ON public.villas
   FOR ALL USING (true) WITH CHECK (true);
@@ -32,3 +36,5 @@ CREATE POLICY "Properties CMS write" ON public.properties_for_sale
 DROP POLICY IF EXISTS "Contact messages CMS delete" ON public.contact_messages;
 CREATE POLICY "Contact messages CMS delete" ON public.contact_messages
   FOR DELETE USING (true);
+
+NOTIFY pgrst, 'reload schema';

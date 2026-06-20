@@ -7,7 +7,8 @@ import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import Button from '../components/ui/Button';
 import LocationMapSection from '../components/maps/LocationMapSection';
-import { formatPrice, formatTimeLabel } from '../data/resort';
+import PolicySections from '../components/PolicySections';
+import { formatPrice, VILLA_CHECK_IN_LABEL, VILLA_CHECK_OUT_LABEL } from '../data/resort';
 import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
 import { useSiteData } from '../context/SiteDataContext';
 
@@ -134,7 +135,7 @@ const RoomDetailPage: React.FC = () => {
                 Managed by {settings.resortName} · ★ {room.rating} ({room.review_count} reviews)
               </p>
               <p className="text-lg text-gray-900 mb-4">
-                Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
+                Check-in {VILLA_CHECK_IN_LABEL} · Check-out {VILLA_CHECK_OUT_LABEL}
               </p>
               <p className="text-lg text-gray-900 leading-relaxed">{room.description}</p>
             </AnimatedSection>
@@ -154,6 +155,21 @@ const RoomDetailPage: React.FC = () => {
               </div>
             </AnimatedSection>
 
+            {settings.houseRulesSections.length > 0 && (
+              <AnimatedSection delay={175}>
+                <h2 className="font-heading text-2xl text-gray-900 mb-4">House rules</h2>
+                <div className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
+                  <PolicySections sections={settings.houseRulesSections} />
+                  <Link
+                    to="/house-rules"
+                    className="inline-block mt-4 text-sm font-semibold text-airbnb-red hover:underline"
+                  >
+                    View full house rules →
+                  </Link>
+                </div>
+              </AnimatedSection>
+            )}
+
             <AnimatedSection delay={200}>
               <LocationMapSection
                 mapEmbedUrl={room.mapEmbedUrl}
@@ -171,10 +187,10 @@ const RoomDetailPage: React.FC = () => {
               </p>
               <p className="flex items-center gap-2 text-lg text-gray-900 font-medium mb-2">
                 <UserGroupIcon className="h-5 w-5" />
-                Up to {room.max_guests} guests
+                {room.max_guests} guests included in base price
               </p>
               <p className="text-base text-gray-900 mb-4">
-                Check-in {formatTimeLabel(settings.checkInTime)} · Check-out {formatTimeLabel(settings.checkOutTime)}
+                Check-in {VILLA_CHECK_IN_LABEL} · Check-out {VILLA_CHECK_OUT_LABEL}
               </p>
               <AvailabilityCalendar
                 embedded
