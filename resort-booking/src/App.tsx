@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useParams } from 'react-router-dom';
 import ScrollToTop from './components/layout/ScrollToTop';
 import AdminRoute from './components/admin/AdminRoute';
+import { isForSaleEnabled } from './lib/featureFlags';
 
 const PublicHomePage = lazy(() => import('./pages/PublicHomePage'));
 const PublicLoginPage = lazy(() => import('./pages/PublicLoginPage'));
@@ -47,8 +48,17 @@ function App() {
           <Route path="/rooms/:id" element={<LegacyRoomRedirect />} />
           <Route path="/villas" element={<RoomsPage />} />
           <Route path="/villas/:id" element={<RoomDetailPage />} />
-          <Route path="/for-sale" element={<PropertiesForSalePage />} />
-          <Route path="/for-sale/:id" element={<PropertyForSaleDetailPage />} />
+          {isForSaleEnabled ? (
+            <>
+              <Route path="/for-sale" element={<PropertiesForSalePage />} />
+              <Route path="/for-sale/:id" element={<PropertyForSaleDetailPage />} />
+            </>
+          ) : (
+            <>
+              <Route path="/for-sale" element={<Navigate to="/villas" replace />} />
+              <Route path="/for-sale/:id" element={<Navigate to="/villas" replace />} />
+            </>
+          )}
           <Route path="/facilities" element={<FacilitiesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -64,7 +74,11 @@ function App() {
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/settings" element={<AdminSiteSettingsPage />} />
             <Route path="/admin/rooms" element={<AdminRoomsPage />} />
-            <Route path="/admin/for-sale" element={<AdminForSalePage />} />
+            {isForSaleEnabled ? (
+              <Route path="/admin/for-sale" element={<AdminForSalePage />} />
+            ) : (
+              <Route path="/admin/for-sale" element={<Navigate to="/admin" replace />} />
+            )}
             <Route path="/admin/bookings" element={<AdminBookingsPage />} />
             <Route path="/admin/calendar" element={<AdminCalendarPage />} />
             <Route path="/admin/other" element={<AdminOtherPage />} />

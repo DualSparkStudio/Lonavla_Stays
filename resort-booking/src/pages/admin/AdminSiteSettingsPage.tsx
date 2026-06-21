@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useSiteData } from '../../context/SiteDataContext';
+import { isForSaleEnabled } from '../../lib/featureFlags';
 import type { SiteSettings } from '../../types/site';
 
 const field = (
@@ -97,8 +98,12 @@ export default function AdminSiteSettingsPage() {
           <h2 className="text-2xl font-bold text-gray-900">Page headings</h2>
           {field('Villas page title', 'villasPageTitle', draft.villasPageTitle, handleChange)}
           {field('Villas page subtitle', 'villasPageSubtitle', draft.villasPageSubtitle, handleChange, true)}
-          {field('For sale page title', 'forSalePageTitle', draft.forSalePageTitle, handleChange)}
-          {field('For sale page subtitle', 'forSalePageSubtitle', draft.forSalePageSubtitle, handleChange, true)}
+          {isForSaleEnabled && (
+            <>
+              {field('For sale page title', 'forSalePageTitle', draft.forSalePageTitle, handleChange)}
+              {field('For sale page subtitle', 'forSalePageSubtitle', draft.forSalePageSubtitle, handleChange, true)}
+            </>
+          )}
           {field('Facilities page title', 'facilitiesPageTitle', draft.facilitiesPageTitle, handleChange)}
           {field('Facilities page subtitle', 'facilitiesPageSubtitle', draft.facilitiesPageSubtitle, handleChange, true)}
           {field('Contact page subtitle', 'contactPageSubtitle', draft.contactPageSubtitle, handleChange, true)}
@@ -153,7 +158,10 @@ export default function AdminSiteSettingsPage() {
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
           <h2 className="text-2xl font-bold text-gray-900">Homepage explore tiles</h2>
-          {draft.exploreTiles.map((tile, i) => (
+          {draft.exploreTiles
+            .map((tile, i) => ({ tile, i }))
+            .filter(({ tile }) => isForSaleEnabled || !tile.path.startsWith('/for-sale'))
+            .map(({ tile, i }) => (
             <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-lg">
               <input
                 value={tile.name}

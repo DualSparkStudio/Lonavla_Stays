@@ -4,6 +4,7 @@ import { addDays, format } from 'date-fns';
 import AnimatedSection from '../ui/AnimatedSection';
 import { useSiteData } from '../../context/SiteDataContext';
 import { RESORT_LOCATION } from '../../data/resort';
+import { isForSaleEnabled } from '../../lib/featureFlags';
 import { cn } from '../../utils/cn';
 
 type HeroMode = 'stay' | 'buy';
@@ -62,7 +63,8 @@ const HeroExplorer: React.FC = () => {
   return (
     <AnimatedSection variant="scale-in" delay={250} className="max-w-5xl mx-auto w-full">
       <div className="search-bar-shell bg-white rounded-2xl md:rounded-3xl shadow-lg border-2 border-airbnb-red/40 p-3 md:p-4 motion-safe:animate-float">
-        {/* Mode toggle */}
+        {/* Mode toggle — hidden while For Sale is disabled (Razorpay onboarding) */}
+        {isForSaleEnabled && (
         <div className="flex justify-center mb-3 md:mb-4">
           <div className="inline-flex rounded-full bg-pink-50 p-1.5 gap-1 ring-1 ring-airbnb-red/20 shadow-sm">
             <button
@@ -91,8 +93,9 @@ const HeroExplorer: React.FC = () => {
             </button>
           </div>
         </div>
+        )}
 
-        {mode === 'stay' ? (
+        {mode === 'stay' || !isForSaleEnabled ? (
           <>
             <p className="text-center text-base text-gray-900 mb-3 px-2 leading-relaxed">
               Nightly villa rentals across {settings.resortLocation || RESORT_LOCATION} — pick dates and browse available stays.

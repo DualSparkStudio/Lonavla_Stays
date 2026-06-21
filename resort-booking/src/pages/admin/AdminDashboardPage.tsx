@@ -2,12 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useSiteData } from '../../context/SiteDataContext';
+import { isForSaleEnabled } from '../../lib/featureFlags';
 
 const AdminDashboardPage: React.FC = () => {
   const { rooms, propertiesForSale, bookings } = useSiteData();
 
   const availableVillas = rooms.filter((r) => r.status === 'available').length;
-  const saleListings = propertiesForSale.filter((p) => p.status !== 'sold').length;
+  const saleListings = isForSaleEnabled
+    ? propertiesForSale.filter((p) => p.status !== 'sold').length
+    : 0;
 
   return (
     <AdminLayout currentPage="dashboard">
@@ -17,7 +20,9 @@ const AdminDashboardPage: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
         {[
           { label: 'Villas', value: rooms.length, sub: `${availableVillas} available`, to: '/admin/rooms' },
-          { label: 'For sale', value: saleListings, sub: 'active listings', to: '/admin/for-sale' },
+          ...(isForSaleEnabled
+            ? [{ label: 'For sale', value: saleListings, sub: 'active listings', to: '/admin/for-sale' }]
+            : []),
           { label: 'Bookings', value: bookings.length, sub: 'records', to: '/admin/bookings' },
         ].map((card) => (
           <Link key={card.label} to={card.to} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">

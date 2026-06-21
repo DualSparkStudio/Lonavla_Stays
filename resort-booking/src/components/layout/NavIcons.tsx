@@ -1,4 +1,5 @@
 import React from 'react';
+import { isForSaleEnabled } from '../../lib/featureFlags';
 
 type NavIconProps = {
   className?: string;
@@ -162,4 +163,4 @@ export const mainNavConfig: {
   { label: 'Facilities', href: '/facilities', page: 'facilities', Icon: NavIconFacilities },
   { label: 'About', href: '/about', page: 'about', Icon: NavIconAbout },
   { label: 'Contact', href: '/contact', page: 'contact', Icon: NavIconContact },
-];
+].filter((item) => isForSaleEnabled || item.page !== 'for-sale');

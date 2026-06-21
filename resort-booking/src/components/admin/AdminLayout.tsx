@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { adminLogout } from '../../lib/adminAuth';
 import { getAdminInitials, loadAdminProfile } from '../../lib/adminProfile';
+import { isForSaleEnabled } from '../../lib/featureFlags';
 
 const adminNavLinks = [
   { to: '/admin', page: 'dashboard', label: 'Dashboard' },
@@ -13,7 +14,7 @@ const adminNavLinks = [
   { to: '/admin/bookings', page: 'bookings', label: 'Bookings' },
   { to: '/admin/calendar', page: 'calendar', label: 'Calendar' },
   { to: '/admin/other', page: 'other', label: 'Other' },
-] as const;
+].filter((item) => isForSaleEnabled || item.page !== 'for-sale');
 
 type AdminLayoutProps = {
   currentPage: string;

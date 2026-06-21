@@ -16,6 +16,7 @@ import PublicLayout from '../components/layout/PublicLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import NormalizedImage from '../components/ui/NormalizedImage';
+import LocationMapSection from '../components/maps/LocationMapSection';
 import { notifyBookingByEmail } from '../lib/bookingEmail';
 import { saveBookingConfirmation } from '../lib/bookingConfirmation';
 import { checkRoomAvailability } from '../lib/availability';
@@ -354,6 +355,14 @@ const BookingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="px-6 md:px-8 pb-6 border-b border-gray-100">
+                <LocationMapSection
+                  mapEmbedUrl={villa.mapEmbedUrl}
+                  address={villa.address}
+                  location={villa.location}
+                />
               </div>
 
               {/* Booking form — two columns */}

@@ -12,10 +12,15 @@ import {
 import PublicLayout from '../components/layout/PublicLayout';
 import Button from '../components/ui/Button';
 import NormalizedImage from '../components/ui/NormalizedImage';
+import LocationMapSection from '../components/maps/LocationMapSection';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { useSiteData } from '../context/SiteDataContext';
 import { VILLA_CHECK_IN_OUT_SUMMARY } from '../data/resort';
 import { getPrimaryImage } from '../lib/imageUrl';
+import {
+  loadBookingConfirmation,
+  type BookingConfirmationData,
+} from '../lib/bookingConfirmation';
 import {
   breakdownFromConfirmation,
   breakdownFromStoredBooking,
@@ -199,6 +204,16 @@ const BookingConfirmationPage: React.FC = () => {
                   </div>
                 </div>
               </section>
+
+              {room && (
+                <section className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
+                  <LocationMapSection
+                    mapEmbedUrl={room.mapEmbedUrl}
+                    address={room.address}
+                    location={room.location}
+                  />
+                </section>
+              )}
 
               {/* Payment */}
               <section className="rounded-xl border border-emerald-100 bg-emerald-50/80 p-5">
