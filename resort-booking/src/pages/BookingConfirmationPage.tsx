@@ -15,7 +15,8 @@ import NormalizedImage from '../components/ui/NormalizedImage';
 import LocationMapSection from '../components/maps/LocationMapSection';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { useSiteData } from '../context/SiteDataContext';
-import { VILLA_CHECK_IN_OUT_SUMMARY } from '../data/resort';
+import { checkInOutSummaryFromTimes } from '../data/resort';
+import { applyBookingTimesToPolicyItem } from '../lib/policySections';
 import { getPrimaryImage } from '../lib/imageUrl';
 import {
   loadBookingConfirmation,
@@ -76,6 +77,12 @@ const BookingConfirmationPage: React.FC = () => {
     if (!data) return [];
     return buildBookingPriceBreakdown(breakdownFromConfirmation(data, settings));
   }, [data, settings]);
+
+  const checkInOutSummary = checkInOutSummaryFromTimes(settings.checkInTime, settings.checkOutTime);
+  const houseRuleHighlights = settings.houseRulesSections
+    .flatMap((s) => s.items)
+    .slice(0, 3)
+    .map((item) => applyBookingTimesToPolicyItem(item, settings.checkInTime, settings.checkOutTime));
 
   if (!data) {
     return (
@@ -257,8 +264,8 @@ const BookingConfirmationPage: React.FC = () => {
                   <div>
                     <h2 className="font-bold text-xl mb-3">Important information</h2>
                     <ul className="list-disc pl-5 space-y-2 text-base text-sky-50">
-                      <li>{VILLA_CHECK_IN_OUT_SUMMARY}</li>
-                      {settings.houseRulesSections.flatMap((s) => s.items).slice(0, 3).map((item) => (
+                      <li>{checkInOutSummary}</li>
+                      {houseRuleHighlights.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                       <li>

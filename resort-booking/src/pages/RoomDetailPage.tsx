@@ -8,7 +8,7 @@ import AnimatedSection from '../components/ui/AnimatedSection';
 import Button from '../components/ui/Button';
 import LocationMapSection from '../components/maps/LocationMapSection';
 import PolicySections from '../components/PolicySections';
-import { formatPrice, VILLA_CHECK_IN_LABEL, VILLA_CHECK_OUT_LABEL } from '../data/resort';
+import { formatPrice, checkInLabelFromTime, checkOutLabelFromTime } from '../data/resort';
 import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
 import { useSiteData } from '../context/SiteDataContext';
 
@@ -52,6 +52,8 @@ const RoomDetailPage: React.FC = () => {
   const prevImage = () => setImageIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
   const activeImage = galleryImages[imageIndex] || 'https://via.placeholder.com/800x600?text=Villa';
   const activeOriginal = room.images[imageIndex] || room.images[0] || '';
+  const checkInLabel = checkInLabelFromTime(settings.checkInTime);
+  const checkOutLabel = checkOutLabelFromTime(settings.checkOutTime);
 
   return (
     <PublicLayout currentPage="villas">
@@ -135,7 +137,7 @@ const RoomDetailPage: React.FC = () => {
                 Managed by {settings.resortName} · ★ {room.rating} ({room.review_count} reviews)
               </p>
               <p className="text-lg text-gray-900 mb-4">
-                Check-in {VILLA_CHECK_IN_LABEL} · Check-out {VILLA_CHECK_OUT_LABEL}
+                Check-in {checkInLabel} · Check-out {checkOutLabel}
               </p>
               <p className="text-lg text-gray-900 leading-relaxed">{room.description}</p>
             </AnimatedSection>
@@ -159,7 +161,11 @@ const RoomDetailPage: React.FC = () => {
               <AnimatedSection delay={175}>
                 <h2 className="font-heading text-2xl text-gray-900 mb-4">House rules</h2>
                 <div className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
-                  <PolicySections sections={settings.houseRulesSections} />
+                  <PolicySections
+                    sections={settings.houseRulesSections}
+                    checkInTime={settings.checkInTime}
+                    checkOutTime={settings.checkOutTime}
+                  />
                   <Link
                     to="/house-rules"
                     className="inline-block mt-4 text-sm font-semibold text-airbnb-red hover:underline"
@@ -190,7 +196,7 @@ const RoomDetailPage: React.FC = () => {
                 {room.max_guests} guests included in base price
               </p>
               <p className="text-base text-gray-900 mb-4">
-                Check-in {VILLA_CHECK_IN_LABEL} · Check-out {VILLA_CHECK_OUT_LABEL}
+                Check-in {checkInLabel} · Check-out {checkOutLabel}
               </p>
               <AvailabilityCalendar
                 embedded

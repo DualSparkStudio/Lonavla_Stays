@@ -41,9 +41,25 @@ export type Room = {
 
 export const DEFAULT_CHECK_IN_TIME = '13:00';
 export const DEFAULT_CHECK_OUT_TIME = '11:00';
+
+/** @deprecated Use checkInLabelFromTime(settings.checkInTime) so admin booking defaults stay in sync. */
 export const VILLA_CHECK_IN_LABEL = '1:00 PM onwards';
+/** @deprecated Use checkOutLabelFromTime(settings.checkOutTime) so admin booking defaults stay in sync. */
 export const VILLA_CHECK_OUT_LABEL = '11:00 AM sharp';
+/** @deprecated Use checkInOutSummaryFromTimes(settings.checkInTime, settings.checkOutTime). */
 export const VILLA_CHECK_IN_OUT_SUMMARY = 'Check-in: 1:00 PM onwards | Check-out: 11:00 AM sharp';
+
+export function checkInLabelFromTime(checkInTime: string): string {
+  return `${formatTimeLabel(checkInTime || DEFAULT_CHECK_IN_TIME)} onwards`;
+}
+
+export function checkOutLabelFromTime(checkOutTime: string): string {
+  return `${formatTimeLabel(checkOutTime || DEFAULT_CHECK_OUT_TIME)} sharp`;
+}
+
+export function checkInOutSummaryFromTimes(checkInTime: string, checkOutTime: string): string {
+  return `Check-in: ${checkInLabelFromTime(checkInTime)} | Check-out: ${checkOutLabelFromTime(checkOutTime)}`;
+}
 export const DEFAULT_GST_PERCENT = 18;
 export const DEFAULT_EXTRA_PERSON_CHARGE = 1500;
 
