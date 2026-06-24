@@ -1,5 +1,5 @@
 import React from 'react';
-import { driveImageFallbackUrl, getPrimaryImage, normalizeImageUrl } from '../../lib/imageUrl';
+import { driveImageFallbackUrls, getPrimaryImage, normalizeImageUrl } from '../../lib/imageUrl';
 
 type NormalizedImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   /** Single image URL (share link or direct URL). */
@@ -25,9 +25,10 @@ const NormalizedImage: React.FC<NormalizedImageProps> = ({
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
-    const alternate = driveImageFallbackUrl(original);
-    if (alternate && img.src !== alternate) {
-      img.src = alternate;
+    const fallbacks = driveImageFallbackUrls(original);
+    const next = fallbacks.find((url) => img.src !== url);
+    if (next) {
+      img.src = next;
       return;
     }
     onError?.(e);

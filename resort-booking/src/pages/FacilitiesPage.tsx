@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
+import NormalizedImage from '../components/ui/NormalizedImage';
 import Button from '../components/ui/Button';
-import { useSiteData } from '../context/SiteDataContext';
+import { resortFacilities } from '../data/resort';
+import { useSiteSettings } from '../context/SiteDataContext';
 
 const FacilitiesPage: React.FC = () => {
-  const { facilities, settings } = useSiteData();
-
+  const settings = useSiteSettings();
   return (
     <PublicLayout currentPage="facilities">
       <div className="bg-white border-b border-gray-200">
@@ -22,17 +23,22 @@ const FacilitiesPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {facilities.map((facility, index) => (
-            <AnimatedSection key={facility.id} delay={index * 80} variant="fade-up">
+          {resortFacilities.map((facility, index) => (            <AnimatedSection key={facility.id} delay={index * 80} variant="fade-up">
               <article className="room-card bg-white rounded-xl overflow-hidden border border-gray-100 shadow-md h-full flex flex-col">
-                <div className="overflow-hidden">
-                  <img
-                    src={facility.image}
-                    alt={facility.name}
-                    className="room-card-image w-full h-52 object-cover"
-                  />
-                </div>
-                <div className="p-6 flex flex-col flex-1">
+                {facility.image ? (
+                  <div className="overflow-hidden">
+                    <NormalizedImage
+                      src={facility.image}
+                      fallback="https://via.placeholder.com/800x500?text=Facility"
+                      alt={facility.name}
+                      loading="lazy"
+                      className="room-card-image w-full h-52 object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-2 bg-gradient-to-r from-airbnb-red to-pink-500" aria-hidden />
+                )}
+                <div className={`p-6 flex flex-col flex-1 ${facility.image ? '' : 'pt-7'}`}>
                   <h2 className="font-heading text-xl text-gray-900 mb-2 uppercase tracking-wide">{facility.name}</h2>
                   <p className="text-lg text-gray-900 mb-4 flex-1">{facility.description}</p>
                   <p className="flex items-center gap-2 text-base font-bold text-gray-900">

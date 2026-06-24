@@ -3,10 +3,13 @@ import {
   DEFAULT_CHECK_OUT_TIME,
   DEFAULT_EXTRA_PERSON_CHARGE,
   DEFAULT_GST_PERCENT,
+  CONTACT_BIO,
+  CONTACT_NAME,
   RESORT_ADDRESS,
   RESORT_EMAIL,
   RESORT_PHONE,
 } from '../data/resort';
+import type { SiteSettings } from '../types/site';
 
 const PROFILE_KEY = 'lonavala-stays-admin-profile';
 const PASSWORD_KEY = 'lonavala-stays-admin-password';
@@ -27,11 +30,11 @@ export type AdminProfile = {
 };
 
 export const defaultAdminProfile = (): AdminProfile => ({
-  displayName: 'Resort Admin',
+  displayName: CONTACT_NAME,
   email: RESORT_EMAIL,
   phone: RESORT_PHONE,
   officeAddress: RESORT_ADDRESS,
-  bio: 'Managing villas, bookings, and guest enquiries for Lonavala Stays.',
+  bio: CONTACT_BIO,
   checkInTime: DEFAULT_CHECK_IN_TIME,
   checkOutTime: DEFAULT_CHECK_OUT_TIME,
   gstPercent: DEFAULT_GST_PERCENT,
@@ -62,6 +65,32 @@ export function getCustomAdminPassword(): string | null {
 
 export function setCustomAdminPassword(password: string): void {
   localStorage.setItem(PASSWORD_KEY, password);
+}
+
+export function mergeAdminProfileFromSettings(
+  settings: Pick<SiteSettings, 'contactName' | 'contactBio' | 'resortEmail' | 'resortPhone' | 'resortAddress'>,
+  local: AdminProfile = loadAdminProfile(),
+): AdminProfile {
+  return {
+    ...local,
+    displayName: settings.contactName?.trim() || local.displayName,
+    email: settings.resortEmail?.trim() || local.email,
+    phone: settings.resortPhone?.trim() || local.phone,
+    officeAddress: settings.resortAddress?.trim() || local.officeAddress,
+    bio: settings.contactBio?.trim() || local.bio,
+  };
+}
+
+export function siteSettingsFromAdminProfile(
+  profile: AdminProfile,
+): Pick<SiteSettings, 'contactName' | 'contactBio' | 'resortEmail' | 'resortPhone' | 'resortAddress'> {
+  return {
+    contactName: profile.displayName.trim(),
+    contactBio: profile.bio.trim(),
+    resortEmail: profile.email.trim(),
+    resortPhone: profile.phone.trim(),
+    resortAddress: profile.officeAddress.trim(),
+  };
 }
 
 export function getAdminInitials(name: string): string {

@@ -228,7 +228,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <Link to="/">
                   <Button
                     size="lg"
-                    className="rounded-lg min-w-[200px] !bg-sky-600 hover:!bg-sky-700 text-white font-bold"
+                    className="rounded-lg w-full sm:w-auto sm:min-w-[200px] !bg-sky-600 hover:!bg-sky-700 text-white font-bold"
                   >
                     Back to home
                   </Button>

@@ -46,6 +46,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/send-contact-message"
+  to = "/.netlify/functions/send-contact-message"
+  status = 200
+
+[[redirects]]
   from = "/api/check-availability"
   to = "/.netlify/functions/check-availability"
   status = 200

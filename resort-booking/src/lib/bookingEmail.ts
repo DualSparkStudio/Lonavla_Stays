@@ -72,6 +72,26 @@ export async function fetchSmtpStatus(verify = false): Promise<SmtpStatusRespons
   return data;
 }
 
+export type ContactMessageEmailRequest = {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  adminEmail?: string;
+  resortName?: string;
+};
+
+export async function sendContactMessageEmail(payload: ContactMessageEmailRequest): Promise<void> {
+  const res = await fetch('/api/send-contact-message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiJson<{ error?: string }>(res);
+  if (!res.ok) throw new Error(data.error || 'Failed to send your message');
+}
+
 export async function sendTestEmail(to: string, resortName?: string): Promise<void> {
   const res = await fetch('/api/send-test-email', {
     method: 'POST',

@@ -1,23 +1,23 @@
 import { addYears, format, subDays } from 'date-fns';
-import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from '../data/resort';
+import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME, resortFacilities } from '../data/resort';
+import type {
+    AdminBooking,
+    BlockedDate,
+    ContactMessage,
+    Facility,
+    PropertyForSale,
+    Room,
+    SiteData,
+    SiteSettings,
+} from '../types/site';
 import { defaultSiteSettings } from './siteStorage';
 import { supabase } from './supabase';
 import {
-  buildVillaUuidCache,
-  getVillaUuidFromCache,
-  isUuid,
-  setVillaUuidCache,
+    buildVillaUuidCache,
+    getVillaUuidFromCache,
+    isUuid,
+    setVillaUuidCache,
 } from './villaUuidCache';
-import type {
-  AdminBooking,
-  BlockedDate,
-  ContactMessage,
-  Facility,
-  PropertyForSale,
-  Room,
-  SiteData,
-  SiteSettings,
-} from '../types/site';
 
 type VillaRow = {
   id: string;
@@ -243,7 +243,6 @@ function mapFetchedSiteData(
   bookings: BookingRow[],
   blocked: BlockedRow[],
   settingsData: Record<string, unknown> | null,
-  facilities: FacilityRow[],
   properties: PropertyRow[],
   messages: ContactRow[],
 ): SiteData {
@@ -255,7 +254,7 @@ function mapFetchedSiteData(
     rooms: villas.map(mapVillaToRoom),
     bookings: bookings.map(mapBookingRow),
     blockedDates: blocked.map((r) => mapBlockedRow(r, legacyByUuid)),
-    facilities: facilities.map(mapFacilityRow),
+    facilities: resortFacilities,
     propertiesForSale: properties.map(mapPropertyRow),
     contactMessages: messages.map(mapContactRow),
     users: [],
@@ -270,7 +269,6 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     bookingsRes,
     blockedRes,
     settingsRes,
-    facilitiesRes,
     propertiesRes,
   ] = await Promise.all([
     supabase.from('villas').select(VILLA_COLUMNS).eq('is_active', true).order('room_number'),
@@ -283,7 +281,6 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
       .order('created_at', { ascending: false }),
     supabase.from('blocked_dates').select(BLOCKED_COLUMNS).order('start_date'),
     supabase.from('site_settings').select('data').eq('id', 'main').maybeSingle(),
-    supabase.from('facilities').select('id, name, description, image, hours').eq('is_active', true).order('name'),
     supabase
       .from('properties_for_sale')
       .select(
@@ -298,7 +295,6 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     bookingsRes.error,
     blockedRes.error,
     settingsRes.error,
-    facilitiesRes.error,
     propertiesRes.error,
   ].filter(Boolean);
 
@@ -311,24 +307,16 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     (bookingsRes.data ?? []) as BookingRow[],
     (blockedRes.data ?? []) as BlockedRow[],
     (settingsRes.data?.data as Record<string, unknown>) ?? null,
-    (facilitiesRes.data ?? []) as FacilityRow[],
     (propertiesRes.data ?? []) as PropertyRow[],
     [],
   );
 }
 
-/** Admin-only supplement: contact messages + full booking history. */
+/** Admin-only supplement: full booking history. */
 export async function fetchAdminSiteDataFromSupabase(): Promise<{
   contactMessages: ContactMessage[];
   bookings: AdminBooking[];
 }> {
-  const { data, error } = await supabase
-    .from('contact_messages')
-    .select('id, name, email, phone, subject, message, created_at')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-
   const bookingsRes = await supabase
     .from('bookings')
     .select(BOOKING_COLUMNS)
@@ -338,7 +326,7 @@ export async function fetchAdminSiteDataFromSupabase(): Promise<{
   if (bookingsRes.error) throw bookingsRes.error;
 
   return {
-    contactMessages: ((data ?? []) as ContactRow[]).map(mapContactRow),
+    contactMessages: [],
     bookings: ((bookingsRes.data ?? []) as BookingRow[]).map(mapBookingRow),
   };
 }
@@ -606,27 +594,5 @@ export async function deletePropertyFromSupabase(id: string): Promise<void> {
   const { data } = await query.maybeSingle();
   if (!data?.id) return;
   const { error } = await supabase.from('properties_for_sale').update({ is_active: false }).eq('id', data.id);
-  if (error) throw error;
-}
-
-export async function insertContactMessageToSupabase(message: ContactMessage): Promise<ContactMessage> {
-  const { data, error } = await supabase
-    .from('contact_messages')
-    .insert({
-      name: message.name,
-      email: message.email,
-      phone: message.phone || null,
-      subject: message.subject,
-      message: message.message,
-    })
-    .select('id, name, email, phone, subject, message, created_at')
-    .single();
-
-  if (error) throw error;
-  return mapContactRow(data as ContactRow);
-}
-
-export async function deleteContactMessageFromSupabase(id: string): Promise<void> {
-  const { error } = await supabase.from('contact_messages').delete().eq('id', id);
   if (error) throw error;
 }

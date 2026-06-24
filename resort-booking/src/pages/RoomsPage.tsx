@@ -1,13 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
 import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import { useSiteData } from '../context/SiteDataContext';
 import { formatPrice } from '../data/resort';
+import { checkRoomAvailability } from '../lib/availability';
+
+const formatSearchDate = (value: string) => {
+  try {
+    return format(parseISO(value), 'MMM d, yyyy');
+  } catch {
+    return value;
+  }
+};
 
 const RoomsPage: React.FC = () => {
-  const { rooms, settings } = useSiteData();
+  const { rooms, settings, bookings, blockedDates } = useSiteData();
   const [searchParams] = useSearchParams();
   const [typeFilter, setTypeFilter] = useState('all');
   const [areaFilter, setAreaFilter] = useState('all');
@@ -18,15 +28,26 @@ const RoomsPage: React.FC = () => {
     if (area) setAreaFilter(area);
   }, [searchParams]);
 
+  const checkIn = searchParams.get('checkIn') ?? '';
+  const checkOut = searchParams.get('checkOut') ?? '';
+  const guestsParam = searchParams.get('guests');
+  const dateSearchActive = Boolean(checkIn && checkOut && checkOut > checkIn);
+
   const searchHint = useMemo(() => {
     const parts: string[] = [];
-    const checkIn = searchParams.get('checkIn');
-    const checkOut = searchParams.get('checkOut');
-    const guests = searchParams.get('guests');
-    if (checkIn && checkOut) parts.push(`${checkIn} → ${checkOut}`);
-    if (guests) parts.push(`${guests} guest${guests !== '1' ? 's' : ''}`);
+    if (dateSearchActive) parts.push(`${formatSearchDate(checkIn)} → ${formatSearchDate(checkOut)}`);
+    if (guestsParam) parts.push(`${guestsParam} guest${guestsParam !== '1' ? 's' : ''}`);
     return parts.length ? parts.join(' · ') : null;
-  }, [searchParams]);
+  }, [checkIn, checkOut, dateSearchActive, guestsParam]);
+
+  const villaLinkQuery = useMemo(() => {
+    const params = new URLSearchParams();
+    if (checkIn) params.set('checkIn', checkIn);
+    if (checkOut) params.set('checkOut', checkOut);
+    if (guestsParam) params.set('guests', guestsParam);
+    const q = params.toString();
+    return q ? `?${q}` : '';
+  }, [checkIn, checkOut, guestsParam]);
 
   const roomTypes = ['all', ...Array.from(new Set(rooms.map((r) => r.room_type)))];
   const areas = ['all', ...Array.from(new Set(rooms.map((r) => r.location)))];
@@ -39,16 +60,33 @@ const RoomsPage: React.FC = () => {
     if (areaFilter !== 'all') {
       list = list.filter((r) => r.location === areaFilter);
     }
-    const guestCount = Number(searchParams.get('guests'));
+    const guestCount = Number(guestsParam);
     if (guestCount > 0) {
       list = list.filter((r) => r.max_guests >= guestCount);
+    }
+    if (dateSearchActive) {
+      list = list.filter(
+        (r) =>
+          checkRoomAvailability(r.id, checkIn, checkOut, bookings, blockedDates).available,
+      );
     }
     return [...list].sort((a, b) => {
       if (sortBy === 'price-asc') return a.price_per_night - b.price_per_night;
       if (sortBy === 'price-desc') return b.price_per_night - a.price_per_night;
       return b.rating - a.rating;
     });
-  }, [typeFilter, areaFilter, sortBy, searchParams, rooms]);
+  }, [
+    typeFilter,
+    areaFilter,
+    sortBy,
+    guestsParam,
+    dateSearchActive,
+    checkIn,
+    checkOut,
+    bookings,
+    blockedDates,
+    rooms,
+  ]);
 
   return (
     <PublicLayout currentPage="villas">
@@ -113,7 +151,11 @@ const RoomsPage: React.FC = () => {
 
         {roomsList.length === 0 ? (
           <div className="text-center py-16 text-gray-900">
-            <p className="text-xl font-medium mb-4">No villas match your search.</p>
+            <p className="text-xl font-medium mb-4">
+              {dateSearchActive
+                ? 'No villas are available for your selected dates.'
+                : 'No villas match your search.'}
+            </p>
             <Link to="/villas" className="text-airbnb-red font-bold hover:underline">
               View all villas →
             </Link>
@@ -123,7 +165,7 @@ const RoomsPage: React.FC = () => {
           {roomsList.map((room, index) => (
             <AnimatedSection key={room.id} delay={index * 100}>
               <Link
-                to={`/villas/${room.id}`}
+                to={`/villas/${room.id}${villaLinkQuery}`}
                 className="room-card block bg-white rounded-xl overflow-hidden border border-gray-100 shadow-md h-full"
               >
                 <div className="relative overflow-hidden">

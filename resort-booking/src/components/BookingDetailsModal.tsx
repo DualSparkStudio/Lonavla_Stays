@@ -156,7 +156,7 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({ booking, room
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto p-4">
+        <div className="fixed inset-0 overflow-y-auto p-3 sm:p-4">
           <div className="flex min-h-full items-center justify-center">
             <Transition.Child
               as={Fragment}
@@ -167,15 +167,15 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({ booking, room
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <Dialog.Panel className="w-full max-w-2xl max-h-[min(92dvh,100%)] flex flex-col transform overflow-hidden rounded-2xl bg-white shadow-2xl">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-red-500 to-pink-500 px-6 py-5 flex items-start justify-between gap-4">
+                <div className="bg-gradient-to-r from-red-500 to-pink-500 px-4 sm:px-6 py-4 sm:py-5 flex items-start justify-between gap-4 shrink-0">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="h-11 w-11 shrink-0 rounded-full bg-white/20 flex items-center justify-center">
                       <DocumentTextIcon className="h-6 w-6 text-white" />
                     </div>
                     <div className="min-w-0">
-                      <Dialog.Title className="font-heading text-2xl text-white tracking-wide">
+                      <Dialog.Title className="font-heading text-xl sm:text-2xl text-white tracking-wide">
                         Booking Details
                       </Dialog.Title>
                       <p className="text-white/90 text-base font-medium mt-0.5 uppercase tracking-wide">
@@ -194,7 +194,7 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({ booking, room
                 </div>
 
                 {/* Body */}
-                <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 overflow-y-auto flex-1 min-h-0">
                   <Section
                     title="Customer information"
                     icon={<UserIcon className="h-5 w-5 text-red-500" />}

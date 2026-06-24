@@ -79,9 +79,14 @@ export default function AdminSiteSettingsPage() {
       <form onSubmit={handleSave} className="space-y-8">
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
           <h2 className="text-2xl font-bold text-gray-900">Brand &amp; contact</h2>
+          <p className="text-sm text-gray-600">
+            Contact person name and bio can also be edited under Admin → Profile.
+          </p>
           {field('Resort name', 'resortName', draft.resortName, handleChange)}
           {field('Tagline', 'brandTagline', draft.brandTagline, handleChange)}
           {field('Location', 'resortLocation', draft.resortLocation, handleChange)}
+          {field('Contact name', 'contactName', draft.contactName, handleChange)}
+          {field('Contact bio', 'contactBio', draft.contactBio, handleChange, true)}
           {field('Office address', 'resortAddress', draft.resortAddress, handleChange)}
           {field('Phone', 'resortPhone', draft.resortPhone, handleChange)}
           {field('Email', 'resortEmail', draft.resortEmail, handleChange)}
@@ -182,7 +187,7 @@ export default function AdminSiteSettingsPage() {
                   next[i] = { ...next[i], image: e.target.value };
                   setDraft((prev) => ({ ...prev, exploreTiles: next }));
                 }}
-                placeholder="Image URL"
+                placeholder="Image URL (Drive share link or direct URL)"
                 className="px-3 py-2 border border-gray-300 rounded-lg"
               />
             </div>

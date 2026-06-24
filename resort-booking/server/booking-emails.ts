@@ -320,6 +320,62 @@ export async function sendBookingConfirmationEmails(
   };
 }
 
+export type ContactMessageEmailPayload = {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  adminEmail?: string;
+  resortName?: string;
+};
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+export async function sendContactMessageEmail(payload: ContactMessageEmailPayload): Promise<void> {
+  const config = getSmtpConfig();
+  if (!config) throw new Error('SMTP is not configured');
+
+  const to = payload.adminEmail?.trim() || config.adminEmail;
+  if (!to) throw new Error('Admin email is not configured');
+
+  const resortName = payload.resortName?.trim() || config.fromName;
+  const transporter = createTransporter();
+
+  const body = `
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#374151;">
+      A visitor submitted the contact form on your website.
+    </p>
+    ${detailLine('Name', escapeHtml(payload.name))}
+    ${detailLine('Email', escapeHtml(payload.email))}
+    ${payload.phone?.trim() ? detailLine('Phone', escapeHtml(payload.phone.trim())) : ''}
+    ${detailLine('Subject', escapeHtml(payload.subject))}
+    <div style="margin-top:16px;padding:16px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;font-weight:600;">Message</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#111827;white-space:pre-wrap;">${escapeHtml(payload.message)}</p>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.fromEmail}>`,
+      to,
+      replyTo: `"${payload.name}" <${payload.email}>`,
+      subject: `Contact form · ${payload.subject}`,
+      html: emailShell('New contact message', resortName, body, resortName),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to send contact email';
+    throw new Error(formatSmtpAuthError(message));
+  }
+}
+
 export async function sendTestEmail(to: string, resortName?: string): Promise<void> {
   const config = getSmtpConfig();
   if (!config) throw new Error('SMTP is not configured');

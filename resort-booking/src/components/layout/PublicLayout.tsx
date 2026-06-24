@@ -26,7 +26,7 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children, currentPage }) =>
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicHeader currentPage={page} />
-      <main className="flex-1 overflow-visible">{children}</main>
+      <main className="flex-1 min-w-0 overflow-x-hidden overflow-visible">{children}</main>
       <PublicFooter />
     </div>
   );

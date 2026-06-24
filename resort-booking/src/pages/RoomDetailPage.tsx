@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import AvailabilityCalendar from '../components/AvailabilityCalendar';
 import StickyBookingPanel from '../components/StickyBookingPanel';
 import { ChevronLeftIcon, MapPinIcon, UserGroupIcon } from '@heroicons/react/24/outline';
@@ -15,10 +15,20 @@ import { useSiteData } from '../context/SiteDataContext';
 const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [imageIndex, setImageIndex] = useState(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const { getRoomById, settings } = useSiteData();
+
+  useEffect(() => {
+    const fromCheckIn = searchParams.get('checkIn') ?? '';
+    const fromCheckOut = searchParams.get('checkOut') ?? '';
+    if (fromCheckIn && fromCheckOut && fromCheckOut > fromCheckIn) {
+      setCheckIn(fromCheckIn);
+      setCheckOut(fromCheckOut);
+    }
+  }, [searchParams]);
 
   const room = id ? getRoomById(id) : undefined;
 

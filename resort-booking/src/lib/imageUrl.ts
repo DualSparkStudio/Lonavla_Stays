@@ -46,10 +46,18 @@ export function getPrimaryImage(urls?: string[], fallback = 'https://via.placeho
   return normalized[0] || fallback;
 }
 
-/** Alternate Google Drive URL when the primary embed fails to load. */
-export function driveImageFallbackUrl(url?: string): string | undefined {
+/** Alternate Google Drive URLs when the primary embed fails to load. */
+export function driveImageFallbackUrls(url?: string): string[] {
   const raw = (url || '').trim();
   const fileId = extractDriveFileId(raw);
-  if (!fileId) return undefined;
-  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1920`;
+  if (!fileId) return [];
+  return [
+    `https://drive.google.com/thumbnail?id=${fileId}&sz=w1920`,
+    `https://lh3.googleusercontent.com/d/${fileId}=w1920`,
+  ];
+}
+
+/** @deprecated use driveImageFallbackUrls */
+export function driveImageFallbackUrl(url?: string): string | undefined {
+  return driveImageFallbackUrls(url)[0];
 }

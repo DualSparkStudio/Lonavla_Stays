@@ -5,6 +5,9 @@ export const RESORT_LOCATION = 'Lonavala, Maharashtra';
 export const RESORT_ADDRESS = 'Office 2, Hill Plaza, Old Mumbai-Pune Highway, Lonavala 410401';
 export const RESORT_PHONE = '+91 98765 43210';
 export const RESORT_EMAIL = 'stay@lonavalastays.com';
+export const CONTACT_NAME = 'Lonavala Stays Team';
+export const CONTACT_BIO =
+  'Managing villas, bookings, and guest enquiries for Lonavala Stays.';
 
 export type Room = {
   id: string;
@@ -171,46 +174,46 @@ export const demoRooms: Room[] = [
 
 export const resortFacilities = [
   {
-    id: 'pool',
-    name: 'Private & shared pools',
-    description: 'Select villas include plunge or infinity pools; others are a short drive from scenic lake spots.',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop',
-    hours: 'Varies by villa',
+    id: 'carrom',
+    name: 'Carrom',
+    description: 'Indoor carrom board for relaxed family game nights at the villa.',
+    image: 'https://images.unsplash.com/photo-1768518354646-33833e95a24d?auto=format&fit=crop&w=800&h=500&q=80',
+    hours: 'Included with stay',
   },
   {
-    id: 'spa',
-    name: 'In-villa wellness',
-    description: 'Spa and massage partners can be arranged at your villa—no need to leave the property.',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop',
-    hours: 'By appointment',
+    id: 'badminton',
+    name: 'Badminton',
+    description: 'Badminton setup for outdoor play—rackets and shuttle available at the property.',
+    image: 'https://images.pexels.com/photos/31724424/pexels-photo-31724424.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop',
+    hours: 'Included with stay',
   },
   {
-    id: 'dining',
-    name: 'Chef & dining',
-    description: 'In-villa meals, barbecue nights, and local Maharashtrian menus on request across the collection.',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=500&fit=crop',
+    id: 'swimming-pool',
+    name: 'Swimming Pool',
+    description: 'Private swimming pool for guests—perfect for a refreshing dip in the hills.',
+    image: 'https://drive.google.com/file/d/12y66vqa9NJJNaoznHWxlFi4_vWN1NAyb/view?usp=drive_link',
+    hours: 'Included with stay',
+  },
+  {
+    id: 'bbq-grill',
+    name: 'BBQ Grill (On Request)',
+    description: 'Barbecue grill arranged on request for outdoor dining and grill nights.',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&h=500&q=80',
     hours: 'On request',
   },
   {
-    id: 'bonfire',
-    name: 'Outdoor experiences',
-    description: 'Bonfires, stargazing decks, and terrace evenings—set up at villas with outdoor space.',
-    image: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop',
-    hours: 'Seasonal',
+    id: 'portable-speaker',
+    name: 'Portable Speaker',
+    description: 'Portable Bluetooth speaker for music on the terrace, by the pool, or indoors.',
+    image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=800&h=500&q=80',
+    hours: 'Included with stay',
   },
   {
-    id: 'trek',
-    name: 'Nature trails & treks',
-    description: 'Our team coordinates guided walks and viewpoints near each villa’s neighbourhood.',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop',
-    hours: 'By appointment',
-  },
-  {
-    id: 'games',
-    name: 'Family recreation',
-    description: 'Board games, indoor lounges, and kid-friendly setups—amenities vary; check each villa listing.',
-    image: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop',
-    hours: 'Varies by villa',
+    id: 'smart-tv-wifi',
+    name: '32" Smart TV | Free Wi-Fi',
+    description: '32-inch smart TV with streaming apps and complimentary high-speed Wi-Fi throughout the villa.',
+    image: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&h=500&q=80',
+    hours: 'Included with stay',
   },
 ];
 

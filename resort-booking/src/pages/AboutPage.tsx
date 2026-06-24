@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
+import NormalizedImage from '../components/ui/NormalizedImage';
 import Button from '../components/ui/Button';
 import { useSiteData } from '../context/SiteDataContext';
 
@@ -23,8 +24,9 @@ const AboutPage: React.FC = () => {
               ))}
             </AnimatedSection>
             <AnimatedSection variant="scale-in" delay={150}>
-              <img
+              <NormalizedImage
                 src={settings.aboutImage}
+                fallback="https://via.placeholder.com/900x600?text=About"
                 alt="Luxury villa in Lonavala hills"
                 className="rounded-2xl shadow-card-hover w-full h-80 object-cover"
               />

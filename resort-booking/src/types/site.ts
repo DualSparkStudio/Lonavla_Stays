@@ -32,6 +32,10 @@ export type SiteSettings = {
   resortAddress: string;
   resortPhone: string;
   resortEmail: string;
+  /** Contact person name shown on the public site (Admin → Profile) */
+  contactName: string;
+  /** Short bio shown on the contact page (Admin → Profile) */
+  contactBio: string;
   /** Site-wide standard check-in time (24h, e.g. 14:00) */
   checkInTime: string;
   /** Site-wide standard check-out time (24h, e.g. 11:00) */
