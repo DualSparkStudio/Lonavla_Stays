@@ -190,6 +190,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
             <AnimatedSection delay={200}>
               <LocationMapSection
                 mapEmbedUrl={property.mapEmbedUrl}
+                mapsLink={property.mapsLink}
                 address={property.address}
                 location={property.location}
               />

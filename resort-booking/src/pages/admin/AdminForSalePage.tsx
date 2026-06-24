@@ -23,6 +23,7 @@ const emptyProperty = (): Omit<PropertyForSale, 'id'> => ({
   highlights: [],
   images: [''],
   mapEmbedUrl: '',
+  mapsLink: '',
 });
 
 const AdminForSalePage: React.FC = () => {
@@ -68,6 +69,7 @@ const AdminForSalePage: React.FC = () => {
       highlights: draft.highlights.filter(Boolean),
       images: draft.images.filter((img) => img.trim()),
       mapEmbedUrl: draft.mapEmbedUrl?.trim() || undefined,
+      mapsLink: draft.mapsLink?.trim() || undefined,
     };
     if (isNew) {
       addPropertyForSale(payload);
@@ -173,13 +175,25 @@ const AdminForSalePage: React.FC = () => {
           </AdminFormField>
           <AdminFormField
             label="Google Maps embed"
-            hint="In Google Maps: Share → Embed a map → copy the iframe code or embed URL. Shown on the property page with a link to open Google Maps."
+            hint="In Google Maps: Share → Embed a map → copy the iframe code or embed URL. Shown as the map preview on the property page."
           >
             <textarea
               value={draft.mapEmbedUrl ?? ''}
               onChange={(e) => setDraft({ ...draft, mapEmbedUrl: e.target.value })}
               rows={3}
               placeholder='Paste embed code, e.g. <iframe src="https://www.google.com/maps/embed?pb=...">'
+              className={adminInputClass}
+            />
+          </AdminFormField>
+          <AdminFormField
+            label="Google Maps link (for guests)"
+            hint="In Google Maps: Share → Copy link. Used for Open in Google Maps. Do not paste embed code here."
+          >
+            <input
+              type="url"
+              value={draft.mapsLink ?? ''}
+              onChange={(e) => setDraft({ ...draft, mapsLink: e.target.value })}
+              placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/place/..."
               className={adminInputClass}
             />
           </AdminFormField>

@@ -189,6 +189,7 @@ const RoomDetailPage: React.FC = () => {
             <AnimatedSection delay={200}>
               <LocationMapSection
                 mapEmbedUrl={room.mapEmbedUrl}
+                mapsLink={room.mapsLink}
                 address={room.address}
                 location={room.location}
               />

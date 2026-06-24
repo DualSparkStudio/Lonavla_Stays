@@ -85,8 +85,12 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
           <AdminDetailField label="Area" value={villa.location} />
           <AdminDetailField label="Full address" value={villa.address} />
           <AdminDetailField
-            label="Map"
-            value={villa.mapEmbedUrl ? 'Google Maps embed added' : 'No map added'}
+            label="Map embed"
+            value={villa.mapEmbedUrl ? 'Google Maps embed added' : 'No embed added'}
+          />
+          <AdminDetailField
+            label="Maps link"
+            value={villa.mapsLink ? 'Guest maps link saved' : 'No maps link'}
           />
         </div>
       </AdminDetailSection>

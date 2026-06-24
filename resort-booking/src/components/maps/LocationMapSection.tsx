@@ -1,9 +1,10 @@
 import React from 'react';
-import { resolveMapsDisplay } from '../../lib/googleMaps';
+import { resolveGoogleMapsOpenUrl, resolveMapsDisplay } from '../../lib/googleMaps';
 
 type LocationMapSectionProps = {
   title?: string;
   mapEmbedUrl?: string;
+  mapsLink?: string;
   address: string;
   location: string;
 };
@@ -11,10 +12,12 @@ type LocationMapSectionProps = {
 const LocationMapSection: React.FC<LocationMapSectionProps> = ({
   title = 'Location & directions',
   mapEmbedUrl,
+  mapsLink,
   address,
   location,
 }) => {
-  const { embedUrl, mapsUrl, hasMap } = resolveMapsDisplay(mapEmbedUrl, address, location);
+  const { embedUrl, hasMap } = resolveMapsDisplay(mapEmbedUrl, address, location, mapsLink);
+  const mapsUrl = resolveGoogleMapsOpenUrl(mapEmbedUrl, address, location, mapsLink);
   const displayAddress = address || location;
 
   if (!hasMap || !mapsUrl) return null;
@@ -36,16 +39,14 @@ const LocationMapSection: React.FC<LocationMapSectionProps> = ({
         </div>
       )}
 
-      {!embedUrl && (
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-base font-medium text-airbnb-red hover:underline"
-        >
-          View {displayAddress} on Google Maps
-        </a>
-      )}
+      <a
+        href={mapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block text-base font-medium text-airbnb-red hover:underline"
+      >
+        {embedUrl ? 'Open in Google Maps' : `View ${displayAddress} on Google Maps`}
+      </a>
     </section>
   );
 };

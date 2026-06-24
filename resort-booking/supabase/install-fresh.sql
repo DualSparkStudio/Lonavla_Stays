@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS public.villas (
   amenities TEXT[] NOT NULL DEFAULT '{}',
   images TEXT[] NOT NULL DEFAULT '{}',
   map_embed_url TEXT,
+  maps_link TEXT,
   check_in_time TEXT NOT NULL DEFAULT '14:00',
   check_out_time TEXT NOT NULL DEFAULT '11:00',
   -- Matches app localStorage villa ids: 1, 2, 3, 4
@@ -173,6 +174,7 @@ CREATE TABLE IF NOT EXISTS public.properties_for_sale (
   images TEXT[] NOT NULL DEFAULT '{}',
   highlights TEXT[] NOT NULL DEFAULT '{}',
   map_embed_url TEXT,
+  maps_link TEXT,
   is_active BOOLEAN NOT NULL DEFAULT true,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -388,6 +390,8 @@ ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS long_description
 ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS price_on_request BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'available';
 ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS map_embed_url TEXT;
+ALTER TABLE public.villas ADD COLUMN IF NOT EXISTS maps_link TEXT;
+ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS maps_link TEXT;
 ALTER TABLE public.properties_for_sale DROP COLUMN IF EXISTS price_display;
 
 -- -----------------------------------------------------------------------------

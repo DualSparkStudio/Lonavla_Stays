@@ -216,6 +216,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <section className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
                   <LocationMapSection
                     mapEmbedUrl={room.mapEmbedUrl}
+                    mapsLink={room.mapsLink}
                     address={room.address}
                     location={room.location}
                   />

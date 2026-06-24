@@ -23,6 +23,7 @@ import { checkRoomAvailability } from '../lib/availability';
 import { verifyRoomAvailabilityRemote } from '../lib/availabilityApi';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { formatPrice, checkInLabelFromTime, checkOutLabelFromTime, checkInOutSummaryFromTimes } from '../data/resort';
+import { applyBookingTimesToPolicyItem } from '../lib/policySections';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -258,6 +259,10 @@ const BookingPage: React.FC = () => {
       saveBookingConfirmation(confirmation);
       notifyBookingByEmail({
         ...confirmation,
+        roomAddress: villa.address,
+        roomLocation: villa.location,
+        mapEmbedUrl: villa.mapEmbedUrl,
+        mapsLink: villa.mapsLink,
         resortName: settings.resortName,
         resortPhone: settings.resortPhone,
         resortEmail: settings.resortEmail,
@@ -265,6 +270,13 @@ const BookingPage: React.FC = () => {
         resortLocation: settings.resortLocation,
         checkInTime: settings.checkInTime,
         checkOutTime: settings.checkOutTime,
+        siteUrl: import.meta.env.VITE_APP_URL || window.location.origin,
+        houseRuleHighlights: settings.houseRulesSections
+          .flatMap((section) => section.items)
+          .slice(0, 3)
+          .map((item) =>
+            applyBookingTimesToPolicyItem(item, settings.checkInTime, settings.checkOutTime),
+          ),
       });
       navigate(`/booking/confirmation/${receipt}`, { state: confirmation, replace: true });
     } catch (error) {
@@ -363,6 +375,7 @@ const BookingPage: React.FC = () => {
               <div className="px-6 md:px-8 pb-6 border-b border-gray-100">
                 <LocationMapSection
                   mapEmbedUrl={villa.mapEmbedUrl}
+                  mapsLink={villa.mapsLink}
                   address={villa.address}
                   location={villa.location}
                 />

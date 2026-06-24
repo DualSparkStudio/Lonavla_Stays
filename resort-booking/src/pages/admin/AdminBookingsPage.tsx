@@ -4,6 +4,8 @@ import AdminCardActions from '../../components/admin/AdminCardActions';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import BookingDetailsModal from '../../components/BookingDetailsModal';
 import { notifyBookingByEmail } from '../../lib/bookingEmail';
+import { getPrimaryImage } from '../../lib/imageUrl';
+import { applyBookingTimesToPolicyItem } from '../../lib/policySections';
 import { useSiteData } from '../../context/SiteDataContext';
 import type { AdminBooking } from '../../types/site';
 
@@ -68,6 +70,11 @@ const AdminBookingsPage: React.FC = () => {
       guestEmail: draft.guestEmail,
       roomId: draft.roomId,
       roomName,
+      roomImage: getPrimaryImage(room?.images),
+      roomAddress: room?.address,
+      roomLocation: room?.location,
+      mapEmbedUrl: room?.mapEmbedUrl,
+      mapsLink: room?.mapsLink,
       checkIn,
       checkOut,
       guests,
@@ -84,6 +91,13 @@ const AdminBookingsPage: React.FC = () => {
       resortLocation: settings.resortLocation,
       checkInTime: settings.checkInTime,
       checkOutTime: settings.checkOutTime,
+      siteUrl: import.meta.env.VITE_APP_URL || window.location.origin,
+      houseRuleHighlights: settings.houseRulesSections
+        .flatMap((section) => section.items)
+        .slice(0, 3)
+        .map((item) =>
+          applyBookingTimesToPolicyItem(item, settings.checkInTime, settings.checkOutTime),
+        ),
     });
 
     setDraft(emptyBooking());

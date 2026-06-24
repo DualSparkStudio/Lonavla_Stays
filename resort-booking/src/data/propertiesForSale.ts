@@ -22,6 +22,8 @@ export type PropertyForSale = {
   images: string[];
   /** Google Maps embed iframe src, embed URL, or share link */
   mapEmbedUrl?: string;
+  /** Google Maps share/place link for guests — Share → Copy link */
+  mapsLink?: string;
 };
 
 export const propertiesForSale: PropertyForSale[] = [

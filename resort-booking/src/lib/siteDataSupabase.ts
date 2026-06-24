@@ -36,6 +36,7 @@ type VillaRow = {
   amenities: string[];
   images: string[];
   map_embed_url: string | null;
+  maps_link: string | null;
   check_in_time?: string | null;
   check_out_time?: string | null;
 };
@@ -95,6 +96,7 @@ type PropertyRow = {
   images: string[];
   highlights: string[];
   map_embed_url: string | null;
+  maps_link: string | null;
 };
 
 type ContactRow = {
@@ -130,6 +132,7 @@ function mapVillaToRoom(row: VillaRow): Room {
     amenities: row.amenities ?? [],
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
+    mapsLink: row.maps_link ?? undefined,
   };
 }
 
@@ -199,6 +202,7 @@ function mapPropertyRow(row: PropertyRow): PropertyForSale {
     highlights: row.highlights ?? [],
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
+    mapsLink: row.maps_link ?? undefined,
   };
 }
 
@@ -227,7 +231,7 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
 }
 
 const VILLA_COLUMNS =
-  'id, legacy_id, name, room_type, description, price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url';
+  'id, legacy_id, name, room_type, description, price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url, maps_link';
 const BOOKING_COLUMNS =
   'id, villa_id, booking_ref, check_in, check_out, adults, children, total_amount, status, guest_name, guest_email, created_at, villas(name, legacy_id)';
 const BLOCKED_COLUMNS = 'id, villa_id, start_date, end_date, reason, notes, source, created_at';
@@ -284,7 +288,7 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     supabase
       .from('properties_for_sale')
       .select(
-        'id, legacy_id, title, category, description, long_description, price_amount, price_on_request, location, address, bedrooms, bathrooms, area_label, status, images, highlights, map_embed_url',
+        'id, legacy_id, title, category, description, long_description, price_amount, price_on_request, location, address, bedrooms, bathrooms, area_label, status, images, highlights, map_embed_url, maps_link',
       )
       .eq('is_active', true)
       .order('sort_order'),
@@ -396,6 +400,7 @@ export async function upsertVillaToSupabase(room: Room): Promise<void> {
     check_in_time: room.check_in_time?.trim() || DEFAULT_CHECK_IN_TIME,
     check_out_time: room.check_out_time?.trim() || DEFAULT_CHECK_OUT_TIME,
     map_embed_url: room.mapEmbedUrl ?? null,
+    maps_link: room.mapsLink ?? null,
     is_active: true,
   };
 
@@ -570,6 +575,7 @@ export async function upsertPropertyToSupabase(property: PropertyForSale): Promi
     images: property.images,
     highlights: property.highlights,
     map_embed_url: property.mapEmbedUrl ?? null,
+    maps_link: property.mapsLink ?? null,
     is_active: true,
   };
 

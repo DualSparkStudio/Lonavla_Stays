@@ -9,6 +9,10 @@ export type BookingEmailRequest = {
   roomId: string;
   roomName: string;
   roomImage?: string;
+  roomAddress?: string;
+  roomLocation?: string;
+  mapEmbedUrl?: string;
+  mapsLink?: string;
   checkIn: string;
   checkOut: string;
   guests: number;
@@ -29,6 +33,8 @@ export type BookingEmailRequest = {
   resortLocation?: string;
   checkInTime?: string;
   checkOutTime?: string;
+  siteUrl?: string;
+  houseRuleHighlights?: string[];
   adminEmail?: string;
 };
 

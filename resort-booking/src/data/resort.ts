@@ -40,6 +40,8 @@ export type Room = {
   extra_guest_cost?: number;
   /** Google Maps embed iframe src, embed URL, or share link */
   mapEmbedUrl?: string;
+  /** Google Maps share/place link for guests (email & directions) — Share → Copy link */
+  mapsLink?: string;
 };
 
 export const DEFAULT_CHECK_IN_TIME = '13:00';

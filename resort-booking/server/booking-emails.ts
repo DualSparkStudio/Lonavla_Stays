@@ -1,10 +1,16 @@
 import { createTransporter, formatSmtpAuthError, getSmtpConfig } from './smtp';
 
 import {
-  BOOKING_ADVANCE_PAYMENT_PERCENT,
+  buildBookingPriceBreakdown,
   calcAmountDueNow,
   calcBalanceDue,
+  type PriceBreakdownLine,
 } from '../src/lib/bookingPricing';
+import { checkInOutSummaryFromTimes } from '../src/data/resort';
+import { applyBookingTimesToPolicyItem } from '../src/lib/policySections';
+import { defaultSiteSettings } from '../src/lib/siteStorage';
+import { resolveGoogleMapsOpenUrl, resolveMapsDisplay } from '../src/lib/googleMaps';
+import { normalizeImageUrl } from '../src/lib/imageUrl';
 
 export type BookingEmailPayload = {
   bookingRef: string;
@@ -12,6 +18,11 @@ export type BookingEmailPayload = {
   guestEmail: string;
   guestPhone?: string;
   roomName: string;
+  roomImage?: string;
+  roomAddress?: string;
+  roomLocation?: string;
+  mapEmbedUrl?: string;
+  mapsLink?: string;
   checkIn: string;
   checkOut: string;
   guests: number;
@@ -36,12 +47,39 @@ export type BookingEmailPayload = {
   resortLocation?: string;
   checkInTime?: string;
   checkOutTime?: string;
+  siteUrl?: string;
+  houseRuleHighlights?: string[];
   adminEmail?: string;
   sendGuest?: boolean;
   sendAdmin?: boolean;
 };
 
 const formatInr = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** For href attributes — do not encode & or email clients may open a broken URL. */
+function escapeHref(value: string): string {
+  return value.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const formatShortDate = (value: string) => {
+  try {
+    return new Date(`${value}T12:00:00`).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return value;
+  }
+};
 
 const formatLongDate = (value: string) => {
   try {
@@ -56,25 +94,288 @@ const formatLongDate = (value: string) => {
   }
 };
 
-const formatTimeLabel = (value: string) => {
-  if (!value) return '';
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
-  if (!match) return value;
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (Number.isNaN(hour) || Number.isNaN(minute)) return value;
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
-};
-
 const bookingIdLabel = (ref: string) => {
   const digits = ref.replace(/\D/g, '');
   return digits ? `#${digits}` : `#${ref}`;
 };
 
-function statusPill(label: string, bg: string, color: string) {
-  return `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:13px;font-weight:500;">${label}</span>`;
+const displayBookingRef = (ref: string) => ref.replace(/^LON/i, '') || ref.replace(/\D/g, '') || ref;
+
+function resolveSiteUrl(payload: BookingEmailPayload): string {
+  const fromPayload = payload.siteUrl?.trim();
+  if (fromPayload) return fromPayload.replace(/\/$/, '');
+  const fromEnv = (process.env.VITE_APP_URL || process.env.APP_URL || '').trim();
+  return fromEnv.replace(/\/$/, '');
+}
+
+function resolveHouseRuleHighlights(payload: BookingEmailPayload): string[] {
+  if (payload.houseRuleHighlights?.length) return payload.houseRuleHighlights;
+  const checkInTime = payload.checkInTime || '13:00';
+  const checkOutTime = payload.checkOutTime || '11:00';
+  return defaultSiteSettings()
+    .houseRulesSections.flatMap((section) => section.items)
+    .slice(0, 3)
+    .map((item) => applyBookingTimesToPolicyItem(item, checkInTime, checkOutTime));
+}
+
+function priceLinesFromPayload(payload: BookingEmailPayload): PriceBreakdownLine[] {
+  const extraGuestsCharge =
+    payload.extraGuestsCharge ?? payload.adultsCharge ?? payload.extraAdultsCharge ?? 0;
+  const amountPaid = payload.amountPaid ?? calcAmountDueNow(payload.total);
+
+  return buildBookingPriceBreakdown({
+    nights: payload.nights,
+    basePrice: payload.basePrice ?? Math.max(0, payload.total - extraGuestsCharge),
+    guestCount: payload.guests,
+    guestsIncluded: payload.guestsIncluded,
+    extraGuests: payload.extraGuests,
+    extraGuestsCharge,
+    total: payload.total,
+    amountDueNow: amountPaid,
+    balanceDue: payload.balanceDue ?? calcBalanceDue(payload.total, amountPaid),
+    showPaymentSplit: true,
+    paymentCompleted: payload.paymentCompleted !== false,
+  });
+}
+
+function renderPriceLine(line: PriceBreakdownLine): string {
+  const amount = formatInr(line.amount);
+
+  if (line.variant === 'total') {
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;">
+      <tr>
+        <td style="padding-top:8px;border-top:1px solid #6ee7b7;font-size:20px;font-weight:700;color:#065f46;">${line.label}</td>
+        <td align="right" style="padding-top:8px;border-top:1px solid #6ee7b7;font-size:20px;font-weight:700;color:#065f46;white-space:nowrap;">${amount}</td>
+      </tr>
+    </table>`;
+  }
+
+  if (line.variant === 'highlight') {
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:4px 0;background:#e0f2fe;border:1px solid #bae6fd;border-radius:8px;">
+      <tr>
+        <td style="padding:10px 12px;font-size:15px;font-weight:700;color:#0c4a6e;">${line.label}</td>
+        <td align="right" style="padding:10px 12px;font-size:15px;font-weight:700;color:#0c4a6e;white-space:nowrap;">${amount}</td>
+      </tr>
+    </table>`;
+  }
+
+  const detailCell = line.detail
+    ? `<td align="center" style="padding:4px 8px;font-size:13px;color:#6b7280;">${escapeHtml(line.detail)}</td>`
+    : `<td style="padding:4px 8px;"></td>`;
+
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:2px 0;">
+    <tr>
+      <td style="padding:4px 0;font-size:16px;color:#111827;white-space:nowrap;">${line.label}</td>
+      ${detailCell}
+      <td align="right" style="padding:4px 0;font-size:16px;font-weight:600;color:#111827;white-space:nowrap;">${amount}</td>
+    </tr>
+  </table>`;
+}
+
+function cardTable(
+  borderColor: string,
+  background: string,
+  title: string,
+  content: string,
+  padding = '20px',
+): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:20px;border:1px solid ${borderColor};border-radius:12px;background:${background};">
+    <tr>
+      <td style="padding:${padding};">
+        <h2 style="margin:0 0 16px;font-size:16px;font-weight:700;color:#111827;">${title}</h2>
+        ${content}
+      </td>
+    </tr>
+  </table>`;
+}
+
+function infoField(label: string, value: string): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:12px;">
+    <tr>
+      <td style="padding:0;">
+        <p style="margin:0 0 4px;font-size:16px;font-weight:500;color:#111827;">${label}</p>
+        <p style="margin:0;font-size:16px;font-weight:600;color:#111827;">${value}</p>
+      </td>
+    </tr>
+  </table>`;
+}
+
+function buildConfirmationHeader(payload: BookingEmailPayload): string {
+  const displayId = displayBookingRef(payload.bookingRef);
+  return `<tr>
+    <td style="background:#059669;background:linear-gradient(135deg,#10b981 0%,#059669 100%);padding:40px 24px;text-align:center;">
+      <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 16px;">
+        <tr>
+          <td style="width:64px;height:64px;border-radius:999px;background:rgba(255,255,255,0.2);border:4px solid rgba(255,255,255,0.3);text-align:center;vertical-align:middle;font-size:36px;line-height:64px;color:#ffffff;">✓</td>
+        </tr>
+      </table>
+      <h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;letter-spacing:0.02em;">Booking Confirmed!</h1>
+      <p style="margin:0;font-size:18px;line-height:1.5;color:#ecfdf5;">Your reservation has been successfully created.</p>
+      <p style="margin:16px 0 0;">
+        <span style="display:inline-block;padding:8px 20px;border-radius:999px;background:rgba(255,255,255,0.2);font-size:16px;font-weight:700;color:#ffffff;letter-spacing:0.03em;">Booking ID: #${escapeHtml(displayId)}</span>
+      </p>
+    </td>
+  </tr>`;
+}
+
+function buildGuestBookingColumns(payload: BookingEmailPayload): string {
+  const confirmedBadge = `<span style="display:inline-block;padding:2px 10px;border-radius:999px;background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;">✓ Confirmed</span>`;
+  const nightsLabel = `${payload.nights} Night${payload.nights !== 1 ? 's' : ''}`;
+
+  const guestCard = cardTable(
+    '#e0f2fe',
+    'rgba(240,249,255,0.8)',
+    '👤 Guest Information',
+    `${infoField('Name', escapeHtml(payload.guestName))}
+     ${infoField('Email', escapeHtml(payload.guestEmail))}
+     ${payload.guestPhone?.trim() ? infoField('Phone', escapeHtml(payload.guestPhone.trim())) : ''}`,
+  );
+
+  const bookingCard = cardTable(
+    '#ede9fe',
+    'rgba(245,243,255,0.8)',
+    '📅 Booking Details',
+    `${infoField('Status', confirmedBadge)}
+     ${infoField('Check-in', escapeHtml(formatShortDate(payload.checkIn)))}
+     ${infoField('Check-out', escapeHtml(formatShortDate(payload.checkOut)))}
+     ${infoField('Nights', escapeHtml(nightsLabel))}
+     ${infoField('Total guests', escapeHtml(String(payload.guests)))}`,
+  );
+
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:20px;">
+    <tr>
+      <td class="stack-column" width="50%" valign="top" style="padding-right:10px;">${guestCard}</td>
+      <td class="stack-column" width="50%" valign="top" style="padding-left:10px;">${bookingCard}</td>
+    </tr>
+  </table>`;
+}
+
+function buildVillaCard(payload: BookingEmailPayload, resortName: string, resortLocation?: string): string {
+  const imageUrl = normalizeImageUrl(payload.roomImage);
+  const locationSuffix = payload.roomLocation?.trim() || resortLocation?.trim();
+  const subtitle = locationSuffix
+    ? `${resortName} — private villa stay in ${locationSuffix}`
+    : `${resortName} — private villa stay`;
+
+  const imageCell = imageUrl
+    ? `<td width="112" valign="middle" style="padding-right:16px;">
+        <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(payload.roomName)}" width="112" height="80" style="display:block;width:112px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #fde68a;" />
+      </td>`
+    : '';
+
+  const content = `<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+      ${imageCell}
+      <td valign="middle">
+        <p style="margin:0 0 4px;font-size:20px;font-weight:700;color:#111827;">${escapeHtml(payload.roomName)}</p>
+        <p style="margin:0;font-size:16px;line-height:1.5;color:#111827;">${escapeHtml(subtitle)}</p>
+      </td>
+    </tr>
+  </table>`;
+
+  return cardTable('#fef3c7', 'rgba(255,251,235,0.8)', '🏠 Villa Details', content);
+}
+
+function buildLocationCard(payload: BookingEmailPayload): string {
+  const address = payload.roomAddress?.trim() || '';
+  const location = payload.roomLocation?.trim() || '';
+  const mapsUrl = resolveGoogleMapsOpenUrl(
+    payload.mapEmbedUrl,
+    address,
+    location,
+    payload.mapsLink,
+  );
+  const { hasMap } = resolveMapsDisplay(payload.mapEmbedUrl, address, location, payload.mapsLink);
+  if (!hasMap || !mapsUrl) return '';
+
+  const displayAddress = address || location;
+  const safeMapsUrl = escapeHref(mapsUrl);
+
+  const mapBlock = `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:16px;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;background:#f3f4f6;">
+    <tr>
+      <td style="padding:24px 20px;text-align:center;vertical-align:middle;background:linear-gradient(180deg,#e5e7eb 0%,#d1d5db 100%);">
+        <p style="margin:0 0 8px;font-size:36px;line-height:1;">📍</p>
+        <p style="margin:0 0 12px;padding:0 16px;font-size:14px;font-weight:600;color:#111827;">${escapeHtml(displayAddress)}</p>
+        <a href="${safeMapsUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;font-size:14px;font-weight:700;color:#0284c7;text-decoration:underline;">Open in Google Maps →</a>
+      </td>
+    </tr>
+  </table>`;
+
+  return cardTable(
+    '#e5e7eb',
+    '#ffffff',
+    'Location &amp; directions',
+    mapBlock,
+    '20px 24px',
+  );
+}
+
+function buildPaymentCard(payload: BookingEmailPayload): string {
+  const lines = priceLinesFromPayload(payload).map(renderPriceLine).join('');
+  const paymentBadge =
+    payload.paymentCompleted !== false
+      ? `<p style="margin:16px 0 0;">
+          <span style="display:inline-block;padding:6px 12px;border-radius:999px;background:#059669;font-size:12px;font-weight:700;color:#ffffff;">✓ Payment completed</span>
+        </p>`
+      : '';
+  const paymentRef = payload.paymentId
+    ? `<p style="margin:12px 0 0;font-size:12px;color:#6b7280;font-family:Consolas,Monaco,monospace;">Payment ref: ${escapeHtml(payload.paymentId)}</p>`
+    : '';
+
+  return cardTable(
+    '#d1fae5',
+    'rgba(236,253,245,0.8)',
+    '💳 Payment Summary',
+    `<div style="max-width:420px;">${lines}</div>${paymentBadge}${paymentRef}`,
+  );
+}
+
+function buildImportantInfoCard(payload: BookingEmailPayload, resortName: string): string {
+  const phone = payload.resortPhone?.trim() || '';
+  const email = payload.resortEmail?.trim() || '';
+  const siteUrl = resolveSiteUrl(payload);
+  const termsUrl = siteUrl ? `${siteUrl}/terms` : '';
+  const checkInOutSummary = checkInOutSummaryFromTimes(
+    payload.checkInTime || '13:00',
+    payload.checkOutTime || '11:00',
+  );
+  const highlights = resolveHouseRuleHighlights(payload);
+
+  const bullets = [
+    escapeHtml(checkInOutSummary),
+    ...highlights.map((item) => escapeHtml(item)),
+    phone
+      ? `For changes or cancellations, contact us at least 24 hours before check-in: <strong style="color:#ffffff;">${escapeHtml(phone)}</strong>`
+      : 'For changes or cancellations, contact us at least 24 hours before check-in.',
+    email
+      ? `Email: <strong style="color:#ffffff;">${escapeHtml(email)}</strong>`
+      : '',
+    termsUrl
+      ? `<a href="${escapeHref(termsUrl)}" style="color:#ffffff;font-weight:600;text-decoration:underline;">Read full terms &amp; conditions</a>`
+      : 'Read full terms &amp; conditions on our website.',
+  ]
+    .filter(Boolean)
+    .map(
+      (item) =>
+        `<li style="margin:0 0 8px;font-size:16px;line-height:1.6;color:#f0f9ff;">${item}</li>`,
+    )
+    .join('');
+
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:20px;border-radius:12px;background:#0284c7;overflow:hidden;">
+    <tr>
+      <td style="padding:20px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td width="28" valign="top" style="padding-right:12px;font-size:22px;line-height:1.2;color:#ffffff;">ℹ️</td>
+            <td valign="top">
+              <h2 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#ffffff;">Important information</h2>
+              <ul style="margin:0;padding:0 0 0 20px;">${bullets}</ul>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`;
 }
 
 function sectionTitle(icon: string, title: string) {
@@ -88,52 +389,11 @@ function detailLine(label: string, value: string, valueStyle = '') {
   </p>`;
 }
 
-function unitRate(total: number, count: number, nights: number) {
-  if (count <= 0 || nights <= 0) return 0;
-  return Math.round(total / (count * nights));
-}
-
-function priceRowWithDetail(label: string, amount: number, detail?: string, emphasizeTotal = false) {
-  const weight = emphasizeTotal ? 500 : 400;
-  const size = emphasizeTotal ? '16px' : '15px';
-  const detailCell = detail
-    ? `<span style="flex:1;text-align:center;color:#6b7280;font-size:14px;font-weight:400;">${detail}</span>`
-    : `<span style="flex:1;"></span>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 8px;font-size:${size};color:#374151;font-weight:400;">
-    <span style="flex-shrink:0;font-weight:400;">${label}</span>
-    ${detailCell}
-    <span style="font-weight:${weight};color:#111827;white-space:nowrap;flex-shrink:0;">${formatInr(amount)}</span>
-  </div>`;
-}
-
 function buildPriceBreakdownHtml(payload: BookingEmailPayload) {
-  const extraGuestsCharge =
-    payload.extraGuestsCharge ?? payload.adultsCharge ?? payload.extraAdultsCharge ?? 0;
-  const basePrice = payload.basePrice ?? Math.max(0, payload.total - extraGuestsCharge);
-  const nights = Math.max(1, payload.nights);
-  const extraGuests = payload.extraGuests ?? 0;
-  const amountPaid = payload.amountPaid ?? calcAmountDueNow(payload.total);
-  const balanceDue = payload.balanceDue ?? calcBalanceDue(payload.total, amountPaid);
-
-  let rows = priceRowWithDetail('Villa price', basePrice);
-  if (extraGuestsCharge > 0) {
-    const detail =
-      extraGuests > 0 ? `${extraGuests} extra guest${extraGuests !== 1 ? 's' : ''}` : undefined;
-    rows += priceRowWithDetail('Extra guests', extraGuestsCharge, detail);
-  }
-  rows += `<div style="border-top:1px solid #d1d5db;margin:10px 0 8px;"></div>`;
-  rows += priceRowWithDetail('Total amount', payload.total, undefined, true);
-  rows += priceRowWithDetail(
-    `Paid (${BOOKING_ADVANCE_PAYMENT_PERCENT}%)`,
-    amountPaid,
-    undefined,
-    false,
-  );
-  rows += priceRowWithDetail('Balance due at check-in', balanceDue);
-
-  return `<div style="margin:20px 0 24px;padding:18px 20px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;">
-    ${sectionTitle('💳', 'Price breakdown')}
-    ${rows}
+  const lines = priceLinesFromPayload(payload).map(renderPriceLine).join('');
+  return `<div style="margin:20px 0 24px;padding:18px 20px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;">
+    ${sectionTitle('💳', 'Payment Summary')}
+    ${lines}
   </div>`;
 }
 
@@ -165,53 +425,53 @@ function emailShell(headerTitle: string, headerSubtitle: string, body: string, r
 }
 
 function buildGuestEmail(payload: BookingEmailPayload, resortName: string) {
-  const phone = payload.resortPhone?.trim() || '';
-  const email = payload.resortEmail?.trim() || '';
-  const address = [payload.resortAddress, payload.resortLocation].filter(Boolean).join(', ');
-  const checkInTime = formatTimeLabel(payload.checkInTime || '14:00');
-  const checkOutTime = formatTimeLabel(payload.checkOutTime || '11:00');
-  const paymentLabel = payload.paymentCompleted === false ? 'Pending' : 'Paid';
-  const paymentColors =
-    payload.paymentCompleted === false
-      ? { bg: '#fef3c7', color: '#92400e' }
-      : { bg: '#dbeafe', color: '#1e40af' };
+  const siteUrl = resolveSiteUrl(payload);
+  const homeButton = siteUrl
+    ? `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:8px 0 0;">
+        <tr>
+          <td align="center">
+            <a href="${escapeHref(siteUrl)}" style="display:inline-block;min-width:200px;padding:14px 28px;border-radius:8px;background:#0284c7;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;text-align:center;">Back to home</a>
+          </td>
+        </tr>
+      </table>`
+    : '';
 
-  const body = `
-    <p style="margin:0 0 12px;font-size:16px;line-height:1.6;color:#111827;font-weight:400;">Dear ${payload.guestName},</p>
-    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#374151;font-weight:400;">
-      Your booking has been successfully confirmed! We&apos;re excited to welcome you to ${resortName}.
-    </p>
+  const body = `${buildGuestBookingColumns(payload)}
+    ${buildVillaCard(payload, resortName, payload.resortLocation)}
+    ${buildLocationCard(payload)}
+    ${buildPaymentCard(payload)}
+    ${homeButton}
+    ${buildImportantInfoCard(payload, resortName)}`;
 
-    ${sectionTitle('📋', 'Booking Details')}
-    ${detailLine('Booking ID', bookingIdLabel(payload.bookingRef))}
-    ${detailLine('Status', statusPill('Confirmed', '#dcfce7', '#166534'))}
-    ${detailLine('Villa', payload.roomName)}
-    ${detailLine('Check-in Date', formatLongDate(payload.checkIn))}
-    ${detailLine('Check-out Date', formatLongDate(payload.checkOut))}
-    ${detailLine('Number of Nights', `${payload.nights} ${payload.nights === 1 ? 'night' : 'nights'}`)}
-    ${detailLine('Number of Guests', `${payload.guests} ${payload.guests === 1 ? 'guest' : 'guests'}`)}
-    ${detailLine('Payment Status', statusPill(paymentLabel, paymentColors.bg, paymentColors.color))}
-
-    ${buildPriceBreakdownHtml(payload)}
-
-    <div style="margin:28px 0 24px;padding:18px 20px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
-      ${sectionTitle('📞', 'Important Information')}
-      ${detailLine('Check-in Time', `${checkInTime} onwards (flexible depending on other bookings)`)}
-      ${detailLine('Check-out Time', `${checkOutTime} (flexible depending on other bookings)`)}
-      ${address ? detailLine('Address', address) : ''}
-      <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:#78716c;font-style:italic;">
-        Note: Check-in and check-out times are flexible. Please contact us if you need an early check-in or late check-out.
-      </p>
-    </div>
-
-    <div style="margin-bottom:8px;">
-      ${sectionTitle('📞', 'Contact Information')}
-      ${phone ? detailLine('Phone', phone) : ''}
-      ${email ? detailLine('Email', `<a href="mailto:${email}" style="color:#2563eb;text-decoration:none;">${email}</a>`) : ''}
-      ${phone ? detailLine('WhatsApp', phone) : ''}
-    </div>`;
-
-  return emailShell('🎉 Booking Confirmed!', `Thank you for choosing ${resortName}`, body, resortName);
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    @media only screen and (max-width: 620px) {
+      .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f4;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f5f5f4;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:768px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+          ${buildConfirmationHeader(payload)}
+          <tr>
+            <td style="padding:24px 32px 32px;">${body}</td>
+          </tr>
+        </table>
+        <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#6b7280;text-align:center;">
+          This is an automated confirmation from ${escapeHtml(resortName)}.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 function buildAdminEmail(payload: BookingEmailPayload, resortName: string) {
@@ -329,14 +589,6 @@ export type ContactMessageEmailPayload = {
   adminEmail?: string;
   resortName?: string;
 };
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 export async function sendContactMessageEmail(payload: ContactMessageEmailPayload): Promise<void> {
   const config = getSmtpConfig();

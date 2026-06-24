@@ -102,8 +102,12 @@ const AdminPropertyDetailsModal: React.FC<AdminPropertyDetailsModalProps> = ({ p
           <AdminDetailField label="Area" value={property.location} />
           <AdminDetailField label="Full address" value={property.address || '—'} />
           <AdminDetailField
-            label="Map"
-            value={property.mapEmbedUrl ? 'Google Maps embed added' : 'No map added'}
+            label="Map embed"
+            value={property.mapEmbedUrl ? 'Google Maps embed added' : 'No embed added'}
+          />
+          <AdminDetailField
+            label="Maps link"
+            value={property.mapsLink ? 'Guest maps link saved' : 'No maps link'}
           />
         </div>
       </AdminDetailSection>

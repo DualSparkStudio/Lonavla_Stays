@@ -23,6 +23,7 @@ const emptyRoom = (): Omit<Room, 'id'> => ({
   amenities: [],
   images: [''],
   mapEmbedUrl: '',
+  mapsLink: '',
 });
 
 const AdminRoomsPage: React.FC = () => {
@@ -68,6 +69,7 @@ const AdminRoomsPage: React.FC = () => {
       amenities: draft.amenities.filter(Boolean),
       images: draft.images.filter((img) => img.trim()),
       mapEmbedUrl: draft.mapEmbedUrl?.trim() || undefined,
+      mapsLink: draft.mapsLink?.trim() || undefined,
     };
     if (isNew) addRoom(payload);
     else if (editing) updateRoom(editing.id, payload);
@@ -174,13 +176,25 @@ const AdminRoomsPage: React.FC = () => {
           </AdminFormField>
           <AdminFormField
             label="Google Maps embed"
-            hint="In Google Maps: Share → Embed a map → copy the iframe code or embed URL. Customers can open directions in Google Maps from the villa page."
+            hint="In Google Maps: Share → Embed a map → copy the iframe code or embed URL. Shown as the map preview on the villa page."
           >
             <textarea
               value={draft.mapEmbedUrl ?? ''}
               onChange={(e) => setDraft({ ...draft, mapEmbedUrl: e.target.value })}
               rows={3}
               placeholder='Paste embed code, e.g. <iframe src="https://www.google.com/maps/embed?pb=...">'
+              className={adminInputClass}
+            />
+          </AdminFormField>
+          <AdminFormField
+            label="Google Maps link (for guests)"
+            hint="In Google Maps: Share → Copy link. Used in booking emails and the Open in Google Maps button. Do not paste embed code here."
+          >
+            <input
+              type="url"
+              value={draft.mapsLink ?? ''}
+              onChange={(e) => setDraft({ ...draft, mapsLink: e.target.value })}
+              placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/place/..."
               className={adminInputClass}
             />
           </AdminFormField>
