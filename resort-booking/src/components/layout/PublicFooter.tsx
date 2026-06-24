@@ -1,6 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../../context/SiteDataContext';
+import { isForSaleEnabled } from '../../lib/featureFlags';
+
+const footerLinks = [
+  { name: 'Villas', path: '/villas' },
+  { name: 'For Sale', path: '/for-sale', forSaleOnly: true },
+  { name: 'Facilities', path: '/facilities' },
+  { name: 'About', path: '/about' },
+  { name: 'Contact', path: '/contact' },
+  { name: 'House rules', path: '/house-rules' },
+  { name: 'Terms & conditions', path: '/terms' },
+] as const;
 
 const PublicFooter: React.FC = () => {
   const settings = useSiteSettings();
@@ -19,15 +30,9 @@ const PublicFooter: React.FC = () => {
           <div>
             <h3 className="font-heading text-lg mb-4 uppercase tracking-wide">Quick Links</h3>
             <ul className="space-y-2">
-              {[
-                { name: 'Villas', path: '/villas' },
-                { name: 'For Sale', path: '/for-sale' },
-                { name: 'Facilities', path: '/facilities' },
-                { name: 'About', path: '/about' },
-                { name: 'Contact', path: '/contact' },
-                { name: 'House rules', path: '/house-rules' },
-                { name: 'Terms & conditions', path: '/terms' },
-              ].map((link) => (
+              {footerLinks
+                .filter((link) => isForSaleEnabled || !('forSaleOnly' in link && link.forSaleOnly))
+                .map((link) => (
                 <li key={link.name}>
                   <Link to={link.path} className="text-gray-900 hover:text-airbnb-red transition-colors font-medium">
                     {link.name}

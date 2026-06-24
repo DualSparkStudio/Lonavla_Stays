@@ -140,7 +140,8 @@ const AdminOtherPage: React.FC = () => {
           <div>
             <h2 className="text-xl font-bold text-gray-900">House rules</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Shown on each villa page and the public house rules page.
+              Shown on each villa page and the public house rules page. Check-in/out times in the
+              first rule line follow booking defaults above automatically.
             </p>
           </div>
           <InfoSectionsEditor

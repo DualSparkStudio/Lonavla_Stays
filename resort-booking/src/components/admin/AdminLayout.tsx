@@ -14,6 +14,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { adminLogout } from '../../lib/adminAuth';
+<<<<<<< HEAD
 import { getAdminInitials } from '../../lib/adminProfile';
 
 const adminNavLinks = [
@@ -24,6 +25,20 @@ const adminNavLinks = [
   { to: '/admin/calendar', page: 'calendar', label: 'Calendar', icon: ChartBarIcon },
   { to: '/admin/other', page: 'other', label: 'Other', icon: Cog6ToothIcon },
 ] as const;
+=======
+import { getAdminInitials, loadAdminProfile } from '../../lib/adminProfile';
+import { isForSaleEnabled } from '../../lib/featureFlags';
+
+const adminNavLinks = [
+  { to: '/admin', page: 'dashboard', label: 'Dashboard' },
+  { to: '/admin/settings', page: 'settings', label: 'Site content' },
+  { to: '/admin/rooms', page: 'rooms', label: 'Villas' },
+  { to: '/admin/for-sale', page: 'for-sale', label: 'For sale' },
+  { to: '/admin/bookings', page: 'bookings', label: 'Bookings' },
+  { to: '/admin/calendar', page: 'calendar', label: 'Calendar' },
+  { to: '/admin/other', page: 'other', label: 'Other' },
+].filter((item) => isForSaleEnabled || item.page !== 'for-sale');
+>>>>>>> 805dc69fbf809cd1c9a5cc0c9aa751eea74d184d
 
 type AdminLayoutProps = {
   currentPage: string;

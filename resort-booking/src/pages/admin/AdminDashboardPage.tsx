@@ -13,6 +13,7 @@ import {
   StarIcon,
 } from '@heroicons/react/24/outline';
 import AdminLayout from '../../components/admin/AdminLayout';
+<<<<<<< HEAD
 import { useSiteData, useSiteSettings } from '../../context/SiteDataContext';
 import { formatPrice } from '../../data/resort';
 import { endOfMonth, isWithinInterval, parseISO, startOfMonth, subMonths } from 'date-fns';
@@ -31,12 +32,17 @@ const bookingBookedDate = (bookedAt: string) => {
     return null;
   }
 };
+=======
+import { useSiteData } from '../../context/SiteDataContext';
+import { isForSaleEnabled } from '../../lib/featureFlags';
+>>>>>>> 805dc69fbf809cd1c9a5cc0c9aa751eea74d184d
 
 const AdminDashboardPage: React.FC = () => {
   const { rooms, bookings, settings, refreshSiteData, loading } = useSiteData();
   const siteSettings = useSiteSettings();
   const firstName = siteSettings.contactName.split(/\s+/)[0] || 'Admin';
 
+<<<<<<< HEAD
   const stats = useMemo(() => {
     const now = new Date();
     const thisMonthStart = startOfMonth(now);
@@ -108,6 +114,30 @@ const AdminDashboardPage: React.FC = () => {
           >
             <EyeIcon className="h-4 w-4" />
             View Website
+=======
+  const availableVillas = rooms.filter((r) => r.status === 'available').length;
+  const saleListings = isForSaleEnabled
+    ? propertiesForSale.filter((p) => p.status !== 'sold').length
+    : 0;
+
+  return (
+    <AdminLayout currentPage="dashboard">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+      <p className="text-gray-900 mb-8">All public website content is managed from this panel and saved to your browser.</p>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+        {[
+          { label: 'Villas', value: rooms.length, sub: `${availableVillas} available`, to: '/admin/rooms' },
+          ...(isForSaleEnabled
+            ? [{ label: 'For sale', value: saleListings, sub: 'active listings', to: '/admin/for-sale' }]
+            : []),
+          { label: 'Bookings', value: bookings.length, sub: 'records', to: '/admin/bookings' },
+        ].map((card) => (
+          <Link key={card.label} to={card.to} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <p className="text-base text-gray-900">{card.label}</p>
+            <p className="text-3xl font-bold text-pink-600">{card.value}</p>
+            <p className="text-xs text-gray-500 mt-1">{card.sub}</p>
+>>>>>>> 805dc69fbf809cd1c9a5cc0c9aa751eea74d184d
           </Link>
         </div>
       </div>

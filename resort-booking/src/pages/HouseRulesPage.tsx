@@ -14,7 +14,11 @@ const HouseRulesPage: React.FC = () => {
           These rules apply to all villas managed by {settings.resortName}. Individual properties
           may have additional guidelines shown on the villa listing.
         </p>
-        <PolicySections sections={settings.houseRulesSections} />
+        <PolicySections
+          sections={settings.houseRulesSections}
+          checkInTime={settings.checkInTime}
+          checkOutTime={settings.checkOutTime}
+        />
       </div>
     </PublicLayout>
   );

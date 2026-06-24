@@ -16,12 +16,13 @@ import PublicLayout from '../components/layout/PublicLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import NormalizedImage from '../components/ui/NormalizedImage';
+import LocationMapSection from '../components/maps/LocationMapSection';
 import { notifyBookingByEmail } from '../lib/bookingEmail';
 import { saveBookingConfirmation } from '../lib/bookingConfirmation';
 import { checkRoomAvailability } from '../lib/availability';
 import { verifyRoomAvailabilityRemote } from '../lib/availabilityApi';
 import PriceBreakdown from '../components/PriceBreakdown';
-import { formatPrice, DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME, VILLA_CHECK_IN_LABEL, VILLA_CHECK_OUT_LABEL, VILLA_CHECK_IN_OUT_SUMMARY } from '../data/resort';
+import { formatPrice, checkInLabelFromTime, checkOutLabelFromTime, checkInOutSummaryFromTimes } from '../data/resort';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -262,8 +263,8 @@ const BookingPage: React.FC = () => {
         resortEmail: settings.resortEmail,
         resortAddress: settings.resortAddress,
         resortLocation: settings.resortLocation,
-        checkInTime: DEFAULT_CHECK_IN_TIME,
-        checkOutTime: DEFAULT_CHECK_OUT_TIME,
+        checkInTime: settings.checkInTime,
+        checkOutTime: settings.checkOutTime,
       });
       navigate(`/booking/confirmation/${receipt}`, { state: confirmation, replace: true });
     } catch (error) {
@@ -289,6 +290,9 @@ const BookingPage: React.FC = () => {
 
   const dateRangeLabel = formatDateRangeLabel(checkIn, checkOut);
   const canPay = nights >= 1 && checkOut > checkIn;
+  const checkInLabel = checkInLabelFromTime(settings.checkInTime);
+  const checkOutLabel = checkOutLabelFromTime(settings.checkOutTime);
+  const checkInOutSummary = checkInOutSummaryFromTimes(settings.checkInTime, settings.checkOutTime);
 
   return (
     <PublicLayout currentPage="villas">
@@ -331,9 +335,9 @@ const BookingPage: React.FC = () => {
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
                         <p className="text-xs text-gray-500 font-medium">Check-in / Check-out</p>
                         <p className="text-sm font-bold text-gray-900 leading-snug">
-                          {VILLA_CHECK_IN_LABEL}
+                          {checkInLabel}
                           <br />
-                          {VILLA_CHECK_OUT_LABEL}
+                          {checkOutLabel}
                         </p>
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
@@ -354,6 +358,14 @@ const BookingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="px-6 md:px-8 pb-6 border-b border-gray-100">
+                <LocationMapSection
+                  mapEmbedUrl={villa.mapEmbedUrl}
+                  address={villa.address}
+                  location={villa.location}
+                />
               </div>
 
               {/* Booking form — two columns */}
@@ -418,7 +430,7 @@ const BookingPage: React.FC = () => {
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-base text-amber-950">
                     <p className="font-bold mb-2">Booking terms</p>
                     <ul className="list-disc pl-5 space-y-1 text-amber-900">
-                      <li>{VILLA_CHECK_IN_OUT_SUMMARY}</li>
+                      <li>{checkInOutSummary}</li>
                       <li>Valid government ID required at check-in</li>
                       <li>No smoking inside the villa</li>
                       <li>Modifications subject to availability — contact us 24h before arrival</li>

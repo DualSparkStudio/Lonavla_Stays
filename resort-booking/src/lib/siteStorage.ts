@@ -80,7 +80,7 @@ export const defaultSiteSettings = (): SiteSettings => ({
     {
       title: 'Check-in & check-out',
       items: [
-        'Standard check-in is from 1:00 PM onwards and check-out is by 11:00 AM sharp.',
+        'Standard check-in is from {{checkIn}} and check-out is by {{checkOut}}.',
         'Early check-in or late check-out may be available on request, subject to availability.',
         'A valid government-issued photo ID is required for all guests at check-in.',
       ],
