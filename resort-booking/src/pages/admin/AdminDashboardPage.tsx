@@ -13,36 +13,41 @@ import {
   StarIcon,
 } from '@heroicons/react/24/outline';
 import AdminLayout from '../../components/admin/AdminLayout';
-<<<<<<< HEAD
 import { useSiteData, useSiteSettings } from '../../context/SiteDataContext';
 import { formatPrice } from '../../data/resort';
-import { endOfMonth, isWithinInterval, parseISO, startOfMonth, subMonths } from 'date-fns';
+import { endOfMonth, isBefore, isWithinInterval, parseISO, startOfDay, startOfMonth, subMonths } from 'date-fns';
+import type { AdminBooking } from '../../lib/siteStorage';
 
 const paidStatuses = new Set(['confirmed', 'completed']);
+
+const parseBookingDate = (value: string) => {
+  try {
+    return parseISO(value.length > 10 ? value : `${value}T12:00:00`);
+  } catch {
+    return null;
+  }
+};
+
+/** Check-in is today or later — excludes cancelled and past stays. */
+const isUpcomingBooking = (booking: AdminBooking) => {
+  if (booking.status === 'cancelled') return false;
+  const checkIn = parseBookingDate(booking.checkIn);
+  if (!checkIn) return false;
+  return !isBefore(checkIn, startOfDay(new Date()));
+};
 
 const percentChange = (current: number, previous: number) => {
   if (previous === 0) return current > 0 ? 100 : 0;
   return Math.round(((current - previous) / previous) * 100);
 };
 
-const bookingBookedDate = (bookedAt: string) => {
-  try {
-    return parseISO(bookedAt.length > 10 ? bookedAt : `${bookedAt}T12:00:00`);
-  } catch {
-    return null;
-  }
-};
-=======
-import { useSiteData } from '../../context/SiteDataContext';
-import { isForSaleEnabled } from '../../lib/featureFlags';
->>>>>>> 805dc69fbf809cd1c9a5cc0c9aa751eea74d184d
+const bookingBookedDate = (bookedAt: string) => parseBookingDate(bookedAt);
 
 const AdminDashboardPage: React.FC = () => {
   const { rooms, bookings, settings, refreshSiteData, loading } = useSiteData();
   const siteSettings = useSiteSettings();
   const firstName = siteSettings.contactName.split(/\s+/)[0] || 'Admin';
 
-<<<<<<< HEAD
   const stats = useMemo(() => {
     const now = new Date();
     const thisMonthStart = startOfMonth(now);
@@ -68,7 +73,9 @@ const AdminDashboardPage: React.FC = () => {
     const confirmed = bookings.filter((b) => b.status === 'confirmed').length;
     const pending = bookings.filter((b) => b.status === 'pending').length;
     const completed = bookings.filter((b) => b.status === 'completed').length;
-    const active = confirmed + pending;
+    const upcomingBookings = bookings.filter(isUpcomingBooking);
+    const active = upcomingBookings.length;
+    const pendingUpcoming = upcomingBookings.filter((b) => b.status === 'pending').length;
 
     return {
       totalBookings: bookings.length,
@@ -76,6 +83,7 @@ const AdminDashboardPage: React.FC = () => {
       revenue: revenue(bookings),
       revenueTrend: percentChange(thisMonthRevenue, lastMonthRevenue),
       active,
+      pendingUpcoming,
       pending,
       totalRooms: rooms.length,
       confirmed,
@@ -114,30 +122,6 @@ const AdminDashboardPage: React.FC = () => {
           >
             <EyeIcon className="h-4 w-4" />
             View Website
-=======
-  const availableVillas = rooms.filter((r) => r.status === 'available').length;
-  const saleListings = isForSaleEnabled
-    ? propertiesForSale.filter((p) => p.status !== 'sold').length
-    : 0;
-
-  return (
-    <AdminLayout currentPage="dashboard">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-      <p className="text-gray-900 mb-8">All public website content is managed from this panel and saved to your browser.</p>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
-        {[
-          { label: 'Villas', value: rooms.length, sub: `${availableVillas} available`, to: '/admin/rooms' },
-          ...(isForSaleEnabled
-            ? [{ label: 'For sale', value: saleListings, sub: 'active listings', to: '/admin/for-sale' }]
-            : []),
-          { label: 'Bookings', value: bookings.length, sub: 'records', to: '/admin/bookings' },
-        ].map((card) => (
-          <Link key={card.label} to={card.to} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <p className="text-base text-gray-900">{card.label}</p>
-            <p className="text-3xl font-bold text-pink-600">{card.value}</p>
-            <p className="text-xs text-gray-500 mt-1">{card.sub}</p>
->>>>>>> 805dc69fbf809cd1c9a5cc0c9aa751eea74d184d
           </Link>
         </div>
       </div>
@@ -161,8 +145,8 @@ const AdminDashboardPage: React.FC = () => {
           {
             label: 'Active Bookings',
             value: String(stats.active),
-            sub: stats.pending > 0 ? `${stats.pending} pending` : undefined,
-            subDown: stats.pending > 0,
+            sub: stats.pendingUpcoming > 0 ? `${stats.pendingUpcoming} pending` : 'Upcoming check-ins',
+            subDown: stats.pendingUpcoming > 0,
             icon: CheckCircleIcon,
             iconBg: 'bg-purple-100 text-purple-600',
           },

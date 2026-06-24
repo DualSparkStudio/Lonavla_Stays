@@ -135,15 +135,10 @@ const PublicHomePage: React.FC = () => {
 
       <div className="bg-gray-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<<<<<<< HEAD
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {settings.exploreTiles.map((item, index) => (
-=======
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {settings.exploreTiles
               .filter((item) => isForSaleEnabled || !item.path.startsWith('/for-sale'))
               .map((item, index) => (
->>>>>>> 805dc69fbf809cd1c9a5cc0c9aa751eea74d184d
               <AnimatedSection key={item.name} delay={index * 100} variant="scale-in">
                 <Link to={item.path} className="explore-tile relative rounded-lg overflow-hidden group block">
                   <NormalizedImage
