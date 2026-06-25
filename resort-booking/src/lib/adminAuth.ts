@@ -50,13 +50,22 @@ async function migrateLocalPasswordToDb(password: string): Promise<boolean> {
   return false;
 }
 
+export type AdminLoginResult = {
+  ok: boolean;
+  error?: string;
+};
+
 /** Verify admin login against Supabase (all devices). Falls back to localStorage only in demo mode. */
-export async function verifyAdminLogin(username: string, password: string): Promise<boolean> {
+export async function verifyAdminLogin(username: string, password: string): Promise<AdminLoginResult> {
   const user = username.trim().toLowerCase();
-  if (user !== ADMIN_CREDENTIALS.username) return false;
+  if (user !== ADMIN_CREDENTIALS.username) {
+    return { ok: false, error: 'Invalid username or password.' };
+  }
 
   if (!isSupabaseConfigured) {
-    return verifyAdminCredentialsLocal(password);
+    return verifyAdminCredentialsLocal(password)
+      ? { ok: true }
+      : { ok: false, error: 'Invalid username or password.' };
   }
 
   const { data, error } = await supabase.rpc('verify_admin_login', {
@@ -66,19 +75,27 @@ export async function verifyAdminLogin(username: string, password: string): Prom
 
   if (error) {
     console.error('Admin login verify error:', error.message);
+    if (error.message.includes('crypt') || error.code === '42883') {
+      return {
+        ok: false,
+        error:
+          'Admin login is not configured correctly in Supabase. Re-run supabase/migrations/20260622_admin_credentials.sql.',
+      };
+    }
+    return { ok: false, error: 'Could not verify login. Please try again.' };
   }
 
   if (data === true) {
     clearCustomAdminPassword();
-    return true;
+    return { ok: true };
   }
 
-  // One-time migration: browser-only password from before DB auth
   if (verifyAdminCredentialsLocal(password)) {
-    return migrateLocalPasswordToDb(password);
+    const migrated = await migrateLocalPasswordToDb(password);
+    return migrated ? { ok: true } : { ok: false, error: 'Invalid username or password.' };
   }
 
-  return false;
+  return { ok: false, error: 'Invalid username or password.' };
 }
 
 /** @deprecated Use verifyAdminLogin — sync local check only */

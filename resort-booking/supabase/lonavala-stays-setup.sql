@@ -226,7 +226,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 BEGIN
   INSERT INTO public.users (id, email, first_name, last_name, role)
@@ -267,7 +267,7 @@ RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.users
@@ -615,7 +615,7 @@ CREATE POLICY "Contact messages CMS delete" ON public.contact_messages
   FOR DELETE USING (true);
 
 -- Admin credentials (hashed password — shared across devices)
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
 CREATE TABLE IF NOT EXISTS public.admin_credentials (
   id TEXT PRIMARY KEY DEFAULT 'main',
@@ -631,14 +631,14 @@ CREATE POLICY "Admin credentials deny all" ON public.admin_credentials
   FOR ALL USING (false) WITH CHECK (false);
 
 INSERT INTO public.admin_credentials (id, username, password_hash)
-VALUES ('main', 'admin', crypt('admin123', gen_salt('bf')))
+VALUES ('main', 'admin', extensions.crypt('admin123', extensions.gen_salt('bf')))
 ON CONFLICT (id) DO NOTHING;
 
 CREATE OR REPLACE FUNCTION public.verify_admin_login(p_username TEXT, p_password TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
   stored_hash TEXT;
@@ -652,7 +652,7 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  RETURN stored_hash = crypt(p_password, stored_hash);
+  RETURN stored_hash = extensions.crypt(p_password, stored_hash);
 END;
 $$;
 
@@ -664,7 +664,7 @@ CREATE OR REPLACE FUNCTION public.update_admin_password(
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
   stored_hash TEXT;
@@ -678,13 +678,13 @@ BEGIN
   WHERE username = lower(trim(p_username))
   LIMIT 1;
 
-  IF stored_hash IS NULL OR stored_hash <> crypt(p_current_password, stored_hash) THEN
+  IF stored_hash IS NULL OR stored_hash <> extensions.crypt(p_current_password, stored_hash) THEN
     RETURN FALSE;
   END IF;
 
   UPDATE public.admin_credentials
   SET
-    password_hash = crypt(p_new_password, gen_salt('bf')),
+    password_hash = extensions.crypt(p_new_password, extensions.gen_salt('bf')),
     updated_at = NOW()
   WHERE username = lower(trim(p_username));
 

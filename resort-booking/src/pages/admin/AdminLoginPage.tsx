@@ -21,12 +21,12 @@ const AdminLoginPage: React.FC = () => {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    const ok = await verifyAdminLogin(credentials.username, credentials.password);
-    if (ok) {
+    const result = await verifyAdminLogin(credentials.username, credentials.password);
+    if (result.ok) {
       adminLogin();
       navigate('/admin', { replace: true });
     } else {
-      setError('Invalid username or password.');
+      setError(result.error ?? 'Invalid username or password.');
     }
     setIsLoading(false);
   };

@@ -1,24 +1,7 @@
--- Admin login credentials (hashed). Shared across all devices/browsers.
--- Run once in Supabase SQL Editor.
+-- Fix admin login: pgcrypto lives in extensions schema on Supabase.
+-- Safe to re-run. Drops old functions first.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
-
-CREATE TABLE IF NOT EXISTS public.admin_credentials (
-  id TEXT PRIMARY KEY DEFAULT 'main',
-  username TEXT NOT NULL UNIQUE DEFAULT 'admin',
-  password_hash TEXT NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE public.admin_credentials ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Admin credentials deny all" ON public.admin_credentials;
-CREATE POLICY "Admin credentials deny all" ON public.admin_credentials
-  FOR ALL USING (false) WITH CHECK (false);
-
-INSERT INTO public.admin_credentials (id, username, password_hash)
-VALUES ('main', 'admin', extensions.crypt('admin123', extensions.gen_salt('bf')))
-ON CONFLICT (id) DO NOTHING;
 
 DROP FUNCTION IF EXISTS public.verify_admin_login(TEXT, TEXT);
 DROP FUNCTION IF EXISTS public.update_admin_password(TEXT, TEXT, TEXT);
@@ -81,12 +64,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.verify_admin_login(TEXT, TEXT) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.update_admin_password(TEXT, TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.verify_admin_login(TEXT, TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.update_admin_password(TEXT, TEXT, TEXT) TO anon, authenticated;
 
--- Reset password to admin123 (run after fixing functions)
 UPDATE public.admin_credentials
 SET password_hash = extensions.crypt('admin123', extensions.gen_salt('bf')), updated_at = NOW()
 WHERE username = 'admin';

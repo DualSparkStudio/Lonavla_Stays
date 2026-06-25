@@ -41,12 +41,12 @@ const PublicLoginPage: React.FC = () => {
       setSuccess('Welcome back! Redirecting to dashboard...');
       setTimeout(() => navigate('/bookings'), 2000);
     } else if (formData.email === 'admin@demo.com') {
-      const ok = await verifyAdminLogin('admin', formData.password);
-      if (ok) {
+      const result = await verifyAdminLogin('admin', formData.password);
+      if (result.ok) {
         adminLogin();
         navigate('/admin', { replace: true });
       } else {
-        setError('Invalid email or password.');
+        setError(result.error ?? 'Invalid email or password.');
       }
     } else {
       setError('Invalid email or password. Try: user@demo.com/demo123 or admin@demo.com/admin123');
