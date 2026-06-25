@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
-import { StatusPill } from '../../components/admin/AdminDetailModal';
 import AdminCardActions from '../../components/admin/AdminCardActions';
+import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
+import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPropertyDetailsModal from '../../components/admin/AdminPropertyDetailsModal';
-import { getCategoryLabel } from '../../data/propertiesForSale';
-import { useSiteData } from '../../context/SiteDataContext';
 import NormalizedImage from '../../components/ui/NormalizedImage';
+import { useSiteData } from '../../context/SiteDataContext';
+import { getCategoryLabel } from '../../data/propertiesForSale';
 import type { PropertyForSale } from '../../types/site';
 
 const emptyProperty = (): Omit<PropertyForSale, 'id'> => ({

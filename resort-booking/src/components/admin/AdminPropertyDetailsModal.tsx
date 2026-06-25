@@ -1,19 +1,19 @@
+import {
+    BuildingOffice2Icon,
+    CurrencyRupeeIcon,
+    MapPinIcon,
+    TagIcon,
+} from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {
-  BuildingOffice2Icon,
-  CurrencyRupeeIcon,
-  MapPinIcon,
-  TagIcon,
-} from '@heroicons/react/24/outline';
 import { formatSalePrice, getCategoryLabel } from '../../data/propertiesForSale';
 import { normalizeImageUrl } from '../../lib/imageUrl';
 import type { PropertyForSale } from '../../types/site';
 import {
-  AdminDetailField,
-  AdminDetailModalShell,
-  AdminDetailSection,
-  StatusPill,
+    AdminDetailField,
+    AdminDetailModalShell,
+    AdminDetailSection,
+    StatusPill,
 } from './AdminDetailModal';
 
 type AdminPropertyDetailsModalProps = {

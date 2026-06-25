@@ -151,7 +151,7 @@ const AdminDashboardPage: React.FC = () => {
             iconBg: 'bg-purple-100 text-purple-600',
           },
           {
-            label: 'Total Rooms',
+            label: 'Total Villas',
             value: String(stats.totalRooms),
             icon: BuildingOffice2Icon,
             iconBg: 'bg-orange-100 text-orange-600',
@@ -202,8 +202,8 @@ const AdminDashboardPage: React.FC = () => {
                 linkClass: 'text-blue-600',
               },
               {
-                title: 'Room Management',
-                description: 'Update room details, availability, and pricing',
+                title: 'Villa Management',
+                description: 'Update villa details, availability, and pricing',
                 to: '/admin/rooms',
                 icon: BuildingOffice2Icon,
                 iconBg: 'bg-green-100 text-green-600',
@@ -262,7 +262,7 @@ const AdminDashboardPage: React.FC = () => {
               Today&apos;s Priority
             </h2>
             <ul className="space-y-3 text-sm text-gray-700">
-              {['Check new bookings', 'Review room availability', 'Respond to reviews'].map((item) => (
+              {['Check new bookings', 'Review villa availability', 'Respond to reviews'].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <CheckCircleIcon className="h-4 w-4 text-blue-600 shrink-0" />
                   {item}

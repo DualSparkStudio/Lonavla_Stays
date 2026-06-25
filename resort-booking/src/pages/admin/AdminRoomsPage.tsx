@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
-import { StatusPill } from '../../components/admin/AdminDetailModal';
 import AdminCardActions from '../../components/admin/AdminCardActions';
+import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
+import AdminLayout from '../../components/admin/AdminLayout';
 import AdminVillaDetailsModal from '../../components/admin/AdminVillaDetailsModal';
 import NormalizedImage from '../../components/ui/NormalizedImage';
 import { useSiteData } from '../../context/SiteDataContext';
@@ -13,6 +13,7 @@ const emptyRoom = (): Omit<Room, 'id'> => ({
   room_type: 'Deluxe Villa',
   description: '',
   price_per_night: 0,
+  weekend_price_per_night: 0,
   location: '',
   address: '',
   max_guests: 2,
@@ -117,6 +118,11 @@ const AdminRoomsPage: React.FC = () => {
                 <StatusPill status={room.status} />
               </div>
               <p className="text-base text-gray-900 mb-1">₹{room.price_per_night.toLocaleString('en-IN')} / night</p>
+              {room.weekend_price_per_night != null && room.weekend_price_per_night > 0 && (
+                <p className="text-sm text-gray-700 mb-1">
+                  Weekend: ₹{room.weekend_price_per_night.toLocaleString('en-IN')} / night
+                </p>
+              )}
               <p className="text-sm text-gray-600 mb-3">{room.max_guests} guests included in base price</p>
               <AdminCardActions
                 onView={() => setViewing(room)}
@@ -150,6 +156,15 @@ const AdminRoomsPage: React.FC = () => {
             </AdminFormField>
             <AdminFormField label="Price per night (INR)">
               <input type="number" min={0} value={draft.price_per_night || ''} onChange={(e) => setDraft({ ...draft, price_per_night: Number(e.target.value) })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField label="Weekend price per night (INR)" hint="Applied on Saturdays and site-wide pricing holidays (Sun–Fri are weekdays)">
+              <input
+                type="number"
+                min={0}
+                value={draft.weekend_price_per_night || ''}
+                onChange={(e) => setDraft({ ...draft, weekend_price_per_night: Number(e.target.value) })}
+                className={adminInputClass}
+              />
             </AdminFormField>
             <AdminFormField label="Guests included in base price" hint="Extra guests above this count are charged at the site-wide extra person rate">
               <input type="number" min={1} value={draft.max_guests || ''} onChange={(e) => setDraft({ ...draft, max_guests: Number(e.target.value) })} className={adminInputClass} />

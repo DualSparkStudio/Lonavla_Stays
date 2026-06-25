@@ -15,6 +15,8 @@ export type Room = {
   room_type: string;
   description: string;
   price_per_night: number;
+  /** Optional weekend nightly rate (Saturdays and pricing holidays). */
+  weekend_price_per_night?: number;
   /** Area or neighbourhood shown on cards, e.g. Tiger Valley */
   location: string;
   /** Full street address for this villa property */
@@ -111,6 +113,7 @@ export const demoRooms: Room[] = [
     description:
       'A standalone hill villa with misty Sahyadri views from a private deck. Ideal for couples and small families seeking a quiet Lonavala escape.',
     price_per_night: 6500,
+    weekend_price_per_night: 7500,
     location: 'Tiger Valley, Lonavala',
     address: 'Survey No. 12, Tiger Valley Road, Lonavala, Maharashtra 410401',
     max_guests: 3,
@@ -132,6 +135,7 @@ export const demoRooms: Room[] = [
     description:
       'Spacious private villa with landscaped gardens and a separate living wing—perfect for families who want their own property in the hills.',
     price_per_night: 9200,
+    weekend_price_per_night: 10500,
     location: 'Tungarli, Lonavala',
     address: 'Lane 4, Near Tungarli Lake, Lonavala, Maharashtra 410403',
     max_guests: 5,
@@ -153,6 +157,7 @@ export const demoRooms: Room[] = [
     description:
       'Flagship villa with panoramic hill views, premium interiors, and a large sit-out—our most requested property for special occasions.',
     price_per_night: 11500,
+    weekend_price_per_night: 12900,
     location: 'Khandala Hills, Lonavala',
     address: 'Plot 8, Khandala View Road, Lonavala, Maharashtra 410401',
     max_guests: 4,
@@ -174,6 +179,7 @@ export const demoRooms: Room[] = [
     description:
       'Intimate standalone cottage tucked into greenery—romantic, private, and fully self-contained with its own entrance and patio.',
     price_per_night: 7800,
+    weekend_price_per_night: 8900,
     location: 'Kurvande, Lonavala',
     address: 'Cottage 12, Green Meadows Estate, Kurvande, Lonavala 410401',
     max_guests: 2,

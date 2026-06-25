@@ -26,6 +26,7 @@ type VillaRow = {
   room_type: string;
   description: string;
   price_per_night: number;
+  weekend_price_per_night: number | null;
   location: string;
   address: string;
   max_guests: number;
@@ -122,6 +123,8 @@ function mapVillaToRoom(row: VillaRow): Room {
     room_type: row.room_type,
     description: row.description,
     price_per_night: Number(row.price_per_night),
+    weekend_price_per_night:
+      row.weekend_price_per_night != null ? Number(row.weekend_price_per_night) : undefined,
     location: row.location,
     address: row.address,
     max_guests: row.max_guests,
@@ -227,11 +230,12 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
     aboutParagraphs: (data.aboutParagraphs as string[]) ?? defaults.aboutParagraphs,
     aboutHighlights: (data.aboutHighlights as SiteSettings['aboutHighlights']) ?? defaults.aboutHighlights,
     exploreTiles: (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
+    pricingHolidays: (data.pricingHolidays as string[]) ?? defaults.pricingHolidays,
   };
 }
 
 const VILLA_COLUMNS =
-  'id, legacy_id, name, room_type, description, price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url, maps_link';
+  'id, legacy_id, name, room_type, description, price_per_night, weekend_price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url, maps_link';
 const BOOKING_COLUMNS =
   'id, villa_id, booking_ref, check_in, check_out, adults, children, total_amount, status, guest_name, guest_email, created_at, villas(name, legacy_id)';
 const BLOCKED_COLUMNS = 'id, villa_id, start_date, end_date, reason, notes, source, created_at';
@@ -388,6 +392,7 @@ export async function upsertVillaToSupabase(room: Room): Promise<void> {
     room_type: room.room_type,
     description: room.description,
     price_per_night: room.price_per_night,
+    weekend_price_per_night: room.weekend_price_per_night ?? null,
     location: room.location,
     address: room.address,
     max_guests: room.max_guests,

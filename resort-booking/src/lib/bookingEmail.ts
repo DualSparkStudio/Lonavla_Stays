@@ -1,4 +1,3 @@
-import { loadAdminProfile } from './adminProfile';
 import { loadSmtpNotificationSettings } from './smtpSettings';
 
 export type BookingEmailRequest = {
@@ -112,7 +111,6 @@ export async function sendBookingConfirmationEmails(
   payload: BookingEmailRequest,
 ): Promise<BookingEmailResponse> {
   const prefs = loadSmtpNotificationSettings();
-  const profile = loadAdminProfile();
 
   if (!prefs.sendGuestConfirmation && !prefs.sendAdminNotification) {
     return {
@@ -127,7 +125,6 @@ export async function sendBookingConfirmationEmails(
   const adminEmail =
     payload.adminEmail?.trim() ||
     prefs.adminNotificationEmail.trim() ||
-    (profile.notifyNewBookings ? profile.email : '') ||
     undefined;
 
   const res = await fetch('/api/send-booking-emails', {

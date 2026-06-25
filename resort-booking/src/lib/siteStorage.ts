@@ -38,6 +38,7 @@ export const defaultSiteSettings = (): SiteSettings => ({
   checkOutTime: DEFAULT_CHECK_OUT_TIME,
   gstPercent: DEFAULT_GST_PERCENT,
   extraPersonCharge: DEFAULT_EXTRA_PERSON_CHARGE,
+  pricingHolidays: [],
   heroTitle: 'Escape Into The Hills',
   heroSubtitle:
     'Book luxury villa stays or explore plots & villas for sale across Lonavala—each with its own home and hillside setting.',
@@ -341,6 +342,7 @@ function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
       checkOutTime: parsed.settings?.checkOutTime ?? defaults.settings.checkOutTime,
       gstPercent: parsed.settings?.gstPercent ?? defaults.settings.gstPercent,
       extraPersonCharge: parsed.settings?.extraPersonCharge ?? defaults.settings.extraPersonCharge,
+      pricingHolidays: parsed.settings?.pricingHolidays ?? defaults.settings.pricingHolidays,
       houseRulesSections: parsed.settings?.houseRulesSections?.length
         ? parsed.settings.houseRulesSections
         : defaults.settings.houseRulesSections,

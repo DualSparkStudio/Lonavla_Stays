@@ -29,10 +29,15 @@ export default {
       },
       fontFamily: {
         sans: [
-          'Cormorant Garamond',
-          'Georgia',
-          'Times New Roman',
-          'serif',
+          'Inter',
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
         ],
         heading: [
           'Anton',

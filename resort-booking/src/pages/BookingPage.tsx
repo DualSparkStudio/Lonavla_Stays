@@ -72,12 +72,14 @@ const BookingPage: React.FC = () => {
   const initialCheckIn = searchParams.get('checkIn') ?? toDateInputValue(addDays(new Date(), 1));
   const initialCheckOut = searchParams.get('checkOut') ?? toDateInputValue(addDays(new Date(), 3));
 
-  const initialGuests = Math.max(1, Number(searchParams.get('guests')) || 1);
+  const guestParam = Number(searchParams.get('guests'));
+  const initialGuestInput =
+    Number.isFinite(guestParam) && guestParam > 0 ? String(Math.floor(guestParam)) : '';
 
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [guestCount, setGuestCount] = useState(initialGuests);
+  const [guestInput, setGuestInput] = useState(initialGuestInput);
   const [isProcessing, setIsProcessing] = useState(false);
   const [dateError, setDateError] = useState('');
   const [paymentError, setPaymentError] = useState('');
@@ -95,11 +97,19 @@ const BookingPage: React.FC = () => {
 
   const guestsIncluded = villa?.max_guests ?? 1;
   const extraPersonCharge = settings.extraPersonCharge ?? 1500;
+  const guestCount = useMemo(() => {
+    const parsed = Number(guestInput);
+    if (!Number.isFinite(parsed) || parsed < 1) return 1;
+    return Math.floor(parsed);
+  }, [guestInput]);
 
   const pricing = useMemo(() => {
     if (!villa || nights < 1) {
       return computeStayPricing({
         pricePerNight: 0,
+        weekendPricePerNight: 0,
+        checkInDate: checkIn,
+        pricingHolidays: settings.pricingHolidays,
         nights: 0,
         guestCount: 1,
         guestsIncluded: 1,
@@ -108,12 +118,15 @@ const BookingPage: React.FC = () => {
     }
     return computeStayPricing({
       pricePerNight: villa.price_per_night,
+      weekendPricePerNight: villa.weekend_price_per_night,
+      checkInDate: checkIn,
+      pricingHolidays: settings.pricingHolidays,
       nights,
       guestCount,
       guestsIncluded: villa.max_guests,
       extraPersonCharge,
     });
-  }, [villa, nights, guestCount, extraPersonCharge]);
+  }, [villa, nights, guestCount, extraPersonCharge, checkIn, settings.pricingHolidays]);
 
   const priceLines = useMemo(
     () =>
@@ -138,7 +151,8 @@ const BookingPage: React.FC = () => {
       setDateError('Please select check-in and check-out dates.');
       return false;
     }
-    if (guestCount < 1) {
+    const parsedGuests = Number(guestInput);
+    if (!Number.isFinite(parsedGuests) || parsedGuests < 1) {
       setDateError('Please enter at least 1 guest.');
       return false;
     }
@@ -302,6 +316,11 @@ const BookingPage: React.FC = () => {
 
   const dateRangeLabel = formatDateRangeLabel(checkIn, checkOut);
   const canPay = nights >= 1 && checkOut > checkIn;
+  const hasWeekendPricing = Boolean(
+    villa.weekend_price_per_night && villa.weekend_price_per_night > 0,
+  );
+  const selectedNightlyRate =
+    pricing.nights > 0 ? Math.round(pricing.basePrice / pricing.nights) : villa.price_per_night;
   const checkInLabel = checkInLabelFromTime(settings.checkInTime);
   const checkOutLabel = checkOutLabelFromTime(settings.checkOutTime);
   const checkInOutSummary = checkInOutSummaryFromTimes(settings.checkInTime, settings.checkOutTime);
@@ -413,10 +432,49 @@ const BookingPage: React.FC = () => {
 
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                     <p className="text-base font-bold text-gray-900 mb-1">Villa rate</p>
-                    <p className="text-xl font-bold text-gray-900">
-                      {formatPrice(villa.price_per_night)}
-                      <span className="text-base font-medium text-gray-900"> / night</span>
-                    </p>
+                    {hasWeekendPricing ? (
+                      <>
+                        {canPay && (
+                          <p className="text-xl font-bold text-gray-900 mb-2">
+                            {formatPrice(selectedNightlyRate)}
+                            <span className="text-base font-medium text-gray-900"> / night</span>
+                            <span className="block text-xs font-normal text-gray-600 mt-0.5">
+                              Average for your selected dates
+                            </span>
+                          </p>
+                        )}
+                        <p
+                          className={`text-sm mt-1 ${
+                            canPay && pricing.weekdayNights > 0
+                              ? 'font-semibold text-gray-900'
+                              : 'text-gray-700'
+                          }`}
+                        >
+                          Weekday (Sun–Fri): {formatPrice(villa.price_per_night)} / night
+                        </p>
+                        <p
+                          className={`text-sm mt-1 ${
+                            canPay && pricing.weekendNights > 0
+                              ? 'font-semibold text-gray-900'
+                              : 'text-gray-700'
+                          }`}
+                        >
+                          Weekend (Sat & holidays): {formatPrice(villa.weekend_price_per_night!)} / night
+                        </p>
+                        {canPay && (
+                          <p className="text-xs text-gray-600 mt-2">
+                            Selected stay includes {pricing.weekendNights} weekend/holiday night
+                            {pricing.weekendNights !== 1 ? 's' : ''} and {pricing.weekdayNights}{' '}
+                            weekday night{pricing.weekdayNights !== 1 ? 's' : ''}.
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-xl font-bold text-gray-900">
+                        {formatPrice(villa.price_per_night)}
+                        <span className="text-base font-medium text-gray-900"> / night</span>
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -430,11 +488,20 @@ const BookingPage: React.FC = () => {
                     <input
                       type="number"
                       min={1}
-                      value={guestCount}
+                      inputMode="numeric"
+                      value={guestInput}
                       onChange={(e) => {
-                        const next = Number(e.target.value);
-                        if (Number.isNaN(next)) return;
-                        setGuestCount(Math.max(1, next));
+                        const next = e.target.value;
+                        if (next === '') {
+                          setGuestInput('');
+                          return;
+                        }
+                        if (!/^\d+$/.test(next)) return;
+                        setGuestInput(next);
+                      }}
+                      onBlur={() => {
+                        if (!guestInput) return;
+                        setGuestInput(String(guestCount));
                       }}
                       className="w-full max-w-xs px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium"
                     />
