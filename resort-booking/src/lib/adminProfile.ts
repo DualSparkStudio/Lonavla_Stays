@@ -67,6 +67,12 @@ export function setCustomAdminPassword(password: string): void {
   localStorage.setItem(PASSWORD_KEY, password);
 }
 
+/** Remove legacy browser-only password after DB auth is active. */
+export function clearCustomAdminPassword(): void {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.removeItem(PASSWORD_KEY);
+}
+
 export function mergeAdminProfileFromSettings(
   settings: Pick<SiteSettings, 'contactName' | 'contactBio' | 'resortEmail' | 'resortPhone' | 'resortAddress'>,
   local: AdminProfile = loadAdminProfile(),

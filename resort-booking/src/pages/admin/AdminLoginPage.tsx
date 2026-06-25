@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { adminLogin, isAdminAuthenticated, validateAdminCredentials } from '../../lib/adminAuth';
+import { adminLogin, isAdminAuthenticated, verifyAdminLogin } from '../../lib/adminAuth';
 
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +21,8 @@ const AdminLoginPage: React.FC = () => {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    if (validateAdminCredentials(credentials.username, credentials.password)) {
+    const ok = await verifyAdminLogin(credentials.username, credentials.password);
+    if (ok) {
       adminLogin();
       navigate('/admin', { replace: true });
     } else {

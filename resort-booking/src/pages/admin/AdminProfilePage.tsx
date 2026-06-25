@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
-import { ADMIN_CREDENTIALS, validateAdminCredentials } from '../../lib/adminAuth';
+import { ADMIN_CREDENTIALS, updateAdminPassword } from '../../lib/adminAuth';
 import { fetchSmtpStatus, sendTestEmail } from '../../lib/bookingEmail';
 import {
   defaultAdminProfile,
   getAdminInitials,
   mergeAdminProfileFromSettings,
   saveAdminProfile,
-  setCustomAdminPassword,
   siteSettingsFromAdminProfile,
   type AdminProfile,
 } from '../../lib/adminProfile';
@@ -86,15 +85,11 @@ const AdminProfilePage: React.FC = () => {
     setTimeout(() => setProfileSaved(false), 3000);
   };
 
-  const handlePasswordSave = (e: React.FormEvent) => {
+  const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError('');
     setPasswordSaved(false);
 
-    if (!validateAdminCredentials(ADMIN_CREDENTIALS.username, passwordForm.current)) {
-      setPasswordError('Current password is incorrect.');
-      return;
-    }
     if (passwordForm.next.length < 6) {
       setPasswordError('New password must be at least 6 characters.');
       return;
@@ -104,7 +99,12 @@ const AdminProfilePage: React.FC = () => {
       return;
     }
 
-    setCustomAdminPassword(passwordForm.next);
+    const result = await updateAdminPassword(passwordForm.current, passwordForm.next);
+    if (!result.ok) {
+      setPasswordError(result.error ?? 'Could not update password.');
+      return;
+    }
+
     setPasswordForm({ current: '', next: '', confirm: '' });
     setPasswordSaved(true);
     setTimeout(() => setPasswordSaved(false), 3000);
