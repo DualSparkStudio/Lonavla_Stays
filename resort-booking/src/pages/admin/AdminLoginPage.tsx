@@ -82,16 +82,6 @@ const AdminLoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-base text-gray-700 text-center">
-            <strong>Demo credentials:</strong>
-            <br />
-            Username: <code className="bg-white px-1 rounded">admin</code>
-            <br />
-            Password: <code className="bg-white px-1 rounded">admin123</code>
-          </p>
-        </div>
-
         <div className="mt-6 text-center space-y-2">
           <Link to="/" className="block text-gray-900 hover:text-gray-700 text-base font-medium">
             ← Back to Home
