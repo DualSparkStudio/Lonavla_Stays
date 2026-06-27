@@ -46,7 +46,6 @@ export type StayPricingResult = {
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const SATURDAY = 6;
 
 export function normalizePricingHolidays(dates?: string[]): Set<string> {
   const set = new Set<string>();
@@ -57,9 +56,13 @@ export function normalizePricingHolidays(dates?: string[]): Set<string> {
   return set;
 }
 
-/** Weekend rate applies on Saturdays and configured holidays; Sun–Fri are weekdays unless a holiday. */
+function isWeekendDay(date: Date): boolean {
+  return date.getDay() === 6;
+}
+
+/** Weekend rate applies on Saturdays and configured pricing holidays; Sun–Fri are weekdays unless a holiday. */
 export function isWeekendRateNight(date: Date, holidays: Set<string>): boolean {
-  return date.getDay() === SATURDAY || holidays.has(format(date, 'yyyy-MM-dd'));
+  return isWeekendDay(date) || holidays.has(format(date, 'yyyy-MM-dd'));
 }
 
 function splitStayNightsByRate(
@@ -81,6 +84,62 @@ function splitStayNightsByRate(
     if (isWeekendRateNight(current, holidays)) weekendNights += 1;
   }
   return { weekdayNights: nights - weekendNights, weekendNights };
+}
+
+export type StayRateDisplayMode = 'none' | 'weekday' | 'weekend' | 'both';
+
+/** Classify selected check-in → check-out nights for listing/booking price display. */
+export function analyzeStayRateNights(
+  checkIn: string,
+  checkOut: string,
+  pricingHolidays?: string[],
+): { weekdayNights: number; weekendNights: number; mode: StayRateDisplayMode } {
+  if (!checkIn || !checkOut || checkOut <= checkIn) {
+    return { weekdayNights: 0, weekendNights: 0, mode: 'none' };
+  }
+
+  const nights = differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn));
+  if (nights < 1) {
+    return { weekdayNights: 0, weekendNights: 0, mode: 'none' };
+  }
+
+  const { weekdayNights, weekendNights } = splitStayNightsByRate(
+    checkIn,
+    nights,
+    normalizePricingHolidays(pricingHolidays),
+  );
+
+  let mode: StayRateDisplayMode = 'none';
+  if (weekdayNights > 0 && weekendNights > 0) mode = 'both';
+  else if (weekendNights > 0) mode = 'weekend';
+  else if (weekdayNights > 0) mode = 'weekday';
+
+  return { weekdayNights, weekendNights, mode };
+}
+
+export type VillaCardPriceDisplay =
+  | { kind: 'single'; amount: number }
+  | { kind: 'dual'; weekdayAmount: number; weekendAmount: number };
+
+export function getVillaCardPriceDisplay(
+  pricePerNight: number,
+  weekendPricePerNight: number | undefined,
+  stayMode: StayRateDisplayMode,
+): VillaCardPriceDisplay {
+  const weekdayAmount = pricePerNight;
+  const hasWeekendRate = Boolean(weekendPricePerNight && weekendPricePerNight > 0);
+  const weekendAmount = hasWeekendRate ? weekendPricePerNight! : weekdayAmount;
+
+  if (stayMode === 'weekend') {
+    return { kind: 'single', amount: weekendAmount };
+  }
+  if (stayMode === 'weekday' || stayMode === 'none') {
+    return { kind: 'single', amount: weekdayAmount };
+  }
+  if (weekendAmount !== weekdayAmount) {
+    return { kind: 'dual', weekdayAmount, weekendAmount };
+  }
+  return { kind: 'single', amount: weekdayAmount };
 }
 
 export function computeStayPricing(input: StayPricingInput): StayPricingResult {

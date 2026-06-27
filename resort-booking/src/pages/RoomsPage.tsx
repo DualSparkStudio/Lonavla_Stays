@@ -5,8 +5,12 @@ import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import { useSiteData } from '../context/SiteDataContext';
-import { formatPrice } from '../data/resort';
 import { checkRoomAvailability } from '../lib/availability';
+import {
+  analyzeStayRateNights,
+  getVillaCardPriceDisplay,
+} from '../lib/bookingPricing';
+import VillaCardPrice from '../components/villas/VillaCardPrice';
 
 const formatSearchDate = (value: string) => {
   try {
@@ -32,6 +36,14 @@ const RoomsPage: React.FC = () => {
   const checkOut = searchParams.get('checkOut') ?? '';
   const guestsParam = searchParams.get('guests');
   const dateSearchActive = Boolean(checkIn && checkOut && checkOut > checkIn);
+
+  const stayRateMode = useMemo(
+    () =>
+      dateSearchActive
+        ? analyzeStayRateNights(checkIn, checkOut, settings.pricingHolidays).mode
+        : ('none' as const),
+    [checkIn, checkOut, dateSearchActive, settings.pricingHolidays],
+  );
 
   const searchHint = useMemo(() => {
     const parts: string[] = [];
@@ -195,12 +207,15 @@ const RoomsPage: React.FC = () => {
                       </span>
                     ))}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className="villa-card-price">{formatPrice(room.price_per_night)}</span>
-                      <span className="villa-card-suffix"> / night</span>
-                    </div>
-                    <span className="text-airbnb-red font-bold text-base">View details →</span>
+                  <div className="flex justify-between items-end gap-3">
+                    <VillaCardPrice
+                      display={getVillaCardPriceDisplay(
+                        room.price_per_night,
+                        room.weekend_price_per_night,
+                        stayRateMode,
+                      )}
+                    />
+                    <span className="text-airbnb-red font-bold text-base shrink-0">View details →</span>
                   </div>
                 </div>
               </Link>

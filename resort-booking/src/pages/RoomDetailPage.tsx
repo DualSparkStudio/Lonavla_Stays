@@ -8,8 +8,13 @@ import AnimatedSection from '../components/ui/AnimatedSection';
 import Button from '../components/ui/Button';
 import LocationMapSection from '../components/maps/LocationMapSection';
 import PolicySections from '../components/PolicySections';
-import { formatPrice, checkInLabelFromTime, checkOutLabelFromTime } from '../data/resort';
+import { checkInLabelFromTime, checkOutLabelFromTime } from '../data/resort';
 import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
+import {
+  analyzeStayRateNights,
+  getVillaCardPriceDisplay,
+} from '../lib/bookingPricing';
+import VillaCardPrice from '../components/villas/VillaCardPrice';
 import { useSiteData } from '../context/SiteDataContext';
 
 const RoomDetailPage: React.FC = () => {
@@ -36,6 +41,22 @@ const RoomDetailPage: React.FC = () => {
     () => (room ? normalizeImageUrls(room.images) : []),
     [room],
   );
+
+  const stayRateMode = useMemo(() => {
+    if (!checkIn || !checkOut || checkOut <= checkIn) return 'none' as const;
+    return analyzeStayRateNights(checkIn, checkOut, settings.pricingHolidays).mode;
+  }, [checkIn, checkOut, settings.pricingHolidays]);
+
+  const cardPriceDisplay = useMemo(() => {
+    if (!room) {
+      return getVillaCardPriceDisplay(0, undefined, 'none');
+    }
+    return getVillaCardPriceDisplay(
+      room.price_per_night,
+      room.weekend_price_per_night,
+      stayRateMode,
+    );
+  }, [room, stayRateMode]);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, originalUrl: string) => {
     const img = e.currentTarget;
@@ -198,10 +219,7 @@ const RoomDetailPage: React.FC = () => {
 
           <aside className="w-full lg:w-[380px] lg:shrink-0">
             <StickyBookingPanel className="bg-white rounded-2xl border border-gray-200 shadow-lg px-4 py-5 sm:px-5">
-              <p className="text-2xl font-bold text-gray-900 mb-1">
-                {formatPrice(room.price_per_night)}
-                <span className="text-lg font-medium text-gray-900"> / night</span>
-              </p>
+              <VillaCardPrice display={cardPriceDisplay} className="mb-1" />
               <p className="flex items-center gap-2 text-lg text-gray-900 font-medium mb-2">
                 <UserGroupIcon className="h-5 w-5" />
                 {room.max_guests} guests included in base price
