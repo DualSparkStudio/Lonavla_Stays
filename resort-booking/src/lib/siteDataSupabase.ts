@@ -230,14 +230,10 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
     ...(data as Partial<SiteSettings>),
     aboutParagraphs: (data.aboutParagraphs as string[]) ?? defaults.aboutParagraphs,
     aboutHighlights: (data.aboutHighlights as SiteSettings['aboutHighlights']) ?? defaults.aboutHighlights,
-<<<<<<< HEAD
     exploreTiles: normalizeExploreTiles(
       (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
     ),
-=======
-    exploreTiles: (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
     pricingHolidays: (data.pricingHolidays as string[]) ?? defaults.pricingHolidays,
->>>>>>> 23b6650e23fb088ed1f291434c5bd8d4fee84e8a
   };
 }
 

@@ -1,9 +1,4 @@
 import React, { useEffect, useState } from 'react';
-<<<<<<< HEAD
-import { Link, useNavigate } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useSiteData } from '../../context/SiteDataContext';
-=======
 import { useSiteData, useSiteSettings } from '../../context/SiteDataContext';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -18,18 +13,19 @@ import {
   Squares2X2Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
->>>>>>> 23b6650e23fb088ed1f291434c5bd8d4fee84e8a
 import { adminLogout } from '../../lib/adminAuth';
 import { getAdminInitials } from '../../lib/adminProfile';
+import { isForSaleEnabled } from '../../lib/featureFlags';
 
 const adminNavLinks = [
   { to: '/admin', page: 'dashboard', label: 'Dashboard', icon: Squares2X2Icon },
+  { to: '/admin/settings', page: 'settings', label: 'Site content', icon: Cog6ToothIcon },
   { to: '/admin/rooms', page: 'rooms', label: 'Villas', icon: BuildingOffice2Icon },
   { to: '/admin/for-sale', page: 'for-sale', label: 'For sale', icon: ShoppingBagIcon },
   { to: '/admin/bookings', page: 'bookings', label: 'Bookings', icon: CalendarDaysIcon },
   { to: '/admin/calendar', page: 'calendar', label: 'Calendar', icon: ChartBarIcon },
   { to: '/admin/other', page: 'other', label: 'Other', icon: Cog6ToothIcon },
-] as const;
+].filter((item) => isForSaleEnabled || item.page !== 'for-sale');
 
 type AdminLayoutProps = {
   currentPage: string;
