@@ -4,6 +4,8 @@ import AdminCardActions from '../../components/admin/AdminCardActions';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import BookingDetailsModal from '../../components/BookingDetailsModal';
 import { notifyBookingByEmail } from '../../lib/bookingEmail';
+import { getPrimaryImage } from '../../lib/imageUrl';
+import { applyBookingTimesToPolicyItem } from '../../lib/policySections';
 import { useSiteData } from '../../context/SiteDataContext';
 import type { AdminBooking } from '../../types/site';
 
@@ -19,6 +21,19 @@ const emptyBooking = (): Omit<AdminBooking, 'id' | 'bookedAt'> => ({
   total: 0,
   status: 'pending',
 });
+
+const statusBadgeClass = (status: AdminBooking['status']) => {
+  switch (status) {
+    case 'confirmed':
+      return 'bg-green-100 text-green-800';
+    case 'completed':
+      return 'bg-blue-100 text-blue-800';
+    case 'pending':
+      return 'bg-amber-100 text-amber-800';
+    default:
+      return 'bg-red-100 text-red-800';
+  }
+};
 
 const AdminBookingsPage: React.FC = () => {
   const { bookings, rooms, addBooking, deleteBooking, settings } = useSiteData();
@@ -55,6 +70,11 @@ const AdminBookingsPage: React.FC = () => {
       guestEmail: draft.guestEmail,
       roomId: draft.roomId,
       roomName,
+      roomImage: getPrimaryImage(room?.images),
+      roomAddress: room?.address,
+      roomLocation: room?.location,
+      mapEmbedUrl: room?.mapEmbedUrl,
+      mapsLink: room?.mapsLink,
       checkIn,
       checkOut,
       guests,
@@ -71,6 +91,13 @@ const AdminBookingsPage: React.FC = () => {
       resortLocation: settings.resortLocation,
       checkInTime: settings.checkInTime,
       checkOutTime: settings.checkOutTime,
+      siteUrl: import.meta.env.VITE_APP_URL || window.location.origin,
+      houseRuleHighlights: settings.houseRulesSections
+        .flatMap((section) => section.items)
+        .slice(0, 3)
+        .map((item) =>
+          applyBookingTimesToPolicyItem(item, settings.checkInTime, settings.checkOutTime),
+        ),
     });
 
     setDraft(emptyBooking());
@@ -83,7 +110,7 @@ const AdminBookingsPage: React.FC = () => {
     <AdminLayout currentPage="bookings">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Bookings</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Bookings</h1>
           <p className="text-gray-900">Manage reservations from the booking flow or add them manually.</p>
         </div>
         <button
@@ -144,13 +171,13 @@ const AdminBookingsPage: React.FC = () => {
         </form>
       )}
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {['all', 'confirmed', 'pending', 'cancelled', 'completed'].map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-full text-base font-bold capitalize ${
+            className={`shrink-0 px-4 py-2 rounded-full text-sm sm:text-base font-bold capitalize ${
               filter === s ? 'bg-red-500 text-white' : 'bg-white border border-gray-200'
             }`}
           >
@@ -162,8 +189,44 @@ const AdminBookingsPage: React.FC = () => {
       {filtered.length === 0 ? (
         <p className="text-gray-900 bg-white rounded-xl p-8 text-center border">No bookings match this filter.</p>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+        <>
+          <div className="lg:hidden space-y-4">
+            {filtered.map((b) => (
+              <article key={b.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900">{b.guestName}</p>
+                    <p className="text-sm text-gray-600 truncate">{b.guestEmail}</p>
+                    <p className="text-xs font-mono text-gray-500 mt-1">{b.bookingRef}</p>
+                  </div>
+                  <span className={`shrink-0 capitalize px-2.5 py-0.5 rounded-full text-xs font-bold ${statusBadgeClass(b.status)}`}>
+                    {b.status}
+                  </span>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm mb-4">
+                  <div>
+                    <dt className="text-gray-500 text-xs font-semibold uppercase">Villa</dt>
+                    <dd className="font-medium text-gray-900">{b.roomName}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500 text-xs font-semibold uppercase">Total</dt>
+                    <dd className="font-medium text-gray-900">₹{b.total.toLocaleString('en-IN')}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-gray-500 text-xs font-semibold uppercase">Dates</dt>
+                    <dd className="font-medium text-gray-900">{b.checkIn} → {b.checkOut}</dd>
+                  </div>
+                </dl>
+                <AdminCardActions
+                  onView={() => setViewing(b)}
+                  onDelete={() => window.confirm('Delete this booking?') && deleteBooking(b.id)}
+                />
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden lg:block bg-white rounded-xl shadow overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 {['Ref', 'Guest', 'Villa', 'Dates', 'Total', 'Status', 'Actions'].map((h) => (
@@ -181,15 +244,7 @@ const AdminBookingsPage: React.FC = () => {
                   <td className="px-4 py-3 text-base">₹{b.total.toLocaleString('en-IN')}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex capitalize px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        b.status === 'confirmed'
-                          ? 'bg-green-100 text-green-800'
-                          : b.status === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : b.status === 'pending'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-red-100 text-red-800'
-                      }`}
+                      className={`inline-flex capitalize px-2.5 py-0.5 rounded-full text-xs font-bold ${statusBadgeClass(b.status)}`}
                     >
                       {b.status}
                     </span>
@@ -204,7 +259,8 @@ const AdminBookingsPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       <BookingDetailsModal

@@ -63,15 +63,14 @@ const HeroExplorer: React.FC = () => {
   return (
     <AnimatedSection variant="scale-in" delay={250} className="max-w-5xl mx-auto w-full">
       <div className="search-bar-shell bg-white rounded-2xl md:rounded-3xl shadow-lg border-2 border-airbnb-red/40 p-3 md:p-4 motion-safe:animate-float">
-        {/* Mode toggle — hidden while For Sale is disabled (Razorpay onboarding) */}
         {isForSaleEnabled && (
-        <div className="flex justify-center mb-3 md:mb-4">
-          <div className="inline-flex rounded-full bg-pink-50 p-1.5 gap-1 ring-1 ring-airbnb-red/20 shadow-sm">
+        <div className="flex justify-center mb-3 md:mb-4 w-full px-1">
+          <div className="inline-flex w-full max-w-lg flex-col gap-1.5 rounded-2xl bg-pink-50 p-1.5 ring-1 ring-airbnb-red/20 shadow-sm sm:max-w-none sm:w-auto sm:flex-row sm:rounded-full sm:gap-1">
             <button
               type="button"
               onClick={() => setMode('stay')}
               className={cn(
-                'rounded-full px-5 py-2.5 text-base font-bold leading-normal transition-all duration-200',
+                'w-full rounded-xl px-4 py-2.5 text-sm font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
                 mode === 'stay'
                   ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
                   : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
@@ -83,7 +82,7 @@ const HeroExplorer: React.FC = () => {
               type="button"
               onClick={() => setMode('buy')}
               className={cn(
-                'rounded-full px-5 py-2.5 text-base font-bold leading-normal transition-all duration-200',
+                'w-full rounded-xl px-4 py-2.5 text-sm font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
                 mode === 'buy'
                   ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
                   : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
@@ -136,8 +135,8 @@ const HeroExplorer: React.FC = () => {
                   className={dateInputClass}
                 />
               </div>
-              <div className={cn(fieldClass, 'flex items-end justify-between gap-3 md:pl-4 md:min-w-[9.5rem]')}>
-                <div className="min-w-[5.5rem]">
+              <div className={cn(fieldClass, 'flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:pl-4 md:min-w-[9.5rem]')}>
+                <div className="min-w-0 flex-1 sm:min-w-[5.5rem]">
                   <div className={labelClass}>Guests</div>
                   <select
                     value={guests}
@@ -154,7 +153,7 @@ const HeroExplorer: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleStaySearch}
-                  className="bg-airbnb-red hover:bg-airbnb-red-dark text-white p-3 rounded-full shrink-0 btn-primary-motion"
+                  className="w-full sm:w-auto inline-flex items-center justify-center bg-airbnb-red hover:bg-airbnb-red-dark text-white py-3 px-4 rounded-full shrink-0 btn-primary-motion sm:p-3"
                   aria-label="Search villa stays"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

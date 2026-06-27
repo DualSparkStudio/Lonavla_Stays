@@ -13,7 +13,6 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import {
   deleteBlockedDateFromSupabase,
   deleteBookingFromSupabase,
-  deleteContactMessageFromSupabase,
   deleteFacilityFromSupabase,
   deletePropertyFromSupabase,
   deleteVillaFromSupabase,
@@ -21,7 +20,6 @@ import {
   fetchPublicSiteDataFromSupabase,
   insertBlockedDateToSupabase,
   insertBookingToSupabase,
-  insertContactMessageToSupabase,
   upsertFacilityToSupabase,
   upsertPropertyToSupabase,
   upsertSiteSettingsToSupabase,
@@ -65,8 +63,6 @@ export type SiteDataActions = {
   deleteBooking: (id: string) => void;
   blockDates: (block: Omit<BlockedDate, 'id' | 'createdAt' | 'source'> & { source?: 'manual' }) => void;
   deleteBlockedDate: (id: string) => void;
-  addContactMessage: (message: Omit<ContactMessage, 'id' | 'createdAt'>) => void;
-  deleteContactMessage: (id: string) => void;
   resetAllData: () => void;
   getRoomById: (id: string) => Room | undefined;
   getPropertyForSaleById: (id: string) => PropertyForSale | undefined;
@@ -480,41 +476,6 @@ const ConnectedSiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     [patchData],
   );
 
-  const addContactMessage = useCallback(
-    (message: Omit<ContactMessage, 'id' | 'createdAt'>) => {
-      const optimistic: ContactMessage = {
-        ...message,
-        id: newId(),
-        createdAt: new Date().toISOString(),
-      };
-
-      patchData((prev) => ({ ...prev, contactMessages: [optimistic, ...prev.contactMessages] }));
-
-      insertContactMessageToSupabase(optimistic)
-        .then((saved) => {
-          patchData((prev) => ({
-            ...prev,
-            contactMessages: prev.contactMessages.map((m) =>
-              m.id === optimistic.id ? saved : m,
-            ),
-          }));
-        })
-        .catch((e) => logRemoteError('addContactMessage', e));
-    },
-    [patchData],
-  );
-
-  const deleteContactMessage = useCallback(
-    (id: string) => {
-      patchData((prev) => ({
-        ...prev,
-        contactMessages: prev.contactMessages.filter((m) => m.id !== id),
-      }));
-      deleteContactMessageFromSupabase(id).catch((e) => logRemoteError('deleteContactMessage', e));
-    },
-    [patchData],
-  );
-
   const resetAllData = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ['site-data'] });
   }, [queryClient]);
@@ -546,8 +507,6 @@ const ConnectedSiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       deleteBooking,
       blockDates,
       deleteBlockedDate,
-      addContactMessage,
-      deleteContactMessage,
       resetAllData,
       getRoomById,
       getPropertyForSaleById,
@@ -573,8 +532,6 @@ const ConnectedSiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       deleteBooking,
       blockDates,
       deleteBlockedDate,
-      addContactMessage,
-      deleteContactMessage,
       resetAllData,
       getRoomById,
       getPropertyForSaleById,
@@ -754,8 +711,6 @@ export function useSiteDataOptional(): SiteDataContextValue {
     deleteBooking: noop,
     blockDates: noop,
     deleteBlockedDate: noop,
-    addContactMessage: noop,
-    deleteContactMessage: noop,
     resetAllData: noop,
     getRoomById: (id) => fallback.rooms.find((r) => r.id === id),
     getPropertyForSaleById: (id) => fallback.propertiesForSale.find((p) => p.id === id),

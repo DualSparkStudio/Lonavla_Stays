@@ -74,11 +74,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/settings" element={<AdminSiteSettingsPage />} />
             <Route path="/admin/rooms" element={<AdminRoomsPage />} />
-            {isForSaleEnabled ? (
-              <Route path="/admin/for-sale" element={<AdminForSalePage />} />
-            ) : (
-              <Route path="/admin/for-sale" element={<Navigate to="/admin" replace />} />
-            )}
+            <Route path="/admin/for-sale" element={<AdminForSalePage />} />
             <Route path="/admin/bookings" element={<AdminBookingsPage />} />
             <Route path="/admin/calendar" element={<AdminCalendarPage />} />
             <Route path="/admin/other" element={<AdminOtherPage />} />

@@ -1,19 +1,19 @@
+import {
+    BuildingOffice2Icon,
+    CurrencyRupeeIcon,
+    MapPinIcon,
+    TagIcon,
+} from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {
-  BuildingOffice2Icon,
-  CurrencyRupeeIcon,
-  MapPinIcon,
-  TagIcon,
-} from '@heroicons/react/24/outline';
 import { formatSalePrice, getCategoryLabel } from '../../data/propertiesForSale';
 import { normalizeImageUrl } from '../../lib/imageUrl';
 import type { PropertyForSale } from '../../types/site';
 import {
-  AdminDetailField,
-  AdminDetailModalShell,
-  AdminDetailSection,
-  StatusPill,
+    AdminDetailField,
+    AdminDetailModalShell,
+    AdminDetailSection,
+    StatusPill,
 } from './AdminDetailModal';
 
 type AdminPropertyDetailsModalProps = {
@@ -102,8 +102,12 @@ const AdminPropertyDetailsModal: React.FC<AdminPropertyDetailsModalProps> = ({ p
           <AdminDetailField label="Area" value={property.location} />
           <AdminDetailField label="Full address" value={property.address || '—'} />
           <AdminDetailField
-            label="Map"
-            value={property.mapEmbedUrl ? 'Google Maps embed added' : 'No map added'}
+            label="Map embed"
+            value={property.mapEmbedUrl ? 'Google Maps embed added' : 'No embed added'}
+          />
+          <AdminDetailField
+            label="Maps link"
+            value={property.mapsLink ? 'Guest maps link saved' : 'No maps link'}
           />
         </div>
       </AdminDetailSection>

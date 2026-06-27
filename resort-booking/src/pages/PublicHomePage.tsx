@@ -136,19 +136,28 @@ const PublicHomePage: React.FC = () => {
 
       <div className="bg-gray-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {settings.exploreTiles
               .filter((item) => isForSaleEnabled || !item.path.startsWith('/for-sale'))
               .map((item, index) => (
               <AnimatedSection key={item.name} delay={index * 100} variant="scale-in">
                 <Link to={item.path} className="explore-tile relative rounded-lg overflow-hidden group block">
                   <NormalizedImage
+<<<<<<< HEAD
                     src={resolveExploreTileImage(item)}
                     alt={item.name}
                     loading="lazy"
                     decoding="async"
                     className="explore-tile-image w-full h-32 object-cover"
                     fallback={resolveExploreTileImage({ ...item, image: '' })}
+=======
+                    src={item.image}
+                    fallback="https://via.placeholder.com/400x300?text=Image"
+                    alt={item.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="explore-tile-image w-full h-40 sm:h-32 object-cover"
+>>>>>>> 23b6650e23fb088ed1f291434c5bd8d4fee84e8a
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/25 flex items-center justify-center p-3">
                     <span className="text-white font-heading text-base uppercase tracking-wide text-center">

@@ -1,4 +1,3 @@
-import { loadAdminProfile } from './adminProfile';
 import { loadSmtpNotificationSettings } from './smtpSettings';
 
 export type BookingEmailRequest = {
@@ -9,6 +8,10 @@ export type BookingEmailRequest = {
   roomId: string;
   roomName: string;
   roomImage?: string;
+  roomAddress?: string;
+  roomLocation?: string;
+  mapEmbedUrl?: string;
+  mapsLink?: string;
   checkIn: string;
   checkOut: string;
   guests: number;
@@ -29,6 +32,8 @@ export type BookingEmailRequest = {
   resortLocation?: string;
   checkInTime?: string;
   checkOutTime?: string;
+  siteUrl?: string;
+  houseRuleHighlights?: string[];
   adminEmail?: string;
 };
 
@@ -72,6 +77,26 @@ export async function fetchSmtpStatus(verify = false): Promise<SmtpStatusRespons
   return data;
 }
 
+export type ContactMessageEmailRequest = {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  adminEmail?: string;
+  resortName?: string;
+};
+
+export async function sendContactMessageEmail(payload: ContactMessageEmailRequest): Promise<void> {
+  const res = await fetch('/api/send-contact-message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseApiJson<{ error?: string }>(res);
+  if (!res.ok) throw new Error(data.error || 'Failed to send your message');
+}
+
 export async function sendTestEmail(to: string, resortName?: string): Promise<void> {
   const res = await fetch('/api/send-test-email', {
     method: 'POST',
@@ -86,7 +111,6 @@ export async function sendBookingConfirmationEmails(
   payload: BookingEmailRequest,
 ): Promise<BookingEmailResponse> {
   const prefs = loadSmtpNotificationSettings();
-  const profile = loadAdminProfile();
 
   if (!prefs.sendGuestConfirmation && !prefs.sendAdminNotification) {
     return {
@@ -101,7 +125,6 @@ export async function sendBookingConfirmationEmails(
   const adminEmail =
     payload.adminEmail?.trim() ||
     prefs.adminNotificationEmail.trim() ||
-    (profile.notifyNewBookings ? profile.email : '') ||
     undefined;
 
   const res = await fetch('/api/send-booking-emails', {

@@ -44,7 +44,7 @@ const Modal: React.FC<ModalProps> = ({
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-3 sm:p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -54,10 +54,10 @@ const Modal: React.FC<ModalProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-floating transition-all`}>
+              <Dialog.Panel className={`w-full max-h-[min(90dvh,100%)] overflow-y-auto ${sizeClasses[size]} transform rounded-2xl bg-white text-left align-middle shadow-floating transition-all`}>
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
                     {title && (
                       <Dialog.Title
                         as="h3"
@@ -80,7 +80,7 @@ const Modal: React.FC<ModalProps> = ({
                 )}
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {children}
                 </div>
               </Dialog.Panel>

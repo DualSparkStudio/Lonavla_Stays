@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { adminLogin } from '../lib/adminAuth';
+import { adminLogin, verifyAdminLogin } from '../lib/adminAuth';
 
 const PublicLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,9 +40,14 @@ const PublicLoginPage: React.FC = () => {
     } else if (formData.email === 'user@demo.com' && formData.password === 'demo123') {
       setSuccess('Welcome back! Redirecting to dashboard...');
       setTimeout(() => navigate('/bookings'), 2000);
-    } else if (formData.email === 'admin@demo.com' && formData.password === 'admin123') {
-      adminLogin();
-      navigate('/admin', { replace: true });
+    } else if (formData.email === 'admin@demo.com') {
+      const result = await verifyAdminLogin('admin', formData.password);
+      if (result.ok) {
+        adminLogin();
+        navigate('/admin', { replace: true });
+      } else {
+        setError(result.error ?? 'Invalid email or password.');
+      }
     } else {
       setError('Invalid email or password. Try: user@demo.com/demo123 or admin@demo.com/admin123');
     }

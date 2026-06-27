@@ -99,17 +99,17 @@ const AdminCalendarPage: React.FC = () => {
     <AdminLayout currentPage="calendar">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Availability calendar</h1>
-          <p className="text-gray-900 text-base mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Availability calendar</h1>
+          <p className="text-gray-900 text-sm sm:text-base mt-1">
             View bookings and block dates. Drag on the calendar to block or unblock a range.
           </p>
         </div>
-        <label className="flex items-center gap-2 text-base font-medium text-gray-700">
-          Villa
+        <label className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm sm:text-base font-medium text-gray-700 w-full sm:w-auto">
+          <span className="shrink-0">Villa</span>
           <select
             value={selectedRoom}
             onChange={(e) => setSelectedRoom(e.target.value as string | 'all')}
-            className="rounded-lg border border-gray-300 px-3 py-2 bg-white"
+            className="w-full sm:w-auto min-w-0 rounded-lg border border-gray-300 px-3 py-2 bg-white"
           >
             <option value="all">All villas</option>
             {rooms.map((r) => (

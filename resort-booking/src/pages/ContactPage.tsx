@@ -4,12 +4,16 @@ import { EnvelopeIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/outline
 import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import Button from '../components/ui/Button';
-import { useSiteData } from '../context/SiteDataContext';
+import { sendContactMessageEmail } from '../lib/bookingEmail';
+import { loadSmtpNotificationSettings } from '../lib/smtpSettings';
+import { useSiteSettings } from '../context/SiteDataContext';
 
 const ContactPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const { settings, addContactMessage } = useSiteData();
+  const settings = useSiteSettings();
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -36,16 +40,28 @@ const ContactPage: React.FC = () => {
     }
   }, [searchParams]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addContactMessage({
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
-      subject: form.subject,
-      message: form.message,
-    });
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const prefs = loadSmtpNotificationSettings();
+      await sendContactMessageEmail({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        message: form.message,
+        adminEmail: prefs.adminNotificationEmail.trim() || settings.resortEmail,
+        resortName: settings.resortName,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to send your message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -62,10 +78,30 @@ const ContactPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <AnimatedSection className="lg:col-span-1 space-y-6">
+            {(settings.contactName.trim() || settings.contactBio.trim()) && (
+              <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+                {settings.contactName.trim() ? (
+                  <p className="text-xl font-bold text-gray-900">{settings.contactName}</p>
+                ) : null}
+                {settings.contactBio.trim() ? (
+                  <p className="text-lg text-gray-900 mt-2">{settings.contactBio}</p>
+                ) : null}
+              </div>
+            )}
             {[
-              { icon: MapPinIcon, label: 'Reservations office', value: settings.resortAddress },
-              { icon: PhoneIcon, label: 'Phone', value: settings.resortPhone },
-              { icon: EnvelopeIcon, label: 'Email', value: settings.resortEmail },
+              { icon: MapPinIcon, label: 'Reservations office', value: settings.resortAddress, href: undefined },
+              {
+                icon: PhoneIcon,
+                label: 'Phone / WhatsApp',
+                value: settings.resortPhone,
+                href: settings.resortPhone.trim() ? `tel:${settings.resortPhone.replace(/\s/g, '')}` : undefined,
+              },
+              {
+                icon: EnvelopeIcon,
+                label: 'Email',
+                value: settings.resortEmail,
+                href: settings.resortEmail.trim() ? `mailto:${settings.resortEmail}` : undefined,
+              },
             ].map((item) => (
               <div
                 key={item.label}
@@ -74,7 +110,13 @@ const ContactPage: React.FC = () => {
                 <item.icon className="h-8 w-8 text-airbnb-red shrink-0" />
                 <div>
                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">{item.label}</p>
-                  <p className="text-lg font-medium text-gray-900 mt-1">{item.value}</p>
+                  {item.href ? (
+                    <a href={item.href} className="text-lg font-medium text-gray-900 mt-1 hover:text-airbnb-red transition-colors block">
+                      {item.value}
+                    </a>
+                  ) : (
+                    <p className="text-lg font-medium text-gray-900 mt-1">{item.value}</p>
+                  )}
                 </div>
               </div>
             ))}
@@ -93,11 +135,16 @@ const ContactPage: React.FC = () => {
                 <div className="text-center py-12">
                   <p className="text-2xl font-bold text-gray-900 mb-2">Thank you!</p>
                   <p className="text-xl text-gray-900">
-                    We received your message and will reply within 24 hours.
+                    Your message was sent. We will reply within 24 hours.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {submitError ? (
+                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-base">
+                      {submitError}
+                    </div>
+                  ) : null}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-base font-bold text-gray-900 mb-1">Name</label>
@@ -154,8 +201,14 @@ const ContactPage: React.FC = () => {
                       placeholder="Tell us about the property you are interested in, your budget, or any questions..."
                     />
                   </div>
-                  <Button type="submit" size="lg" fullWidth className="rounded-full btn-primary-motion">
-                    Send message
+                  <Button
+                    type="submit"
+                    size="lg"
+                    fullWidth
+                    className="rounded-full btn-primary-motion"
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Sending…' : 'Send message'}
                   </Button>
                 </form>
               )}

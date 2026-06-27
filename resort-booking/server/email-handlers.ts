@@ -1,4 +1,4 @@
-import { sendBookingConfirmationEmails, sendTestEmail, type BookingEmailPayload } from './booking-emails';
+import { sendBookingConfirmationEmails, sendContactMessageEmail, sendTestEmail, type BookingEmailPayload, type ContactMessageEmailPayload } from './booking-emails';
 import { getSmtpConfig, isSmtpConfigured, verifySmtpConnection } from './smtp';
 
 export type SmtpStatus = {
@@ -31,7 +31,7 @@ export async function checkSmtpConnection(): Promise<SmtpStatus> {
   return { ...status, configured: true };
 }
 
-export { sendBookingConfirmationEmails, sendTestEmail, type BookingEmailPayload };
+export { sendBookingConfirmationEmails, sendContactMessageEmail, sendTestEmail, type BookingEmailPayload, type ContactMessageEmailPayload };
 
 export function isEmailServiceReady(): boolean {
   return isSmtpConfigured();

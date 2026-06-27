@@ -216,6 +216,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <section className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
                   <LocationMapSection
                     mapEmbedUrl={room.mapEmbedUrl}
+                    mapsLink={room.mapsLink}
                     address={room.address}
                     location={room.location}
                   />
@@ -250,7 +251,7 @@ const BookingConfirmationPage: React.FC = () => {
                 <Link to="/">
                   <Button
                     size="lg"
-                    className="rounded-lg min-w-[200px] !bg-sky-600 hover:!bg-sky-700 text-white font-bold"
+                    className="rounded-lg w-full sm:w-auto sm:min-w-[200px] !bg-sky-600 hover:!bg-sky-700 text-white font-bold"
                   >
                     Back to home
                   </Button>

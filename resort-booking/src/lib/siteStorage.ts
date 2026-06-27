@@ -9,6 +9,8 @@ import {
   RESORT_ADDRESS,
   RESORT_PHONE,
   RESORT_EMAIL,
+  CONTACT_NAME,
+  CONTACT_BIO,
   DEFAULT_GST_PERCENT,
   DEFAULT_EXTRA_PERSON_CHARGE,
 } from '../data/resort';
@@ -31,10 +33,13 @@ export const defaultSiteSettings = (): SiteSettings => ({
   resortAddress: RESORT_ADDRESS,
   resortPhone: RESORT_PHONE,
   resortEmail: RESORT_EMAIL,
+  contactName: CONTACT_NAME,
+  contactBio: CONTACT_BIO,
   checkInTime: DEFAULT_CHECK_IN_TIME,
   checkOutTime: DEFAULT_CHECK_OUT_TIME,
   gstPercent: DEFAULT_GST_PERCENT,
   extraPersonCharge: DEFAULT_EXTRA_PERSON_CHARGE,
+  pricingHolidays: [],
   heroTitle: 'Escape Into The Hills',
   heroSubtitle:
     'Book luxury villa stays or explore plots & villas for sale across Lonavala—each with its own home and hillside setting.',
@@ -67,7 +72,7 @@ export const defaultSiteSettings = (): SiteSettings => ({
   villasPageSubtitle: `${BRAND_TAGLINE}. Each listing is a separate private villa—compare locations, capacity, and amenities to find your fit.`,
   facilitiesPageTitle: 'Our facilities',
   facilitiesPageSubtitle:
-    'Experiences and amenities across our villa collection. What is included depends on the villa you book—see each listing for details.',
+    'Games, pool, kitchen essentials, entertainment, and on-site support—amenities available across our villas for your stay.',
   forSalePageTitle: 'Plots & villas for sale',
   forSalePageSubtitle:
     'Own a piece of Lonavala. Browse our curated plots and ready villas—view full galleries and descriptions, then contact us to schedule a visit or request documents.',
@@ -338,6 +343,7 @@ function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
       checkOutTime: parsed.settings?.checkOutTime ?? defaults.settings.checkOutTime,
       gstPercent: parsed.settings?.gstPercent ?? defaults.settings.gstPercent,
       extraPersonCharge: parsed.settings?.extraPersonCharge ?? defaults.settings.extraPersonCharge,
+      pricingHolidays: parsed.settings?.pricingHolidays ?? defaults.settings.pricingHolidays,
       houseRulesSections: parsed.settings?.houseRulesSections?.length
         ? parsed.settings.houseRulesSections
         : defaults.settings.houseRulesSections,

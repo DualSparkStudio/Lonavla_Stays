@@ -80,12 +80,43 @@ export default function AdminSiteSettingsPage() {
       <form onSubmit={handleSave} className="space-y-8">
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
           <h2 className="text-2xl font-bold text-gray-900">Brand &amp; contact</h2>
+          <p className="text-sm text-gray-600">
+            Contact person name and bio can also be edited under Admin → Profile.
+          </p>
           {field('Resort name', 'resortName', draft.resortName, handleChange)}
           {field('Tagline', 'brandTagline', draft.brandTagline, handleChange)}
           {field('Location', 'resortLocation', draft.resortLocation, handleChange)}
+          {field('Contact name', 'contactName', draft.contactName, handleChange)}
+          {field('Contact bio', 'contactBio', draft.contactBio, handleChange, true)}
           {field('Office address', 'resortAddress', draft.resortAddress, handleChange)}
           {field('Phone', 'resortPhone', draft.resortPhone, handleChange)}
           {field('Email', 'resortEmail', draft.resortEmail, handleChange)}
+        </section>
+
+        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+          <h2 className="text-2xl font-bold text-gray-900">Booking pricing</h2>
+          <p className="text-sm text-gray-600">
+            Weekdays are Sunday–Friday. Weekend rate applies on Saturdays and on the holiday dates listed
+            below (one date per line, YYYY-MM-DD).
+          </p>
+          <div>
+            <label className="block text-base font-semibold text-pink-600 mb-1">Pricing holidays</label>
+            <textarea
+              rows={6}
+              value={draft.pricingHolidays.join('\n')}
+              onChange={(e) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  pricingHolidays: e.target.value
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean),
+                }))
+              }
+              placeholder={'2026-08-15\n2026-10-02'}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
+            />
+          </div>
         </section>
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
@@ -190,7 +221,7 @@ export default function AdminSiteSettingsPage() {
                   next[i] = { ...next[i], image: e.target.value };
                   setDraft((prev) => ({ ...prev, exploreTiles: next }));
                 }}
-                placeholder="Image URL"
+                placeholder="Image URL (Drive share link or direct URL)"
                 className="px-3 py-2 border border-gray-300 rounded-lg"
               />
             </div>

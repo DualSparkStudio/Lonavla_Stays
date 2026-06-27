@@ -22,8 +22,9 @@
 .availability-calendar .fc-header-toolbar,
 .enhanced-calendar .fc-header-toolbar {
   margin-bottom: 0.5rem !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   gap: 0.35rem;
+  row-gap: 0.5rem;
 }
 
 .availability-calendar .fc-toolbar,
@@ -35,7 +36,7 @@
 .enhanced-calendar .fc-toolbar-chunk {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem;
 }
@@ -117,4 +118,29 @@
 .availability-calendar .fc-scrollgrid-section-header > td {
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+
+@media (max-width: 639px) {
+  .enhanced-calendar .fc-toolbar-title,
+  .availability-calendar .fc-toolbar-title {
+    font-size: 0.9rem !important;
+  }
+
+  .enhanced-calendar .fc-daygrid-day-frame,
+  .availability-calendar .fc-daygrid-day-frame {
+    min-height: 1.75rem;
+  }
+
+  .enhanced-calendar .fc-event-title,
+  .availability-calendar .fc-event-title {
+    font-size: 0.6rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .enhanced-calendar .fc-toolbar-title {
+    font-size: 0.95rem !important;
+  }
 }

@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { formatPrice } from '../data/resort';
 import type { BookingConfirmationData } from './bookingConfirmation';
 
@@ -19,7 +19,11 @@ export function calcExtraGuests(guestCount: number, guestsIncluded: number): num
 
 export type StayPricingInput = {
   pricePerNight: number;
+  weekendPricePerNight?: number;
+  checkInDate?: string;
   nights: number;
+  /** YYYY-MM-DD dates charged at the weekend rate (in addition to Saturdays). */
+  pricingHolidays?: string[];
   guestCount: number;
   /** Villa `max_guests` — guests covered by the base nightly rate */
   guestsIncluded: number;
@@ -28,6 +32,8 @@ export type StayPricingInput = {
 
 export type StayPricingResult = {
   nights: number;
+  weekdayNights: number;
+  weekendNights: number;
   basePrice: number;
   guestCount: number;
   guestsIncluded: number;
@@ -39,10 +45,60 @@ export type StayPricingResult = {
   extraPersonCharge: number;
 };
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const SATURDAY = 6;
+
+export function normalizePricingHolidays(dates?: string[]): Set<string> {
+  const set = new Set<string>();
+  for (const raw of dates ?? []) {
+    const d = raw.trim();
+    if (ISO_DATE.test(d)) set.add(d);
+  }
+  return set;
+}
+
+/** Weekend rate applies on Saturdays and configured holidays; Sun–Fri are weekdays unless a holiday. */
+export function isWeekendRateNight(date: Date, holidays: Set<string>): boolean {
+  return date.getDay() === SATURDAY || holidays.has(format(date, 'yyyy-MM-dd'));
+}
+
+function splitStayNightsByRate(
+  checkInDate: string,
+  nights: number,
+  holidays: Set<string>,
+): {
+  weekdayNights: number;
+  weekendNights: number;
+} {
+  let weekendNights = 0;
+  const start = parseISO(`${checkInDate}T12:00:00`);
+  if (Number.isNaN(start.getTime())) {
+    return { weekdayNights: nights, weekendNights: 0 };
+  }
+  for (let i = 0; i < nights; i += 1) {
+    const current = new Date(start);
+    current.setDate(start.getDate() + i);
+    if (isWeekendRateNight(current, holidays)) weekendNights += 1;
+  }
+  return { weekdayNights: nights - weekendNights, weekendNights };
+}
+
 export function computeStayPricing(input: StayPricingInput): StayPricingResult {
   const nights = Math.max(1, input.nights);
   const extraPersonCharge = input.extraPersonCharge;
-  const basePrice = input.pricePerNight * nights;
+  const weekendRate =
+    input.weekendPricePerNight && input.weekendPricePerNight > 0
+      ? input.weekendPricePerNight
+      : input.pricePerNight;
+  const { weekdayNights, weekendNights } =
+    input.checkInDate && input.weekendPricePerNight && input.weekendPricePerNight > 0
+      ? splitStayNightsByRate(
+          input.checkInDate,
+          nights,
+          normalizePricingHolidays(input.pricingHolidays),
+        )
+      : { weekdayNights: nights, weekendNights: 0 };
+  const basePrice = input.pricePerNight * weekdayNights + weekendRate * weekendNights;
   const extraGuests = calcExtraGuests(input.guestCount, input.guestsIncluded);
   const extraGuestsCharge = extraGuests * extraPersonCharge * nights;
   const total = basePrice + extraGuestsCharge;
@@ -51,6 +107,8 @@ export function computeStayPricing(input: StayPricingInput): StayPricingResult {
 
   return {
     nights,
+    weekdayNights,
+    weekendNights,
     basePrice,
     guestCount: input.guestCount,
     guestsIncluded: input.guestsIncluded,

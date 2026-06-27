@@ -7,8 +7,10 @@ import {
   checkSmtpConnection,
   getSmtpStatus,
   sendBookingConfirmationEmails,
+  sendContactMessageEmail,
   sendTestEmail,
   type BookingEmailPayload,
+  type ContactMessageEmailPayload,
 } from '../server/email-handlers';
 import { checkRoomAvailabilityRemote } from '../server/availability-handlers';
 import { createRazorpayOrder, verifyRazorpaySignature } from '../server/razorpay-handlers';
@@ -99,6 +101,7 @@ function createApiMiddleware(root: string, mode: string): Connect.NextHandleFunc
         pathname === '/api/verify-razorpay-payment' ||
         pathname === '/api/send-booking-emails' ||
         pathname === '/api/send-test-email' ||
+        pathname === '/api/send-contact-message' ||
         pathname === '/api/smtp-status') &&
       (req.method === 'POST' || req.method === 'GET')
     ) {
@@ -197,6 +200,30 @@ function createApiMiddleware(root: string, mode: string): Connect.NextHandleFunc
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Availability check failed';
         sendJson(res, 500, { error: message, available: false });
+      }
+      return;
+    }
+
+    if (pathname === '/api/send-contact-message' && req.method === 'POST') {
+      try {
+        const body = (await readJsonBody(req)) as ContactMessageEmailPayload;
+        if (!body.name?.trim() || !body.email?.trim() || !body.subject?.trim() || !body.message?.trim()) {
+          sendJson(res, 400, { error: 'Name, email, subject, and message are required' });
+          return;
+        }
+        await sendContactMessageEmail({
+          name: body.name.trim(),
+          email: body.email.trim(),
+          phone: body.phone?.trim(),
+          subject: body.subject.trim(),
+          message: body.message.trim(),
+          adminEmail: body.adminEmail?.trim(),
+          resortName: body.resortName?.trim(),
+        });
+        sendJson(res, 200, { success: true });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to send contact message';
+        sendJson(res, 500, { error: message });
       }
       return;
     }

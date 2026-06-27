@@ -32,6 +32,10 @@ export type SiteSettings = {
   resortAddress: string;
   resortPhone: string;
   resortEmail: string;
+  /** Contact person name shown on the public site (Admin → Profile) */
+  contactName: string;
+  /** Short bio shown on the contact page (Admin → Profile) */
+  contactBio: string;
   /** Site-wide standard check-in time (24h, e.g. 14:00) */
   checkInTime: string;
   /** Site-wide standard check-out time (24h, e.g. 11:00) */
@@ -40,6 +44,8 @@ export type SiteSettings = {
   gstPercent: number;
   /** Per-night charge for each guest above the villa's included guest count */
   extraPersonCharge: number;
+  /** YYYY-MM-DD dates charged at the weekend villa rate (in addition to Saturdays). */
+  pricingHolidays: string[];
   heroTitle: string;
   heroSubtitle: string;
   aboutImage: string;

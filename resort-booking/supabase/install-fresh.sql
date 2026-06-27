@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS public.villas (
   room_type TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   price_per_night NUMERIC(10, 2) NOT NULL,
+  weekend_price_per_night NUMERIC(10, 2),
   location TEXT NOT NULL DEFAULT '',
   address TEXT NOT NULL DEFAULT '',
   max_guests INTEGER NOT NULL DEFAULT 2,
@@ -66,6 +67,7 @@ CREATE TABLE IF NOT EXISTS public.villas (
   amenities TEXT[] NOT NULL DEFAULT '{}',
   images TEXT[] NOT NULL DEFAULT '{}',
   map_embed_url TEXT,
+  maps_link TEXT,
   check_in_time TEXT NOT NULL DEFAULT '14:00',
   check_out_time TEXT NOT NULL DEFAULT '11:00',
   -- Matches app localStorage villa ids: 1, 2, 3, 4
@@ -173,6 +175,7 @@ CREATE TABLE IF NOT EXISTS public.properties_for_sale (
   images TEXT[] NOT NULL DEFAULT '{}',
   highlights TEXT[] NOT NULL DEFAULT '{}',
   map_embed_url TEXT,
+  maps_link TEXT,
   is_active BOOLEAN NOT NULL DEFAULT true,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -388,6 +391,9 @@ ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS long_description
 ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS price_on_request BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'available';
 ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS map_embed_url TEXT;
+ALTER TABLE public.villas ADD COLUMN IF NOT EXISTS weekend_price_per_night NUMERIC(10, 2);
+ALTER TABLE public.villas ADD COLUMN IF NOT EXISTS maps_link TEXT;
+ALTER TABLE public.properties_for_sale ADD COLUMN IF NOT EXISTS maps_link TEXT;
 ALTER TABLE public.properties_for_sale DROP COLUMN IF EXISTS price_display;
 
 -- -----------------------------------------------------------------------------
@@ -396,13 +402,13 @@ ALTER TABLE public.properties_for_sale DROP COLUMN IF EXISTS price_display;
 -- -----------------------------------------------------------------------------
 
 INSERT INTO public.villas (
-  legacy_id, name, room_type, description, price_per_night, location, address,
+  legacy_id, name, room_type, description, price_per_night, weekend_price_per_night, location, address,
   max_guests, room_number, rating, review_count, status, amenities, images
 ) VALUES
 (
   '1', 'Valley View Villa', 'Deluxe Villa',
   'A standalone hill villa with misty Sahyadri views from a private deck. Ideal for couples and small families seeking a quiet Lonavala escape.',
-  6500, 'Tiger Valley, Lonavala', 'Survey No. 12, Tiger Valley Road, Lonavala, Maharashtra 410401',
+  6500, 7500, 'Tiger Valley, Lonavala', 'Survey No. 12, Tiger Valley Road, Lonavala, Maharashtra 410401',
   3, 'VV-01', 4.9, 128, 'available',
   ARRAY['Valley View','Private Deck','Wi-Fi','Air Conditioning','Kitchenette','Breakfast Included'],
   ARRAY[
@@ -414,7 +420,7 @@ INSERT INTO public.villas (
 (
   '2', 'Garden Wing Villa', 'Family Villa',
   'Spacious private villa with landscaped gardens and a separate living wingâ€”perfect for families who want their own property in the hills.',
-  9200, 'Tungarli, Lonavala', 'Lane 4, Near Tungarli Lake, Lonavala, Maharashtra 410403',
+  9200, 10500, 'Tungarli, Lonavala', 'Lane 4, Near Tungarli Lake, Lonavala, Maharashtra 410403',
   5, 'GW-02', 4.8, 89, 'available',
   ARRAY['Private Garden','Living Area','Wi-Fi','Air Conditioning','Parking','BBQ Patio'],
   ARRAY[
@@ -426,7 +432,7 @@ INSERT INTO public.villas (
 (
   '3', 'Hillside Premium Villa', 'Premium Villa',
   'Flagship villa with panoramic hill views, premium interiors, and a large sit-outâ€”our most requested property for special occasions.',
-  11500, 'Khandala Hills, Lonavala', 'Plot 8, Khandala View Road, Lonavala, Maharashtra 410401',
+  11500, 12900, 'Khandala Hills, Lonavala', 'Plot 8, Khandala View Road, Lonavala, Maharashtra 410401',
   4, 'HP-03', 5.0, 64, 'available',
   ARRAY['Panoramic View','King Bed','Private Pool','Wi-Fi','Chef on Request','Tea/Coffee Bar'],
   ARRAY[
@@ -438,7 +444,7 @@ INSERT INTO public.villas (
 (
   '4', 'Garden Cottage Villa', 'Cottage Villa',
   'Intimate standalone cottage tucked into greeneryâ€”romantic, private, and fully self-contained with its own entrance and patio.',
-  7800, 'Kurvande, Lonavala', 'Cottage 12, Green Meadows Estate, Kurvande, Lonavala 410401',
+  7800, 8900, 'Kurvande, Lonavala', 'Cottage 12, Green Meadows Estate, Kurvande, Lonavala 410401',
   2, 'GC-04', 4.7, 52, 'available',
   ARRAY['Private Entry','Garden Patio','Wi-Fi','Air Conditioning','Complimentary Breakfast','Parking'],
   ARRAY[
@@ -452,12 +458,15 @@ ON CONFLICT (legacy_id) DO NOTHING;
 INSERT INTO public.facilities (name, description, image, hours)
 SELECT v.name, v.description, v.image, v.hours
 FROM (VALUES
-  ('Private & shared pools', 'Select villas include plunge or infinity pools; others are a short drive from scenic lake spots.', 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop', 'Varies by villa'),
-  ('In-villa wellness', 'Spa and massage partners can be arranged at your villaâ€”no need to leave the property.', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop', 'By appointment'),
-  ('Chef & dining', 'In-villa meals, barbecue nights, and local Maharashtrian menus on request across the collection.', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=500&fit=crop', 'On request'),
-  ('Outdoor experiences', 'Bonfires, stargazing decks, and terrace eveningsâ€”set up at villas with outdoor space.', 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop', 'Seasonal'),
-  ('Nature trails & treks', 'Our team coordinates guided walks and viewpoints near each villa''s neighbourhood.', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop', 'By appointment'),
-  ('Family recreation', 'Board games, indoor lounges, and kid-friendly setupsâ€”amenities vary; check each villa listing.', 'https://images.unsplash.com/photo-1517457373958-b7bdd4587209?w=800&h=500&fit=crop', 'Varies by villa')
+  ('Carrom', 'Indoor carrom board for relaxed family game nights at the villa.', 'https://images.unsplash.com/photo-1611190103353-8fefb6d32c58?w=800&h=500&fit=crop', 'Included with stay'),
+  ('Badminton', 'Badminton setup for outdoor play—rackets and shuttle available at the property.', 'https://images.unsplash.com/photo-1626224583764-f87db4ac00ea?w=800&h=500&fit=crop', 'Included with stay'),
+  ('Cricket', 'Space and equipment for a friendly cricket match during your stay.', 'https://images.unsplash.com/photo-1531410400050-ca32ddb38f54?w=800&h=500&fit=crop', 'Included with stay'),
+  ('Swimming Pool', 'Private swimming pool for guests—perfect for a refreshing dip in the hills.', 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop', 'Included with stay'),
+  ('Refrigerator | Water Purifier', 'Fully equipped kitchen with refrigerator and RO water purifier for safe drinking water.', 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=500&fit=crop', 'Included with stay'),
+  ('Caretaker Available', 'On-site caretaker support to help with your stay and day-to-day needs at the villa.', 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&h=500&fit=crop', 'During your stay'),
+  ('BBQ Grill (On Request)', 'Barbecue grill arranged on request for outdoor dining and grill nights.', 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=500&fit=crop', 'On request'),
+  ('Portable Speaker', 'Portable Bluetooth speaker for music on the terrace, by the pool, or indoors.', 'https://images.unsplash.com/photo-1545454675-3531b543f6b4?w=800&h=500&fit=crop', 'Included with stay'),
+  ('32" Smart TV | Free Wi-Fi', '32-inch smart TV with streaming apps and complimentary high-speed Wi-Fi throughout the villa.', 'https://images.unsplash.com/photo-1593359677873-a886bb46f1ef?w=800&h=500&fit=crop', 'Included with stay')
 ) AS v(name, description, image, hours)
 WHERE NOT EXISTS (SELECT 1 FROM public.facilities LIMIT 1);
 

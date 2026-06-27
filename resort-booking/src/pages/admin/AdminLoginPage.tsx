@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { adminLogin, isAdminAuthenticated, validateAdminCredentials } from '../../lib/adminAuth';
+import { adminLogin, isAdminAuthenticated, verifyAdminLogin } from '../../lib/adminAuth';
 
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,11 +21,12 @@ const AdminLoginPage: React.FC = () => {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    if (validateAdminCredentials(credentials.username, credentials.password)) {
+    const result = await verifyAdminLogin(credentials.username, credentials.password);
+    if (result.ok) {
       adminLogin();
       navigate('/admin', { replace: true });
     } else {
-      setError('Invalid username or password.');
+      setError(result.error ?? 'Invalid username or password.');
     }
     setIsLoading(false);
   };
@@ -80,16 +81,6 @@ const AdminLoginPage: React.FC = () => {
             {isLoading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-base text-gray-700 text-center">
-            <strong>Demo credentials:</strong>
-            <br />
-            Username: <code className="bg-white px-1 rounded">admin</code>
-            <br />
-            Password: <code className="bg-white px-1 rounded">admin123</code>
-          </p>
-        </div>
 
         <div className="mt-6 text-center space-y-2">
           <Link to="/" className="block text-gray-900 hover:text-gray-700 text-base font-medium">

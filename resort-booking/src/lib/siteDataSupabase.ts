@@ -1,24 +1,24 @@
 import { addYears, format, subDays } from 'date-fns';
-import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from '../data/resort';
+import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME, resortFacilities } from '../data/resort';
+import type {
+    AdminBooking,
+    BlockedDate,
+    ContactMessage,
+    Facility,
+    PropertyForSale,
+    Room,
+    SiteData,
+    SiteSettings,
+} from '../types/site';
 import { defaultSiteSettings } from './siteStorage';
 import { normalizeExploreTiles } from './exploreTileImages';
 import { supabase } from './supabase';
 import {
-  buildVillaUuidCache,
-  getVillaUuidFromCache,
-  isUuid,
-  setVillaUuidCache,
+    buildVillaUuidCache,
+    getVillaUuidFromCache,
+    isUuid,
+    setVillaUuidCache,
 } from './villaUuidCache';
-import type {
-  AdminBooking,
-  BlockedDate,
-  ContactMessage,
-  Facility,
-  PropertyForSale,
-  Room,
-  SiteData,
-  SiteSettings,
-} from '../types/site';
 
 type VillaRow = {
   id: string;
@@ -27,6 +27,7 @@ type VillaRow = {
   room_type: string;
   description: string;
   price_per_night: number;
+  weekend_price_per_night: number | null;
   location: string;
   address: string;
   max_guests: number;
@@ -37,6 +38,7 @@ type VillaRow = {
   amenities: string[];
   images: string[];
   map_embed_url: string | null;
+  maps_link: string | null;
   check_in_time?: string | null;
   check_out_time?: string | null;
 };
@@ -96,6 +98,7 @@ type PropertyRow = {
   images: string[];
   highlights: string[];
   map_embed_url: string | null;
+  maps_link: string | null;
 };
 
 type ContactRow = {
@@ -121,6 +124,8 @@ function mapVillaToRoom(row: VillaRow): Room {
     room_type: row.room_type,
     description: row.description,
     price_per_night: Number(row.price_per_night),
+    weekend_price_per_night:
+      row.weekend_price_per_night != null ? Number(row.weekend_price_per_night) : undefined,
     location: row.location,
     address: row.address,
     max_guests: row.max_guests,
@@ -131,6 +136,7 @@ function mapVillaToRoom(row: VillaRow): Room {
     amenities: row.amenities ?? [],
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
+    mapsLink: row.maps_link ?? undefined,
   };
 }
 
@@ -200,6 +206,7 @@ function mapPropertyRow(row: PropertyRow): PropertyForSale {
     highlights: row.highlights ?? [],
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
+    mapsLink: row.maps_link ?? undefined,
   };
 }
 
@@ -223,14 +230,19 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
     ...(data as Partial<SiteSettings>),
     aboutParagraphs: (data.aboutParagraphs as string[]) ?? defaults.aboutParagraphs,
     aboutHighlights: (data.aboutHighlights as SiteSettings['aboutHighlights']) ?? defaults.aboutHighlights,
+<<<<<<< HEAD
     exploreTiles: normalizeExploreTiles(
       (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
     ),
+=======
+    exploreTiles: (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
+    pricingHolidays: (data.pricingHolidays as string[]) ?? defaults.pricingHolidays,
+>>>>>>> 23b6650e23fb088ed1f291434c5bd8d4fee84e8a
   };
 }
 
 const VILLA_COLUMNS =
-  'id, legacy_id, name, room_type, description, price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url';
+  'id, legacy_id, name, room_type, description, price_per_night, weekend_price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url, maps_link';
 const BOOKING_COLUMNS =
   'id, villa_id, booking_ref, check_in, check_out, adults, children, total_amount, status, guest_name, guest_email, created_at, villas(name, legacy_id)';
 const BLOCKED_COLUMNS = 'id, villa_id, start_date, end_date, reason, notes, source, created_at';
@@ -246,7 +258,6 @@ function mapFetchedSiteData(
   bookings: BookingRow[],
   blocked: BlockedRow[],
   settingsData: Record<string, unknown> | null,
-  facilities: FacilityRow[],
   properties: PropertyRow[],
   messages: ContactRow[],
 ): SiteData {
@@ -258,7 +269,7 @@ function mapFetchedSiteData(
     rooms: villas.map(mapVillaToRoom),
     bookings: bookings.map(mapBookingRow),
     blockedDates: blocked.map((r) => mapBlockedRow(r, legacyByUuid)),
-    facilities: facilities.map(mapFacilityRow),
+    facilities: resortFacilities,
     propertiesForSale: properties.map(mapPropertyRow),
     contactMessages: messages.map(mapContactRow),
     users: [],
@@ -273,7 +284,6 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     bookingsRes,
     blockedRes,
     settingsRes,
-    facilitiesRes,
     propertiesRes,
   ] = await Promise.all([
     supabase.from('villas').select(VILLA_COLUMNS).eq('is_active', true).order('room_number'),
@@ -286,11 +296,10 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
       .order('created_at', { ascending: false }),
     supabase.from('blocked_dates').select(BLOCKED_COLUMNS).order('start_date'),
     supabase.from('site_settings').select('data').eq('id', 'main').maybeSingle(),
-    supabase.from('facilities').select('id, name, description, image, hours').eq('is_active', true).order('name'),
     supabase
       .from('properties_for_sale')
       .select(
-        'id, legacy_id, title, category, description, long_description, price_amount, price_on_request, location, address, bedrooms, bathrooms, area_label, status, images, highlights, map_embed_url',
+        'id, legacy_id, title, category, description, long_description, price_amount, price_on_request, location, address, bedrooms, bathrooms, area_label, status, images, highlights, map_embed_url, maps_link',
       )
       .eq('is_active', true)
       .order('sort_order'),
@@ -301,7 +310,6 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     bookingsRes.error,
     blockedRes.error,
     settingsRes.error,
-    facilitiesRes.error,
     propertiesRes.error,
   ].filter(Boolean);
 
@@ -314,24 +322,16 @@ export async function fetchPublicSiteDataFromSupabase(): Promise<SiteData> {
     (bookingsRes.data ?? []) as BookingRow[],
     (blockedRes.data ?? []) as BlockedRow[],
     (settingsRes.data?.data as Record<string, unknown>) ?? null,
-    (facilitiesRes.data ?? []) as FacilityRow[],
     (propertiesRes.data ?? []) as PropertyRow[],
     [],
   );
 }
 
-/** Admin-only supplement: contact messages + full booking history. */
+/** Admin-only supplement: full booking history. */
 export async function fetchAdminSiteDataFromSupabase(): Promise<{
   contactMessages: ContactMessage[];
   bookings: AdminBooking[];
 }> {
-  const { data, error } = await supabase
-    .from('contact_messages')
-    .select('id, name, email, phone, subject, message, created_at')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-
   const bookingsRes = await supabase
     .from('bookings')
     .select(BOOKING_COLUMNS)
@@ -341,7 +341,7 @@ export async function fetchAdminSiteDataFromSupabase(): Promise<{
   if (bookingsRes.error) throw bookingsRes.error;
 
   return {
-    contactMessages: ((data ?? []) as ContactRow[]).map(mapContactRow),
+    contactMessages: [],
     bookings: ((bookingsRes.data ?? []) as BookingRow[]).map(mapBookingRow),
   };
 }
@@ -399,6 +399,7 @@ export async function upsertVillaToSupabase(room: Room): Promise<void> {
     room_type: room.room_type,
     description: room.description,
     price_per_night: room.price_per_night,
+    weekend_price_per_night: room.weekend_price_per_night ?? null,
     location: room.location,
     address: room.address,
     max_guests: room.max_guests,
@@ -411,6 +412,7 @@ export async function upsertVillaToSupabase(room: Room): Promise<void> {
     check_in_time: room.check_in_time?.trim() || DEFAULT_CHECK_IN_TIME,
     check_out_time: room.check_out_time?.trim() || DEFAULT_CHECK_OUT_TIME,
     map_embed_url: room.mapEmbedUrl ?? null,
+    maps_link: room.mapsLink ?? null,
     is_active: true,
   };
 
@@ -585,6 +587,7 @@ export async function upsertPropertyToSupabase(property: PropertyForSale): Promi
     images: property.images,
     highlights: property.highlights,
     map_embed_url: property.mapEmbedUrl ?? null,
+    maps_link: property.mapsLink ?? null,
     is_active: true,
   };
 
@@ -609,27 +612,5 @@ export async function deletePropertyFromSupabase(id: string): Promise<void> {
   const { data } = await query.maybeSingle();
   if (!data?.id) return;
   const { error } = await supabase.from('properties_for_sale').update({ is_active: false }).eq('id', data.id);
-  if (error) throw error;
-}
-
-export async function insertContactMessageToSupabase(message: ContactMessage): Promise<ContactMessage> {
-  const { data, error } = await supabase
-    .from('contact_messages')
-    .insert({
-      name: message.name,
-      email: message.email,
-      phone: message.phone || null,
-      subject: message.subject,
-      message: message.message,
-    })
-    .select('id, name, email, phone, subject, message, created_at')
-    .single();
-
-  if (error) throw error;
-  return mapContactRow(data as ContactRow);
-}
-
-export async function deleteContactMessageFromSupabase(id: string): Promise<void> {
-  const { error } = await supabase.from('contact_messages').delete().eq('id', id);
   if (error) throw error;
 }

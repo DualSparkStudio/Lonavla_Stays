@@ -2,11 +2,12 @@ import React, { memo, useCallback, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import type { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import type { DateSelectArg, EventClickArg, EventInput, ToolbarInput } from '@fullcalendar/core';
 import { addDays, format, parseISO } from 'date-fns';
 import '../styles/fullcalendar.css';
 import type { AdminBooking, BlockedDate, Room } from '../types/site';
 import { bookingEventEnd } from '../lib/availability';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 type EnhancedCalendarProps = {
   bookings: AdminBooking[];
@@ -19,11 +20,24 @@ type EnhancedCalendarProps = {
 };
 
 const FC_PLUGINS = [dayGridPlugin, interactionPlugin];
-const FC_HEADER = {
+
+const DESKTOP_HEADER: ToolbarInput = {
   left: 'prev,next today',
   center: 'title',
   right: 'dayGridMonth,dayGridWeek',
-} as const;
+};
+
+const TABLET_HEADER: ToolbarInput = {
+  left: 'prev,next',
+  center: 'title',
+  right: 'today',
+};
+
+const MOBILE_HEADER: ToolbarInput = {
+  left: 'prev,next',
+  center: 'title',
+  right: 'today',
+};
 
 const statusColors: Record<AdminBooking['status'], { bg: string; border: string }> = {
   confirmed: { bg: '#ef4444', border: '#dc2626' },
@@ -41,6 +55,11 @@ const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   onBookingClick,
   onBlockedClick,
 }) => {
+  const isMobile = useMediaQuery('(max-width: 639px)');
+  const isTablet = useMediaQuery('(max-width: 1023px)');
+
+  const headerToolbar = isMobile ? MOBILE_HEADER : isTablet ? TABLET_HEADER : DESKTOP_HEADER;
+
   const roomNameById = useMemo(
     () => Object.fromEntries(rooms.map((r) => [r.id, r.name])),
     [rooms],
@@ -108,15 +127,16 @@ const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
   );
 
   return (
-    <div className="enhanced-calendar rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="enhanced-calendar rounded-xl border border-gray-200 bg-white p-2 sm:p-4 shadow-sm overflow-hidden">
       <FullCalendar
         plugins={FC_PLUGINS}
         initialView="dayGridMonth"
         height="auto"
         selectable
         selectMirror
+        longPressDelay={250}
         fixedWeekCount={false}
-        headerToolbar={FC_HEADER}
+        headerToolbar={headerToolbar}
         events={events}
         select={onDateSelect}
         eventClick={handleEventClick}

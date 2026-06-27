@@ -1,18 +1,18 @@
+import {
+    HomeModernIcon,
+    MapPinIcon,
+    SparklesIcon,
+} from '@heroicons/react/24/outline';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {
-  HomeModernIcon,
-  MapPinIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/outline';
 import { formatPrice } from '../../data/resort';
-import NormalizedImage from '../ui/NormalizedImage';
 import type { Room } from '../../types/site';
+import NormalizedImage from '../ui/NormalizedImage';
 import {
-  AdminDetailField,
-  AdminDetailModalShell,
-  AdminDetailSection,
-  StatusPill,
+    AdminDetailField,
+    AdminDetailModalShell,
+    AdminDetailSection,
+    StatusPill,
 } from './AdminDetailModal';
 
 type AdminVillaDetailsModalProps = {
@@ -70,7 +70,14 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
           <AdminDetailField
             label="Price per night"
             value={formatPrice(villa.price_per_night)}
-            className="sm:col-span-2"
+          />
+          <AdminDetailField
+            label="Weekend price per night"
+            value={
+              villa.weekend_price_per_night && villa.weekend_price_per_night > 0
+                ? formatPrice(villa.weekend_price_per_night)
+                : 'Not set'
+            }
           />
         </div>
       </AdminDetailSection>
@@ -85,8 +92,12 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
           <AdminDetailField label="Area" value={villa.location} />
           <AdminDetailField label="Full address" value={villa.address} />
           <AdminDetailField
-            label="Map"
-            value={villa.mapEmbedUrl ? 'Google Maps embed added' : 'No map added'}
+            label="Map embed"
+            value={villa.mapEmbedUrl ? 'Google Maps embed added' : 'No embed added'}
+          />
+          <AdminDetailField
+            label="Maps link"
+            value={villa.mapsLink ? 'Guest maps link saved' : 'No maps link'}
           />
         </div>
       </AdminDetailSection>

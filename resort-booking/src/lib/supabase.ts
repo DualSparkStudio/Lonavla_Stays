@@ -37,7 +37,8 @@ export const supabase = isSupabaseConfigured
         update: () => Promise.resolve({ data: null, error: null }),
         delete: () => Promise.resolve({ data: null, error: null }),
       }),
-    };
+      rpc: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+    } as ReturnType<typeof createClient>;
 
 // Database schema types (simplified for demo)
 export type Database = {
