@@ -69,7 +69,7 @@ const PropertiesForSalePage: React.FC = () => {
             <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">
               {settings.forSalePageTitle}
             </h1>
-            <p className="text-2xl text-gray-900 max-w-2xl">
+            <p className="section-lead text-2xl max-w-2xl">
               {settings.forSalePageSubtitle}
             </p>
             {(categoryFilter !== 'all' || areaFilter !== 'all') && (
@@ -158,9 +158,9 @@ const PropertiesForSalePage: React.FC = () => {
                     <h2 className="font-heading text-xl text-airbnb-red uppercase tracking-wide mb-2">
                       {property.title}
                     </h2>
-                    <p className="text-lg text-gray-900 font-medium mb-1">{property.location}</p>
-                    <p className="text-base text-gray-900 mb-3">{property.areaLabel}</p>
-                    <p className="text-lg text-gray-900 mb-4 line-clamp-2">{property.description}</p>
+                    <p className="villa-card-meta text-lg font-medium mb-1">{property.location}</p>
+                    <p className="villa-card-meta text-base mb-3">{property.areaLabel}</p>
+                    <p className="villa-card-body text-lg mb-4 line-clamp-2">{property.description}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {property.highlights.slice(0, 3).map((h) => (
                         <span

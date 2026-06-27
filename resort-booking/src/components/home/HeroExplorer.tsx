@@ -55,9 +55,8 @@ const HeroExplorer: React.FC = () => {
 
   const fieldClass =
     'px-3 py-2 md:px-4 md:py-3 border-b border-gray-100 md:border-b-0 overflow-visible';
-  const labelClass = 'text-base font-bold text-gray-900 mb-1';
-  const inputClass =
-    'w-full min-w-0 text-lg font-medium text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 p-0';
+  const labelClass = 'form-field-label';
+  const inputClass = 'form-field-value';
   const dateInputClass = cn(inputClass, 'min-w-[9.75rem]');
 
   return (
@@ -70,7 +69,7 @@ const HeroExplorer: React.FC = () => {
               type="button"
               onClick={() => setMode('stay')}
               className={cn(
-                'w-full rounded-xl px-4 py-2.5 text-sm font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
+                'w-full rounded-xl px-4 py-2.5 text-sm font-ui font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
                 mode === 'stay'
                   ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
                   : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
@@ -82,7 +81,7 @@ const HeroExplorer: React.FC = () => {
               type="button"
               onClick={() => setMode('buy')}
               className={cn(
-                'w-full rounded-xl px-4 py-2.5 text-sm font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
+                'w-full rounded-xl px-4 py-2.5 text-sm font-ui font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
                 mode === 'buy'
                   ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
                   : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
@@ -96,7 +95,7 @@ const HeroExplorer: React.FC = () => {
 
         {mode === 'stay' || !isForSaleEnabled ? (
           <>
-            <p className="text-center text-base text-gray-900 mb-3 px-2 leading-relaxed">
+            <p className="section-lead text-base mb-3 px-2">
               Nightly villa rentals across {settings.resortLocation || RESORT_LOCATION} — pick dates and browse available stays.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.35fr)_minmax(10rem,1fr)_minmax(10rem,1fr)_auto] md:items-end md:divide-x md:divide-gray-300">
@@ -170,7 +169,7 @@ const HeroExplorer: React.FC = () => {
           </>
         ) : (
           <>
-            <p className="text-center text-base text-gray-900 mb-3 px-2 leading-relaxed">
+            <p className="section-lead text-base mb-3 px-2">
               Own a piece of Lonavala — browse NA plots and ready villas with photos, details, and
               direct contact.
             </p>

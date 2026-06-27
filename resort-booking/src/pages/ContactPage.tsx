@@ -70,7 +70,7 @@ const ContactPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AnimatedSection>
             <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">Contact us</h1>
-            <p className="text-2xl text-gray-900 max-w-2xl">{settings.contactPageSubtitle}</p>
+            <p className="section-lead text-2xl max-w-2xl">{settings.contactPageSubtitle}</p>
           </AnimatedSection>
         </div>
       </div>

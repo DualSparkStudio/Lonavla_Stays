@@ -43,7 +43,7 @@ const PublicHomePage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <AnimatedSection>
-          <h2 className="section-title text-4xl mb-2">Featured villas</h2>
+          <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">Featured villas</h2>
           <p className="section-lead text-2xl mb-8 max-w-2xl">
             {settings.brandTagline}. Every card is a separate villa we manage—tap to see location, amenities, and rates.
           </p>
@@ -70,14 +70,14 @@ const PublicHomePage: React.FC = () => {
                 </div>
                 <div className="p-5">
                   <h3 className="font-heading text-lg text-airbnb-red leading-snug uppercase tracking-wide">{room.name}</h3>
-                  <p className="text-gray-900 text-lg font-normal mb-2 mt-2">
+                  <p className="villa-card-meta text-lg mb-2 mt-2">
                     {room.location} · {room.max_guests} guests included
                   </p>
-                  <p className="text-gray-900 text-lg font-normal mb-3 line-clamp-2">{room.description}</p>
+                  <p className="villa-card-body text-lg mb-3 line-clamp-2">{room.description}</p>
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="villa-card-price">₹{room.price_per_night.toLocaleString('en-IN')}</span>
-                      <span className="text-gray-900 text-xl font-normal"> / night</span>
+                      <span className="villa-card-suffix"> / night</span>
                     </div>
                   </div>
                 </div>
@@ -100,7 +100,7 @@ const PublicHomePage: React.FC = () => {
       <div className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <h2 className="section-title text-4xl mb-2">
+            <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">
               Plots &amp; villas for sale
             </h2>
           </AnimatedSection>
@@ -123,7 +123,7 @@ const PublicHomePage: React.FC = () => {
                   />
                   <div className="p-5">
                     <h3 className="font-heading text-lg text-airbnb-red uppercase tracking-wide mb-2">{property.title}</h3>
-                    <p className="text-gray-900 text-lg font-medium mb-2">{property.location}</p>
+                    <p className="villa-card-meta text-lg font-medium mb-2">{property.location}</p>
                     <span className="font-bold text-2xl villa-card-price">{formatSalePrice(property)}</span>
                   </div>
                 </div>

@@ -94,7 +94,7 @@ const RoomsPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AnimatedSection>
             <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">{settings.villasPageTitle}</h1>
-            <p className="text-2xl text-gray-900 max-w-2xl">
+            <p className="section-lead text-2xl max-w-2xl">
               {settings.villasPageSubtitle}
             </p>
             {searchHint && (
@@ -184,10 +184,10 @@ const RoomsPage: React.FC = () => {
                     <h2 className="font-heading text-xl text-airbnb-red uppercase tracking-wide">{room.name}</h2>
                     <span className="text-lg font-bold text-gray-800">★ {room.rating}</span>
                   </div>
-                  <p className="text-lg text-gray-900 font-normal mb-2">
+                  <p className="villa-card-meta text-lg mb-2">
                     {room.location} · {room.max_guests} guests included
                   </p>
-                  <p className="text-lg text-gray-900 font-normal mb-4 line-clamp-2">{room.description}</p>
+                  <p className="villa-card-body text-lg mb-4 line-clamp-2">{room.description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {room.amenities.slice(0, 4).map((a) => (
                       <span key={a} className="text-xs font-bold bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
@@ -198,7 +198,7 @@ const RoomsPage: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="villa-card-price">{formatPrice(room.price_per_night)}</span>
-                      <span className="text-xl font-normal text-gray-900"> / night</span>
+                      <span className="villa-card-suffix"> / night</span>
                     </div>
                     <span className="text-airbnb-red font-bold text-base">View details →</span>
                   </div>

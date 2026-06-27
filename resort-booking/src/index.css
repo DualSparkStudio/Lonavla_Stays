@@ -39,8 +39,9 @@
   h4,
   h5,
   h6 {
-    @apply font-sans font-bold;
-    letter-spacing: 0.01em;
+    font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.04em;
     text-transform: none;
   }
 
@@ -71,11 +72,23 @@
   }
 
   .section-title {
-    @apply font-sans font-bold text-gray-900 tracking-wide;
+    @apply font-heading font-normal text-gray-900 tracking-wide;
   }
 
   .section-lead {
-    @apply font-sans font-normal text-gray-900;
+    @apply font-sans font-normal text-gray-900 leading-relaxed;
+  }
+
+  .form-field-label {
+    @apply font-ui text-base font-bold text-gray-900 mb-1;
+  }
+
+  .form-field-value {
+    @apply font-ui w-full min-w-0 text-lg font-medium text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 p-0;
+  }
+
+  .nav-link-label {
+    @apply font-ui;
   }
 
   .nav-header {
@@ -126,8 +139,20 @@
     @apply font-display text-airbnb-red text-sm;
   }
 
+  .room-card .villa-card-meta {
+    @apply font-ui font-normal text-gray-900;
+  }
+
+  .room-card .villa-card-body {
+    @apply font-sans font-normal text-gray-900;
+  }
+
   .room-card .villa-card-price {
     @apply font-sans text-airbnb-red text-2xl font-bold;
+  }
+
+  .room-card .villa-card-suffix {
+    @apply font-ui text-xl font-normal text-gray-900;
   }
 
   .explore-tile {

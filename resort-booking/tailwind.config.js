@@ -29,6 +29,12 @@ export default {
       },
       fontFamily: {
         sans: [
+          'Cormorant Garamond',
+          'Georgia',
+          'Times New Roman',
+          'serif',
+        ],
+        ui: [
           'Inter',
           'ui-sans-serif',
           'system-ui',

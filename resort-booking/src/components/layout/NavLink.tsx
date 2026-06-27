@@ -54,7 +54,7 @@ const NavLink: React.FC<NavLinkProps> = ({
       </span>
       <span
         className={cn(
-          'nav-link-label leading-none font-display font-normal transition-transform duration-300',
+          'nav-link-label leading-none font-bold transition-transform duration-300',
           compact ? 'text-xs xl:text-sm' : 'text-base'
         )}
       >
