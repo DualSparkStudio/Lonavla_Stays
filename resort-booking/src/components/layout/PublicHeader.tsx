@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import NavLink from './NavLink';
+import BrandLogo from './BrandLogo';
 import { mainNavConfig } from './NavIcons';
 import { useSiteSettings } from '../../context/SiteDataContext';
 import { cn } from '../../utils/cn';
@@ -49,27 +50,19 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({ currentPage = 'home' }) => 
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between min-h-[4.5rem] py-2 lg:py-0 lg:h-20 gap-3">
+        <div className="relative flex items-center justify-between min-h-[4.5rem] py-2.5 lg:py-3 gap-3">
           <Link
             to="/"
-            className="nav-link-enter relative z-10 flex items-center min-w-0 max-w-[58%] sm:max-w-[48%] lg:max-w-[28%] shrink-0 transition-transform duration-300 hover:scale-[1.02]"
+            className="nav-link-enter relative z-10 flex items-center shrink-0 max-w-[calc(100%-3.25rem)] sm:max-w-[calc(100%-4rem)] lg:max-w-none transition-transform duration-300 hover:scale-[1.01]"
             style={{ animationDelay: '80ms' }}
           >
-            <svg
-              viewBox="0 0 32 32"
-              className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 motion-safe:animate-nav-pop"
-              style={{ animationDelay: '120ms' }}
-              aria-hidden
-            >
-              <circle cx="16" cy="16" r="16" fill="#FF385C" />
-              <path
-                fill="#fff"
-                d="M16 7c-4.5 3.5-9 7.2-9 12.2a4.5 4.5 0 109 0c0-1.2-.4-2.3-1-3.2.6 2.2 2.5 3.8 4.8 3.8a4.8 4.8 0 100-9.6c-1.2 0-2.3.4-3.2 1.1.9-3.5 3.5-6.2 6.4-7.3z"
-              />
-            </svg>
-            <span className="font-heading ml-2 text-sm sm:text-lg lg:text-xl text-[#FF385C] uppercase tracking-wide truncate">
-              {settings.resortName}
-            </span>
+            <BrandLogo
+              name={settings.resortName}
+              showName
+              variant="mark"
+              size="header"
+              className="motion-safe:animate-nav-pop"
+            />
           </Link>
 
           <nav

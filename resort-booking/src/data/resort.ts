@@ -1,4 +1,5 @@
-export const RESORT_NAME = 'The Lonavala Stays';
+export const RESORT_NAME = 'Lonavala Stays';
+export const BRAND_LOGO_URL = '/brand/lonavala-stays-logo.png';
 export const BRAND_TAGLINE = 'Curated luxury villas across Lonavala';
 export const RESORT_LOCATION = 'Lonavala, Maharashtra';
 /** Reservations & management office (not a single guest property). */

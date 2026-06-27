@@ -6,6 +6,7 @@ import HeroExplorer from '../components/home/HeroExplorer';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import { formatSalePrice } from '../data/propertiesForSale';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
+import { resolveExploreTileImage } from '../lib/exploreTileImages';
 import { isForSaleEnabled } from '../lib/featureFlags';
 
 const PublicHomePage: React.FC = () => {
@@ -32,7 +33,7 @@ const PublicHomePage: React.FC = () => {
             <h1 className="font-heading text-4xl md:text-6xl font-normal tracking-wide text-gray-900 mb-4 motion-safe:animate-slide-up">
               {settings.heroTitle}
             </h1>
-            <p className="text-2xl text-gray-900 max-w-2xl mx-auto motion-safe:animate-fade-in [animation-delay:150ms] opacity-0 [animation-fill-mode:forwards]">
+            <p className="section-lead text-2xl max-w-2xl mx-auto motion-safe:animate-fade-in [animation-delay:150ms] opacity-0 [animation-fill-mode:forwards]">
               {settings.heroSubtitle}
             </p>
           </div>
@@ -42,8 +43,8 @@ const PublicHomePage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <AnimatedSection>
-          <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">Featured villas</h2>
-          <p className="text-2xl text-gray-900 mb-8 max-w-2xl">
+          <h2 className="section-title text-4xl mb-2">Featured villas</h2>
+          <p className="section-lead text-2xl mb-8 max-w-2xl">
             {settings.brandTagline}. Every card is a separate villa we manage—tap to see location, amenities, and rates.
           </p>
         </AnimatedSection>
@@ -69,14 +70,14 @@ const PublicHomePage: React.FC = () => {
                 </div>
                 <div className="p-5">
                   <h3 className="font-heading text-lg text-airbnb-red leading-snug uppercase tracking-wide">{room.name}</h3>
-                  <p className="text-gray-900 text-lg font-medium mb-2 mt-2">
+                  <p className="text-gray-900 text-lg font-normal mb-2 mt-2">
                     {room.location} · {room.max_guests} guests included
                   </p>
-                  <p className="text-gray-900 text-lg mb-3 line-clamp-2">{room.description}</p>
+                  <p className="text-gray-900 text-lg font-normal mb-3 line-clamp-2">{room.description}</p>
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="villa-card-price">₹{room.price_per_night.toLocaleString('en-IN')}</span>
-                      <span className="text-gray-900 text-xl"> / night</span>
+                      <span className="text-gray-900 text-xl font-normal"> / night</span>
                     </div>
                   </div>
                 </div>
@@ -99,7 +100,7 @@ const PublicHomePage: React.FC = () => {
       <div className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">
+            <h2 className="section-title text-4xl mb-2">
               Plots &amp; villas for sale
             </h2>
           </AnimatedSection>
@@ -141,12 +142,13 @@ const PublicHomePage: React.FC = () => {
               .map((item, index) => (
               <AnimatedSection key={item.name} delay={index * 100} variant="scale-in">
                 <Link to={item.path} className="explore-tile relative rounded-lg overflow-hidden group block">
-                  <img
-                    src={item.image}
+                  <NormalizedImage
+                    src={resolveExploreTileImage(item)}
                     alt={item.name}
                     loading="lazy"
                     decoding="async"
                     className="explore-tile-image w-full h-32 object-cover"
+                    fallback={resolveExploreTileImage({ ...item, image: '' })}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/25 flex items-center justify-center p-3">
                     <span className="text-white font-heading text-base uppercase tracking-wide text-center">

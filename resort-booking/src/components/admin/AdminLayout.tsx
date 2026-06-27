@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useSiteData } from '../../context/SiteDataContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useSiteData } from '../../context/SiteDataContext';
 import { adminLogout } from '../../lib/adminAuth';
 import { getAdminInitials, loadAdminProfile } from '../../lib/adminProfile';
 import { isForSaleEnabled } from '../../lib/featureFlags';

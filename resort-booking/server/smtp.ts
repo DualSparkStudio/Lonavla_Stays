@@ -51,7 +51,7 @@ export function getSmtpConfig(): SmtpConfig | null {
     user,
     pass,
     fromEmail,
-    fromName: process.env.FROM_NAME?.trim() || process.env.VITE_APP_NAME?.trim() || 'The Lonavala Stays',
+    fromName: process.env.FROM_NAME?.trim() || process.env.VITE_APP_NAME?.trim() || 'Lonavala Stays',
     adminEmail: process.env.ADMIN_EMAIL?.trim() || fromEmail,
   };
 }

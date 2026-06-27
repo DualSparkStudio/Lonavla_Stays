@@ -142,10 +142,10 @@ const RoomsPage: React.FC = () => {
                     <h2 className="font-heading text-xl text-airbnb-red uppercase tracking-wide">{room.name}</h2>
                     <span className="text-lg font-bold text-gray-800">★ {room.rating}</span>
                   </div>
-                  <p className="text-lg text-gray-900 font-medium mb-2">
+                  <p className="text-lg text-gray-900 font-normal mb-2">
                     {room.location} · {room.max_guests} guests included
                   </p>
-                  <p className="text-lg text-gray-900 mb-4 line-clamp-2">{room.description}</p>
+                  <p className="text-lg text-gray-900 font-normal mb-4 line-clamp-2">{room.description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {room.amenities.slice(0, 4).map((a) => (
                       <span key={a} className="text-xs font-bold bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
@@ -156,7 +156,7 @@ const RoomsPage: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="villa-card-price">{formatPrice(room.price_per_night)}</span>
-                      <span className="text-xl font-medium text-gray-900"> / night</span>
+                      <span className="text-xl font-normal text-gray-900"> / night</span>
                     </div>
                     <span className="text-airbnb-red font-bold text-base">View details →</span>
                   </div>

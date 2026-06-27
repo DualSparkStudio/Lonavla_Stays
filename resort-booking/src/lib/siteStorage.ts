@@ -12,6 +12,7 @@ import {
   DEFAULT_GST_PERCENT,
   DEFAULT_EXTRA_PERSON_CHARGE,
 } from '../data/resort';
+import { EXPLORE_TILE_IMAGES } from './exploreTileImages';
 import { propertiesForSale as defaultPropertiesForSale } from '../data/propertiesForSale';
 import type { SiteData, SiteSettings, Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, BlockedDate } from '../types/site';
 
@@ -57,10 +58,10 @@ export const defaultSiteSettings = (): SiteSettings => ({
     },
   ],
   exploreTiles: [
-    { name: 'All villas', path: '/villas', image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop' },
-    { name: 'For sale', path: '/for-sale', image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop' },
-    { name: 'Facilities', path: '/facilities', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop' },
-    { name: 'Contact', path: '/contact', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop' },
+    { name: 'All villas', path: '/villas', image: EXPLORE_TILE_IMAGES['/villas'] },
+    { name: 'For sale', path: '/for-sale', image: EXPLORE_TILE_IMAGES['/for-sale'] },
+    { name: 'Facilities', path: '/facilities', image: EXPLORE_TILE_IMAGES['/facilities'] },
+    { name: 'Contact', path: '/contact', image: EXPLORE_TILE_IMAGES['/contact'] },
   ],
   villasPageTitle: 'Our villas',
   villasPageSubtitle: `${BRAND_TAGLINE}. Each listing is a separate private villa—compare locations, capacity, and amenities to find your fit.`,

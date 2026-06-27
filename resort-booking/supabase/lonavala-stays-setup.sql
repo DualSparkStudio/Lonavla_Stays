@@ -444,7 +444,7 @@ INSERT INTO public.site_settings (id, data)
 VALUES (
   'main',
   $json${
-    "resortName": "The Lonavala Stays",
+    "resortName": "Lonavala Stays",
     "brandTagline": "Curated luxury villas across Lonavala",
     "resortLocation": "Lonavala, Maharashtra",
     "resortAddress": "Office 2, Hill Plaza, Old Mumbai-Pune Highway, Lonavala 410401",
@@ -463,9 +463,9 @@ VALUES (
       {"title": "End-to-end management", "text": "From booking and housekeeping to maintenance and guest support, we run every villa so owners and guests enjoy a seamless stay."}
     ],
     "exploreTiles": [
-      {"name": "All villas", "path": "/villas", "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop"},
-      {"name": "For sale", "path": "/for-sale", "image": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop"},
-      {"name": "Facilities", "path": "/facilities", "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop"},
+      {"name": "All villas", "path": "/villas", "image": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&h=600&fit=crop&auto=format&q=80"},
+      {"name": "For sale", "path": "/for-sale", "image": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop&auto=format&q=80"},
+      {"name": "Facilities", "path": "/facilities", "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop&auto=format&q=80"},
       {"name": "Contact", "path": "/contact", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop"}
     ],
     "villasPageTitle": "Our villas",

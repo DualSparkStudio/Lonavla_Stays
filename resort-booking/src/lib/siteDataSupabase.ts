@@ -1,6 +1,7 @@
 import { addYears, format, subDays } from 'date-fns';
 import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from '../data/resort';
 import { defaultSiteSettings } from './siteStorage';
+import { normalizeExploreTiles } from './exploreTileImages';
 import { supabase } from './supabase';
 import {
   buildVillaUuidCache,
@@ -222,7 +223,9 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
     ...(data as Partial<SiteSettings>),
     aboutParagraphs: (data.aboutParagraphs as string[]) ?? defaults.aboutParagraphs,
     aboutHighlights: (data.aboutHighlights as SiteSettings['aboutHighlights']) ?? defaults.aboutHighlights,
-    exploreTiles: (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
+    exploreTiles: normalizeExploreTiles(
+      (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
+    ),
   };
 }
 

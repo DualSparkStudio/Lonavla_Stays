@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import BrandLogo from './BrandLogo';
 import { useSiteSettings } from '../../context/SiteDataContext';
 import { isForSaleEnabled } from '../../lib/featureFlags';
 
@@ -21,7 +22,14 @@ const PublicFooter: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
-            <span className="font-heading text-xl text-[#FF385C] uppercase tracking-wide">{settings.resortName}</span>
+            <Link to="/" className="inline-block mb-3">
+              <BrandLogo
+                name={settings.resortName}
+                showName
+                variant="mark"
+                size="footer"
+              />
+            </Link>
             <p className="text-gray-900 mb-4 mt-3 max-w-md">
               We manage and book a collection of private luxury villas across Lonavala—each property with its own address and character.
             </p>
