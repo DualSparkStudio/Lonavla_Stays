@@ -170,7 +170,7 @@ const UserBookingsPage: React.FC = () => {
     <PublicLayout currentPage="bookings">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AnimatedSection className="mb-8">
-          <h1 className="font-heading text-4xl text-gray-900 mb-2">My bookings</h1>
+          <h1 className="font-heading text-4xl mb-2">My bookings</h1>
           <p className="text-2xl text-gray-900">
             Your villa bookings across our Lonavala collection
           </p>

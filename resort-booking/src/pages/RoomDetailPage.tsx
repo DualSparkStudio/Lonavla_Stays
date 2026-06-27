@@ -49,7 +49,7 @@ const RoomDetailPage: React.FC = () => {
     return (
       <PublicLayout currentPage="villas">
         <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-          <h1 className="font-heading text-3xl text-gray-900 mb-4">Villa not found</h1>
+          <h1 className="font-heading text-3xl mb-4">Villa not found</h1>
           <Link to="/villas" className="text-airbnb-red font-bold hover:underline">
             ← Back to all villas
           </Link>
@@ -135,7 +135,7 @@ const RoomDetailPage: React.FC = () => {
               <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-base font-bold text-gray-800 mb-3">
                 {room.room_type}
               </span>
-              <h1 className="font-heading text-4xl text-gray-900 mb-2">{room.name}</h1>
+              <h1 className="font-heading text-4xl mb-2">{room.name}</h1>
               <p className="flex items-start gap-2 text-xl text-gray-900 mb-2">
                 <MapPinIcon className="h-5 w-5 shrink-0 mt-0.5 text-airbnb-red" />
                 <span>
@@ -153,7 +153,7 @@ const RoomDetailPage: React.FC = () => {
             </AnimatedSection>
 
             <AnimatedSection delay={150}>
-              <h2 className="font-heading text-2xl text-gray-900 mb-4">Amenities</h2>
+              <h2 className="font-heading text-2xl mb-4">Amenities</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {room.amenities.map((amenity) => (
                   <div
@@ -169,7 +169,7 @@ const RoomDetailPage: React.FC = () => {
 
             {settings.houseRulesSections.length > 0 && (
               <AnimatedSection delay={175}>
-                <h2 className="font-heading text-2xl text-gray-900 mb-4">House rules</h2>
+                <h2 className="font-heading text-2xl mb-4">House rules</h2>
                 <div className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
                   <PolicySections
                     sections={settings.houseRulesSections}

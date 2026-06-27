@@ -55,8 +55,8 @@ const HeroExplorer: React.FC = () => {
 
   const fieldClass =
     'px-3 py-2 md:px-4 md:py-3 border-b border-gray-100 md:border-b-0 overflow-visible';
-  const labelClass = 'form-field-label';
-  const inputClass = 'form-field-value';
+  const labelClass = 'search-field-label';
+  const inputClass = 'search-field-value';
   const dateInputClass = cn(inputClass, 'min-w-[9.75rem]');
 
   return (
@@ -69,7 +69,7 @@ const HeroExplorer: React.FC = () => {
               type="button"
               onClick={() => setMode('stay')}
               className={cn(
-                'w-full rounded-xl px-4 py-2.5 text-sm font-ui font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
+                'search-tab w-full rounded-xl px-4 py-2.5 text-sm leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
                 mode === 'stay'
                   ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
                   : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
@@ -81,7 +81,7 @@ const HeroExplorer: React.FC = () => {
               type="button"
               onClick={() => setMode('buy')}
               className={cn(
-                'w-full rounded-xl px-4 py-2.5 text-sm font-ui font-bold leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
+                'search-tab w-full rounded-xl px-4 py-2.5 text-sm leading-normal transition-all duration-200 sm:w-auto sm:rounded-full sm:px-5 sm:text-base',
                 mode === 'buy'
                   ? 'bg-airbnb-red text-white shadow-md shadow-airbnb-red/35'
                   : 'text-gray-700 hover:text-airbnb-red hover:bg-white/90'
@@ -204,7 +204,7 @@ const HeroExplorer: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleBuySearch}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-airbnb-red px-6 py-3 text-white font-bold hover:bg-airbnb-red-dark btn-primary-motion"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-airbnb-red px-6 py-3 text-white search-tab hover:bg-airbnb-red-dark btn-primary-motion"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

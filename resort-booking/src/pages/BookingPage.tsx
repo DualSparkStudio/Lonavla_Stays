@@ -305,7 +305,7 @@ const BookingPage: React.FC = () => {
     return (
       <PublicLayout currentPage="villas">
         <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-          <h1 className="font-heading text-3xl text-gray-900 mb-4">Villa not found</h1>
+          <h1 className="font-heading text-3xl mb-4">Villa not found</h1>
           <Link to="/villas" className="text-airbnb-red font-bold hover:underline">
             ← Back to all villas
           </Link>
@@ -338,7 +338,7 @@ const BookingPage: React.FC = () => {
             Back to villa
           </button>
 
-          <h1 className="font-heading text-3xl md:text-4xl text-gray-900 mb-6">
+          <h1 className="font-heading text-3xl md:text-4xl mb-6">
             Book {villa.name}
           </h1>
 
@@ -546,6 +546,7 @@ const BookingPage: React.FC = () => {
                       <Input
                         label="Phone"
                         type="tel"
+                        className="phone-number"
                         startIcon={<PhoneIcon className="h-5 w-5" />}
                         {...form.register('phone')}
                         error={form.formState.errors.phone?.message}

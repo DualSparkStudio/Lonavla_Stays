@@ -30,7 +30,7 @@ const PublicHomePage: React.FC = () => {
         <div className="hero-glow pointer-events-none absolute inset-0" aria-hidden />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
           <div className="text-center mb-8">
-            <h1 className="font-heading text-4xl md:text-6xl font-normal tracking-wide text-gray-900 mb-4 motion-safe:animate-slide-up">
+            <h1 className="font-heading text-4xl md:text-6xl font-normal tracking-wide mb-4 motion-safe:animate-slide-up">
               {settings.heroTitle}
             </h1>
             <p className="section-lead text-2xl max-w-2xl mx-auto motion-safe:animate-fade-in [animation-delay:150ms] opacity-0 [animation-fill-mode:forwards]">
@@ -43,7 +43,7 @@ const PublicHomePage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <AnimatedSection>
-          <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">Featured villas</h2>
+          <h2 className="font-heading text-4xl font-normal tracking-wide mb-2">Featured villas</h2>
           <p className="section-lead text-2xl mb-8 max-w-2xl">
             {settings.brandTagline}. Every card is a separate villa we manage—tap to see location, amenities, and rates.
           </p>
@@ -100,7 +100,7 @@ const PublicHomePage: React.FC = () => {
       <div className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <h2 className="font-heading text-4xl font-normal tracking-wide text-gray-900 mb-2">
+            <h2 className="font-heading text-4xl font-normal tracking-wide mb-2">
               Plots &amp; villas for sale
             </h2>
           </AnimatedSection>

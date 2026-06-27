@@ -48,18 +48,22 @@
   p,
   a,
   button,
-  input,
-  select,
   textarea,
   label,
   span,
   li {
     font-family: inherit;
   }
+
+  input:not(.search-field-value):not(.phone-number):not(.form-field-value),
+  select:not(.search-field-value):not(.form-field-value) {
+    font-family: inherit;
+  }
 }
 
 @layer components {
   .font-heading {
+    @apply text-airbnb-red;
     font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -72,7 +76,7 @@
   }
 
   .section-title {
-    @apply font-heading font-normal text-gray-900 tracking-wide;
+    @apply font-heading font-normal text-airbnb-red tracking-wide;
   }
 
   .section-lead {
@@ -87,8 +91,59 @@
     @apply font-ui w-full min-w-0 text-lg font-medium text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 p-0;
   }
 
+  .search-field-label {
+    font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    @apply tracking-wide text-base text-gray-900 mb-1;
+  }
+
+  .search-field-value {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+    @apply w-full min-w-0 text-lg text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 tracking-normal;
+  }
+
+  .search-bar-shell .search-field-value,
+  .search-bar-shell select.search-field-value,
+  .search-bar-shell input.search-field-value {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+  }
+
+  .search-bar-shell input[type='date']::-webkit-datetime-edit,
+  .search-bar-shell input[type='date']::-webkit-datetime-edit-fields-wrapper,
+  .search-bar-shell input[type='date']::-webkit-datetime-edit-text,
+  .search-bar-shell input[type='date']::-webkit-datetime-edit-month-field,
+  .search-bar-shell input[type='date']::-webkit-datetime-edit-day-field,
+  .search-bar-shell input[type='date']::-webkit-datetime-edit-year-field {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+  }
+
+  .search-tab {
+    font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    @apply tracking-wide;
+  }
+
   .nav-link-label {
-    @apply font-ui;
+    font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    @apply tracking-wide text-inherit;
+  }
+
+  .nav-mobile-link {
+    font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    @apply tracking-wide;
+  }
+
+  .phone-number {
+    @apply font-ui tabular-nums tracking-normal;
   }
 
   .nav-header {
@@ -140,7 +195,7 @@
   }
 
   .room-card .villa-card-meta {
-    @apply font-ui font-normal text-gray-900;
+    @apply font-sans font-normal text-gray-900;
   }
 
   .room-card .villa-card-body {

@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import { sendContactMessageEmail } from '../lib/bookingEmail';
 import { loadSmtpNotificationSettings } from '../lib/smtpSettings';
 import { useSiteSettings } from '../context/SiteDataContext';
+import { cn } from '../utils/cn';
 
 const ContactPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -69,7 +70,7 @@ const ContactPage: React.FC = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AnimatedSection>
-            <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">Contact us</h1>
+            <h1 className="font-heading text-4xl md:text-5xl mb-3">Contact us</h1>
             <p className="section-lead text-2xl max-w-2xl">{settings.contactPageSubtitle}</p>
           </AnimatedSection>
         </div>
@@ -95,6 +96,7 @@ const ContactPage: React.FC = () => {
                 label: 'Phone / WhatsApp',
                 value: settings.resortPhone,
                 href: settings.resortPhone.trim() ? `tel:${settings.resortPhone.replace(/\s/g, '')}` : undefined,
+                valueClassName: 'phone-number',
               },
               {
                 icon: EnvelopeIcon,
@@ -111,11 +113,11 @@ const ContactPage: React.FC = () => {
                 <div>
                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">{item.label}</p>
                   {item.href ? (
-                    <a href={item.href} className="text-lg font-medium text-gray-900 mt-1 hover:text-airbnb-red transition-colors block">
+                    <a href={item.href} className={cn('text-lg font-medium text-gray-900 mt-1 hover:text-airbnb-red transition-colors block', item.valueClassName)}>
                       {item.value}
                     </a>
                   ) : (
-                    <p className="text-lg font-medium text-gray-900 mt-1">{item.value}</p>
+                    <p className={cn('text-lg font-medium text-gray-900 mt-1', item.valueClassName)}>{item.value}</p>
                   )}
                 </div>
               </div>
@@ -172,7 +174,7 @@ const ContactPage: React.FC = () => {
                       <input
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className="w-full rounded-lg border border-gray-200 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
+                        className="phone-number w-full rounded-lg border border-gray-200 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red/30"
                       />
                     </div>
                     <div>

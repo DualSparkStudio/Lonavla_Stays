@@ -44,7 +44,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
     return (
       <PublicLayout currentPage="for-sale">
         <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-          <h1 className="font-heading text-3xl text-gray-900 mb-4">Property not found</h1>
+          <h1 className="font-heading text-3xl mb-4">Property not found</h1>
           <Link to="/for-sale" className="text-airbnb-red font-bold hover:underline">
             ← Back to all listings
           </Link>
@@ -147,7 +147,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
                   {getStatusLabel(property.status)}
                 </span>
               </div>
-              <h1 className="font-heading text-4xl text-gray-900 mb-2">{property.title}</h1>
+              <h1 className="font-heading text-4xl mb-2">{property.title}</h1>
               <p className="flex items-start gap-2 text-xl text-gray-900 mb-2">
                 <MapPinIcon className="h-5 w-5 shrink-0 mt-0.5 text-airbnb-red" />
                 <span>
@@ -173,7 +173,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
             </AnimatedSection>
 
             <AnimatedSection delay={150}>
-              <h2 className="font-heading text-2xl text-gray-900 mb-4">Highlights</h2>
+              <h2 className="font-heading text-2xl mb-4">Highlights</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {property.highlights.map((item) => (
                   <div
@@ -226,7 +226,7 @@ const PropertyForSaleDetailPage: React.FC = () => {
               <a href={phoneHref} className="block">
                 <Button variant="outline" fullWidth size="lg" className="rounded-full">
                   <PhoneIcon className="h-5 w-5 mr-2" />
-                  Call {whatsappPhone}
+                  Call <span className="phone-number">{whatsappPhone}</span>
                 </Button>
               </a>
 

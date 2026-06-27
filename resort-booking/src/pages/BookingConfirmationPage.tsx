@@ -88,7 +88,7 @@ const BookingConfirmationPage: React.FC = () => {
     return (
       <PublicLayout currentPage="villas">
         <div className="max-w-lg mx-auto px-4 py-20 text-center">
-          <h1 className="font-heading text-3xl text-gray-900 mb-4">Booking not found</h1>
+          <h1 className="font-heading text-3xl mb-4">Booking not found</h1>
           <p className="text-gray-900 mb-6">
             We could not find confirmation details for this booking.
           </p>
@@ -144,7 +144,7 @@ const BookingConfirmationPage: React.FC = () => {
                     {data.guestPhone && (
                       <div>
                         <dt className="text-gray-900 font-medium">Phone</dt>
-                        <dd className="font-semibold text-gray-900">{data.guestPhone}</dd>
+                        <dd className="phone-number font-semibold text-gray-900">{data.guestPhone}</dd>
                       </div>
                     )}
                   </dl>
@@ -271,7 +271,7 @@ const BookingConfirmationPage: React.FC = () => {
                       ))}
                       <li>
                         For changes or cancellations, contact us at least 24 hours before check-in:{' '}
-                        <span className="font-semibold text-white">{settings.resortPhone}</span>
+                        <span className="phone-number font-semibold text-white">{settings.resortPhone}</span>
                       </li>
                       <li>
                         Email: <span className="font-semibold text-white">{settings.resortEmail}</span>

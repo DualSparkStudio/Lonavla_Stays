@@ -25,7 +25,7 @@ const LocationMapSection: React.FC<LocationMapSectionProps> = ({
 
   return (
     <section className="space-y-4">
-      <h2 className="font-heading text-2xl text-gray-900">{title}</h2>
+      <h2 className="font-heading text-2xl">{title}</h2>
 
       {embedUrl && (
         <div className="space-y-2">

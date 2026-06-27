@@ -66,7 +66,7 @@ const PropertiesForSalePage: React.FC = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AnimatedSection>
-            <h1 className="font-heading text-4xl md:text-5xl text-gray-900 mb-3">
+            <h1 className="font-heading text-4xl md:text-5xl mb-3">
               {settings.forSalePageTitle}
             </h1>
             <p className="section-lead text-2xl max-w-2xl">
@@ -185,7 +185,7 @@ const PropertiesForSalePage: React.FC = () => {
         )}
 
         <AnimatedSection delay={300} className="mt-12 bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-          <h2 className="font-heading text-2xl text-gray-900 mb-2">Looking for something specific?</h2>
+          <h2 className="font-heading text-2xl mb-2">Looking for something specific?</h2>
           <p className="text-xl text-gray-900 mb-6 max-w-xl mx-auto">
             Tell us your budget, preferred location, and whether you need a plot or villa—we&apos;ll share
             matching options and arrange site visits.
