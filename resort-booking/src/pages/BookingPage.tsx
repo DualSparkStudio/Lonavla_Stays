@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,13 +22,14 @@ import { saveBookingConfirmation } from '../lib/bookingConfirmation';
 import { checkRoomAvailability } from '../lib/availability';
 import { verifyRoomAvailabilityRemote } from '../lib/availabilityApi';
 import PriceBreakdown from '../components/PriceBreakdown';
+import VillaCardPrice from '../components/villas/VillaCardPrice';
 import { formatPrice, checkInLabelFromTime, checkOutLabelFromTime, checkInOutSummaryFromTimes } from '../data/resort';
 import { applyBookingTimesToPolicyItem } from '../lib/policySections';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 
 const AvailabilityCalendar = lazy(() => import('../components/AvailabilityCalendar'));
-import { buildBookingPriceBreakdown, computeStayPricing, BOOKING_ADVANCE_PAYMENT_PERCENT } from '../lib/bookingPricing';
+import { buildBookingPriceBreakdown, computeStayPricing, BOOKING_ADVANCE_PAYMENT_PERCENT, getVillaCardPriceDisplay, resolveVillaCardRateMode } from '../lib/bookingPricing';
 import { getPrimaryImage } from '../lib/imageUrl';
 import {
   createRazorpayOrder,
@@ -85,6 +86,14 @@ const BookingPage: React.FC = () => {
   const [paymentError, setPaymentError] = useState('');
   const paymentInFlight = useRef(false);
 
+  useEffect(() => {
+    const param = searchParams.get('guests');
+    const parsed = Number(param);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      setGuestInput(String(Math.floor(parsed)));
+    }
+  }, [searchParams]);
+
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: { agreeToTerms: false },
@@ -127,6 +136,20 @@ const BookingPage: React.FC = () => {
       extraPersonCharge,
     });
   }, [villa, nights, guestCount, extraPersonCharge, checkIn, settings.pricingHolidays]);
+
+  const stayRateMode = useMemo(
+    () => resolveVillaCardRateMode(checkIn, checkOut, settings.pricingHolidays),
+    [checkIn, checkOut, settings.pricingHolidays],
+  );
+
+  const summaryPriceDisplay = useMemo(() => {
+    if (!villa) return { kind: 'single' as const, amount: 0 };
+    return getVillaCardPriceDisplay(
+      villa.price_per_night,
+      villa.weekend_price_per_night,
+      stayRateMode,
+    );
+  }, [villa, stayRateMode]);
 
   const priceLines = useMemo(
     () =>
@@ -319,8 +342,6 @@ const BookingPage: React.FC = () => {
   const hasWeekendPricing = Boolean(
     villa.weekend_price_per_night && villa.weekend_price_per_night > 0,
   );
-  const selectedNightlyRate =
-    pricing.nights > 0 ? Math.round(pricing.basePrice / pricing.nights) : villa.price_per_night;
   const checkInLabel = checkInLabelFromTime(settings.checkInTime);
   const checkOutLabel = checkOutLabelFromTime(settings.checkOutTime);
   const checkInOutSummary = checkInOutSummaryFromTimes(settings.checkInTime, settings.checkOutTime);
@@ -360,8 +381,10 @@ const BookingPage: React.FC = () => {
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
-                        <p className="text-xs text-gray-500 font-medium">Price per night</p>
-                        <p className="text-base font-bold text-gray-900">{formatPrice(villa.price_per_night)}</p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          {summaryPriceDisplay.kind === 'dual' ? 'Rates per night' : 'Price per night'}
+                        </p>
+                        <VillaCardPrice display={summaryPriceDisplay} compact className="text-center" />
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center">
                         <p className="text-xs text-gray-500 font-medium">Check-in / Check-out</p>
@@ -434,12 +457,12 @@ const BookingPage: React.FC = () => {
                     <p className="text-base font-bold text-gray-900 mb-1">Villa rate</p>
                     {hasWeekendPricing ? (
                       <>
-                        {canPay && (
+                        {canPay && summaryPriceDisplay.kind === 'single' && (
                           <p className="text-xl font-bold text-gray-900 mb-2">
-                            {formatPrice(selectedNightlyRate)}
+                            {formatPrice(summaryPriceDisplay.amount)}
                             <span className="text-base font-medium text-gray-900"> / night</span>
                             <span className="block text-xs font-normal text-gray-600 mt-0.5">
-                              Average for your selected dates
+                              For your selected dates
                             </span>
                           </p>
                         )}

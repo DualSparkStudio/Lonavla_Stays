@@ -11,8 +11,8 @@ import PolicySections from '../components/PolicySections';
 import { checkInLabelFromTime, checkOutLabelFromTime } from '../data/resort';
 import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
 import {
-  analyzeStayRateNights,
   getVillaCardPriceDisplay,
+  resolveVillaCardRateMode,
 } from '../lib/bookingPricing';
 import VillaCardPrice from '../components/villas/VillaCardPrice';
 import { useSiteData } from '../context/SiteDataContext';
@@ -42,10 +42,10 @@ const RoomDetailPage: React.FC = () => {
     [room],
   );
 
-  const stayRateMode = useMemo(() => {
-    if (!checkIn || !checkOut || checkOut <= checkIn) return 'none' as const;
-    return analyzeStayRateNights(checkIn, checkOut, settings.pricingHolidays).mode;
-  }, [checkIn, checkOut, settings.pricingHolidays]);
+  const stayRateMode = useMemo(
+    () => resolveVillaCardRateMode(checkIn, checkOut, settings.pricingHolidays),
+    [checkIn, checkOut, settings.pricingHolidays],
+  );
 
   const cardPriceDisplay = useMemo(() => {
     if (!room) {
@@ -244,6 +244,8 @@ const RoomDetailPage: React.FC = () => {
                 disabled={!checkIn || !checkOut || checkOut <= checkIn}
                 onClick={() => {
                   const params = new URLSearchParams({ checkIn, checkOut });
+                  const guests = searchParams.get('guests');
+                  if (guests) params.set('guests', guests);
                   navigate(`/booking/${room.id}?${params.toString()}`);
                 }}
               >

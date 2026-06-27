@@ -117,6 +117,24 @@ export function analyzeStayRateNights(
   return { weekdayNights, weekendNights, mode };
 }
 
+/** Rate mode for browse views when the guest has not picked stay dates yet. */
+export function getBrowseRateMode(pricingHolidays?: string[]): 'weekday' | 'weekend' {
+  const holidays = normalizePricingHolidays(pricingHolidays);
+  return isWeekendRateNight(new Date(), holidays) ? 'weekend' : 'weekday';
+}
+
+/** Villa card / listing rate: selected stay dates when present, otherwise today's rate. */
+export function resolveVillaCardRateMode(
+  checkIn: string,
+  checkOut: string,
+  pricingHolidays?: string[],
+): StayRateDisplayMode {
+  if (checkIn && checkOut && checkOut > checkIn) {
+    return analyzeStayRateNights(checkIn, checkOut, pricingHolidays).mode;
+  }
+  return getBrowseRateMode(pricingHolidays);
+}
+
 export type VillaCardPriceDisplay =
   | { kind: 'single'; amount: number }
   | { kind: 'dual'; weekdayAmount: number; weekendAmount: number };

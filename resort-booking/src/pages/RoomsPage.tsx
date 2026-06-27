@@ -7,8 +7,8 @@ import NormalizedImage from '../components/ui/NormalizedImage';
 import { useSiteData } from '../context/SiteDataContext';
 import { checkRoomAvailability } from '../lib/availability';
 import {
-  analyzeStayRateNights,
   getVillaCardPriceDisplay,
+  resolveVillaCardRateMode,
 } from '../lib/bookingPricing';
 import VillaCardPrice from '../components/villas/VillaCardPrice';
 
@@ -38,11 +38,8 @@ const RoomsPage: React.FC = () => {
   const dateSearchActive = Boolean(checkIn && checkOut && checkOut > checkIn);
 
   const stayRateMode = useMemo(
-    () =>
-      dateSearchActive
-        ? analyzeStayRateNights(checkIn, checkOut, settings.pricingHolidays).mode
-        : ('none' as const),
-    [checkIn, checkOut, dateSearchActive, settings.pricingHolidays],
+    () => resolveVillaCardRateMode(checkIn, checkOut, settings.pricingHolidays),
+    [checkIn, checkOut, settings.pricingHolidays],
   );
 
   const searchHint = useMemo(() => {

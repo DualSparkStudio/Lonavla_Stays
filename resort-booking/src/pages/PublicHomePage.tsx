@@ -5,6 +5,8 @@ import PublicLayout from '../components/layout/PublicLayout';
 import HeroExplorer from '../components/home/HeroExplorer';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import { formatSalePrice } from '../data/propertiesForSale';
+import { getVillaCardPriceDisplay, getBrowseRateMode } from '../lib/bookingPricing';
+import VillaCardPrice from '../components/villas/VillaCardPrice';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
 import { resolveExploreTileImage } from '../lib/exploreTileImages';
 import { isForSaleEnabled } from '../lib/featureFlags';
@@ -13,6 +15,11 @@ const PublicHomePage: React.FC = () => {
   const navigate = useNavigate();
   const settings = useSiteSettings();
   const { rooms, propertiesForSale } = useSiteCatalog();
+
+  const browseRateMode = useMemo(
+    () => getBrowseRateMode(settings.pricingHolidays),
+    [settings.pricingHolidays],
+  );
 
   const featuredRooms = useMemo(
     () => rooms.filter((room) => room.status === 'available'),
@@ -75,10 +82,13 @@ const PublicHomePage: React.FC = () => {
                   </p>
                   <p className="villa-card-body text-lg mb-3 line-clamp-2">{room.description}</p>
                   <div className="flex justify-between items-center">
-                    <div>
-                      <span className="villa-card-price">₹{room.price_per_night.toLocaleString('en-IN')}</span>
-                      <span className="villa-card-suffix"> / night</span>
-                    </div>
+                    <VillaCardPrice
+                      display={getVillaCardPriceDisplay(
+                        room.price_per_night,
+                        room.weekend_price_per_night,
+                        browseRateMode,
+                      )}
+                    />
                   </div>
                 </div>
               </div>
