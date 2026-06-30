@@ -16,6 +16,23 @@ function driveEmbedUrl(fileId: string): string {
   return `https://drive.google.com/uc?export=view&id=${fileId}`;
 }
 
+function driveThumbnailUrl(fileId: string, width = 240): string {
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${width}`;
+}
+
+/** Small preview URL for gallery thumbnails (Google Drive uses the thumbnail API). */
+export function galleryThumbnailUrl(url?: string, width = 240): string {
+  const raw = (url || '').trim();
+  if (!raw) return '';
+
+  const fileId = extractDriveFileId(raw);
+  if (fileId) {
+    return driveThumbnailUrl(fileId, width);
+  }
+
+  return normalizeImageUrl(raw);
+}
+
 /** Converts common share links into image-renderable URLs. */
 export function normalizeImageUrl(url?: string): string {
   const raw = (url || '').trim();

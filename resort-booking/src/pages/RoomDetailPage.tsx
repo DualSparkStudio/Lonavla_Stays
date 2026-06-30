@@ -1,37 +1,67 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  ArrowPathIcon,
+  ArrowUpOnSquareIcon,
+  ChatBubbleLeftRightIcon,
+  CheckBadgeIcon,
+  HeartIcon,
+  HomeModernIcon,
+  MapPinIcon,
+  ShieldCheckIcon,
+  UserGroupIcon,
+  WifiIcon,
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid, StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import AvailabilityCalendar from '../components/AvailabilityCalendar';
-import StickyBookingPanel from '../components/StickyBookingPanel';
-import { ChevronLeftIcon, MapPinIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import PublicLayout from '../components/layout/PublicLayout';
-import AnimatedSection from '../components/ui/AnimatedSection';
-import Button from '../components/ui/Button';
-import LocationMapSection from '../components/maps/LocationMapSection';
+import VillaDetailBookingCard from '../components/villas/VillaDetailBookingCard';
+import VillaDetailMobileBar from '../components/villas/VillaDetailMobileBar';
+import VillaPhotoGallery from '../components/villas/VillaPhotoGallery';
+import VillaAvailabilityModal from '../components/villas/VillaAvailabilityModal';
 import PolicySections from '../components/PolicySections';
 import { checkInLabelFromTime, checkOutLabelFromTime } from '../data/resort';
-import { driveImageFallbackUrl, normalizeImageUrls } from '../lib/imageUrl';
+import { resolveGoogleMapsOpenUrl, resolveMapsDisplay } from '../lib/googleMaps';
+import { normalizeImageUrls } from '../lib/imageUrl';
 import {
+  computeStayPricing,
   getVillaCardPriceDisplay,
   resolveVillaCardRateMode,
 } from '../lib/bookingPricing';
-import VillaCardPrice from '../components/villas/VillaCardPrice';
+import {
+  hasPrivatePool,
+  parseBathroomsFromAmenities,
+  parseBedroomsFromRoomType,
+  ratingDistribution,
+  truncateText,
+} from '../lib/villaDetailHelpers';
 import { useSiteData } from '../context/SiteDataContext';
+
+const AMENITY_PREVIEW_COUNT = 9;
 
 const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [imageIndex, setImageIndex] = useState(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
+  const [guestInput, setGuestInput] = useState('2');
+  const [saved, setSaved] = useState(false);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const { getRoomById, settings } = useSiteData();
 
   useEffect(() => {
     const fromCheckIn = searchParams.get('checkIn') ?? '';
     const fromCheckOut = searchParams.get('checkOut') ?? '';
+    const fromGuests = searchParams.get('guests');
     if (fromCheckIn && fromCheckOut && fromCheckOut > fromCheckIn) {
       setCheckIn(fromCheckIn);
       setCheckOut(fromCheckOut);
+    }
+    if (fromGuests && Number(fromGuests) > 0) {
+      setGuestInput(String(Math.floor(Number(fromGuests))));
     }
   }, [searchParams]);
 
@@ -48,9 +78,7 @@ const RoomDetailPage: React.FC = () => {
   );
 
   const cardPriceDisplay = useMemo(() => {
-    if (!room) {
-      return getVillaCardPriceDisplay(0, undefined, 'none');
-    }
+    if (!room) return getVillaCardPriceDisplay(0, undefined, 'none');
     return getVillaCardPriceDisplay(
       room.price_per_night,
       room.weekend_price_per_night,
@@ -58,12 +86,64 @@ const RoomDetailPage: React.FC = () => {
     );
   }, [room, stayRateMode]);
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, originalUrl: string) => {
-    const img = e.currentTarget;
-    const fallback = driveImageFallbackUrl(originalUrl);
-    if (fallback && img.src !== fallback) {
-      img.src = fallback;
+  const guestCount = useMemo(() => {
+    const parsed = Number(guestInput);
+    if (!Number.isFinite(parsed) || parsed < 1) return 1;
+    return Math.floor(parsed);
+  }, [guestInput]);
+
+  const nights = useMemo(() => {
+    if (!checkIn || !checkOut || checkOut <= checkIn) return 0;
+    return Math.max(
+      0,
+      Math.round(
+        (new Date(`${checkOut}T12:00:00`).getTime() - new Date(`${checkIn}T12:00:00`).getTime()) /
+          (1000 * 60 * 60 * 24),
+      ),
+    );
+  }, [checkIn, checkOut]);
+
+  const pricing = useMemo(() => {
+    if (!room) {
+      return computeStayPricing({
+        pricePerNight: 0,
+        nights: 0,
+        guestCount: 1,
+        guestsIncluded: 1,
+        extraPersonCharge: 0,
+      });
     }
+    return computeStayPricing({
+      pricePerNight: room.price_per_night,
+      weekendPricePerNight: room.weekend_price_per_night,
+      checkInDate: checkIn,
+      pricingHolidays: settings.pricingHolidays,
+      nights,
+      guestCount,
+      guestsIncluded: room.max_guests,
+      extraPersonCharge: settings.extraPersonCharge ?? 1500,
+    });
+  }, [room, checkIn, nights, guestCount, settings.pricingHolidays, settings.extraPersonCharge, checkOut]);
+
+  const canBook = nights >= 1 && checkOut > checkIn;
+
+  const navigateToBooking = useCallback(() => {
+    if (!room || !canBook) return;
+    const params = new URLSearchParams({ checkIn, checkOut, guests: String(guestCount) });
+    navigate(`/booking/${room.id}?${params.toString()}`);
+  }, [room, canBook, checkIn, checkOut, guestCount, navigate]);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: room?.name, url });
+        return;
+      }
+    } catch {
+      /* user cancelled */
+    }
+    await navigator.clipboard.writeText(url);
   };
 
   if (!room) {
@@ -79,187 +159,302 @@ const RoomDetailPage: React.FC = () => {
     );
   }
 
-  const nextImage = () => setImageIndex((i) => (i + 1) % galleryImages.length);
-  const prevImage = () => setImageIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
-  const activeImage = galleryImages[imageIndex] || 'https://via.placeholder.com/800x600?text=Villa';
-  const activeOriginal = room.images[imageIndex] || room.images[0] || '';
   const checkInLabel = checkInLabelFromTime(settings.checkInTime);
   const checkOutLabel = checkOutLabelFromTime(settings.checkOutTime);
+  const bedrooms = parseBedroomsFromRoomType(room.room_type);
+  const bathrooms = parseBathroomsFromAmenities(room.amenities);
+  const pool = hasPrivatePool(room.amenities);
+  const { preview: descriptionPreview, isTruncated: descriptionTruncated } = truncateText(
+    room.description,
+    320,
+  );
+  const visibleAmenities = showAllAmenities
+    ? room.amenities
+    : room.amenities.slice(0, AMENITY_PREVIEW_COUNT);
+  const starBars = ratingDistribution(room.rating, room.review_count);
+  const { embedUrl } = resolveMapsDisplay(room.mapEmbedUrl, room.address, room.location, room.mapsLink);
+  const mapsUrl = resolveGoogleMapsOpenUrl(room.mapEmbedUrl, room.address, room.location, room.mapsLink);
+
+  const pageTitle = `${room.name} – ${room.room_type}`;
 
   return (
     <PublicLayout currentPage="villas">
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-6 py-8">
-        <button
-          type="button"
-          onClick={() => navigate('/villas')}
-          className="inline-flex items-center gap-2 text-gray-900 hover:text-airbnb-red font-bold mb-6 transition-colors"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-          All villas
-        </button>
+      <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-12">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-[2rem] font-bold leading-tight text-gray-900">
+            {pageTitle}
+          </h1>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="hidden sm:inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold underline hover:bg-gray-50"
+            >
+              <ArrowUpOnSquareIcon className="h-4 w-4" />
+              Share
+            </button>
+            <button
+              type="button"
+              onClick={() => setSaved((v) => !v)}
+              className="hidden sm:inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold underline hover:bg-gray-50"
+            >
+              {saved ? (
+                <HeartSolid className="h-4 w-4 text-airbnb-red" />
+              ) : (
+                <HeartIcon className="h-4 w-4" />
+              )}
+              Save
+            </button>
+          </div>
+        </div>
 
-        <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-10">
-          <div className="flex-1 min-w-0 space-y-6">
-            <AnimatedSection variant="fade-in">
-              <div className="relative rounded-2xl overflow-hidden shadow-lg">
-                <img
-                  src={activeImage}
-                  alt={room.name}
-                  referrerPolicy="no-referrer"
-                  onError={(e) => handleImageError(e, activeOriginal)}
-                  className="w-full h-80 md:h-[28rem] object-cover"
-                />
-                {galleryImages.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={prevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow hover:scale-105 transition-transform"
-                      aria-label="Previous image"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      type="button"
-                      onClick={nextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow hover:scale-105 transition-transform"
-                      aria-label="Next image"
-                    >
-                      ›
-                    </button>
-                  </>
-                )}
-              </div>
-              <div className="flex gap-2 mt-3 overflow-x-auto">
-                {galleryImages.map((img, idx) => (
-                  <button
-                    key={`${room.images[idx]}-${idx}`}
-                    type="button"
-                    onClick={() => setImageIndex(idx)}
-                    className={`shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                      idx === imageIndex ? 'border-airbnb-red' : 'border-transparent opacity-70'
-                    }`}
-                  >
-                    <img
-                      src={img}
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      onError={(e) => handleImageError(e, room.images[idx] || '')}
-                      className="h-16 w-24 object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            </AnimatedSection>
+        <div className="mb-6">
+          <VillaPhotoGallery images={galleryImages} originals={room.images} alt={room.name} />
+        </div>
 
-            <AnimatedSection delay={100}>
-              <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-base font-bold text-gray-800 mb-3">
-                {room.room_type}
-              </span>
-              <h1 className="font-heading text-4xl mb-2">{room.name}</h1>
-              <p className="flex items-start gap-2 text-xl text-gray-900 mb-2">
-                <MapPinIcon className="h-5 w-5 shrink-0 mt-0.5 text-airbnb-red" />
-                <span>
-                  {room.location}
-                  <span className="block text-lg text-gray-900 mt-1">{room.address}</span>
-                </span>
-              </p>
-              <p className="text-lg text-gray-900 mb-2">
-                Managed by {settings.resortName} · ★ {room.rating} ({room.review_count} reviews)
-              </p>
-              <p className="text-lg text-gray-900 mb-4">
-                Check-in {checkInLabel} · Check-out {checkOutLabel}
-              </p>
-              <p className="text-lg text-gray-900 leading-relaxed">{room.description}</p>
-            </AnimatedSection>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:text-base text-gray-900 mb-6">
+          <span className="inline-flex items-center gap-1 font-semibold">
+            <StarSolid className="h-4 w-4" />
+            {room.rating}
+          </span>
+          <span>·</span>
+          <button type="button" className="font-semibold underline">
+            {room.review_count} reviews
+          </button>
+          <span>·</span>
+          <span className="font-semibold">Superhost</span>
+          <span>·</span>
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-semibold underline"
+          >
+            <MapPinIcon className="h-4 w-4" />
+            {room.location}, Maharashtra, India
+          </a>
+        </div>
 
-            <AnimatedSection delay={150}>
-              <h2 className="font-heading text-2xl mb-4">Amenities</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {room.amenities.map((amenity) => (
-                  <div
-                    key={amenity}
-                    className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 text-base font-medium text-gray-700"
-                  >
-                    <span className="text-airbnb-red">✓</span>
-                    {amenity}
+        <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-gray-900 pb-6 mb-6 border-b border-gray-200">
+          <span className="inline-flex items-center gap-2">
+            <UserGroupIcon className="h-5 w-5" />
+            {room.max_guests} guests
+          </span>
+          {bedrooms != null && (
+            <span className="inline-flex items-center gap-2">
+              <HomeModernIcon className="h-5 w-5" />
+              {bedrooms} bedroom{bedrooms !== 1 ? 's' : ''}
+            </span>
+          )}
+          {bathrooms != null && (
+            <span className="inline-flex items-center gap-2">
+              <span className="text-lg leading-none">🛁</span>
+              {bathrooms} bathroom{bathrooms !== 1 ? 's' : ''}
+            </span>
+          )}
+          {pool && (
+            <span className="inline-flex items-center gap-2">
+              <span className="text-lg leading-none">🏊</span>
+              Private pool
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-16">
+          <div className="flex-1 min-w-0 space-y-10">
+            <section className="pb-8 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">About this space</h2>
+              <p className="text-base text-gray-800 leading-relaxed whitespace-pre-line">
+                {showFullDescription ? room.description : descriptionPreview}
+              </p>
+              {descriptionTruncated && !showFullDescription && (
+                <button
+                  type="button"
+                  onClick={() => setShowFullDescription(true)}
+                  className="mt-3 text-sm font-semibold underline text-gray-900"
+                >
+                  Show more
+                </button>
+              )}
+            </section>
+
+            <section className="pb-8 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-5">What this place offers</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                {visibleAmenities.map((amenity) => (
+                  <div key={amenity} className="flex items-center gap-3 text-base text-gray-800">
+                    <WifiIcon className="h-6 w-6 shrink-0 text-gray-700" aria-hidden />
+                    <span>{amenity}</span>
                   </div>
                 ))}
               </div>
-            </AnimatedSection>
+              {room.amenities.length > AMENITY_PREVIEW_COUNT && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllAmenities((v) => !v)}
+                  className="mt-5 rounded-lg border border-gray-900 px-5 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+                >
+                  {showAllAmenities
+                    ? 'Show fewer amenities'
+                    : `Show all ${room.amenities.length} amenities`}
+                </button>
+              )}
+            </section>
 
-            {settings.houseRulesSections.length > 0 && (
-              <AnimatedSection delay={175}>
-                <h2 className="font-heading text-2xl mb-4">House rules</h2>
-                <div className="rounded-xl border border-gray-200 bg-white p-5 md:p-6">
-                  <PolicySections
-                    sections={settings.houseRulesSections}
-                    checkInTime={settings.checkInTime}
-                    checkOutTime={settings.checkOutTime}
+            {embedUrl && (
+              <section className="pb-8 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Where you&apos;ll be</h2>
+                <div className="relative rounded-2xl overflow-hidden border border-gray-200">
+                  <iframe
+                    title={`Map — ${room.location}`}
+                    src={embedUrl}
+                    className="w-full h-72 border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
                   />
-                  <Link
-                    to="/house-rules"
-                    className="inline-block mt-4 text-sm font-semibold text-airbnb-red hover:underline"
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-4 left-4 rounded-lg bg-white px-4 py-2 text-sm font-semibold shadow border border-gray-200 hover:bg-gray-50"
                   >
-                    View full house rules →
-                  </Link>
+                    Show on map
+                  </a>
                 </div>
-              </AnimatedSection>
+                <p className="mt-3 text-base text-gray-800">{room.address || room.location}</p>
+              </section>
             )}
 
-            <AnimatedSection delay={200}>
-              <LocationMapSection
-                mapEmbedUrl={room.mapEmbedUrl}
-                mapsLink={room.mapsLink}
-                address={room.address}
-                location={room.location}
-              />
-            </AnimatedSection>
+            <section>
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                <StarSolid className="h-8 w-8 text-gray-900" />
+                <span className="text-3xl font-bold text-gray-900">{room.rating}</span>
+                <span className="text-xl text-gray-700">· {room.review_count} reviews</span>
+              </div>
+              <div className="grid sm:grid-cols-[1fr_1.2fr] gap-8">
+                <div className="space-y-2">
+                  {starBars.map((bar) => (
+                    <div key={bar.stars} className="flex items-center gap-3 text-sm">
+                      <span className="w-3 font-medium">{bar.stars}</span>
+                      <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                        <div
+                          className="h-full bg-gray-900 rounded-full"
+                          style={{ width: `${bar.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 text-base text-gray-700 leading-relaxed">
+                  Guests love the spacious layout, private pool, and smooth check-in experience at{' '}
+                  {room.name}. Reviews reflect stays managed by {settings.resortName} across Lonavala.
+                </div>
+              </div>
+            </section>
           </div>
 
-          <aside className="w-full lg:w-[380px] lg:shrink-0">
-            <StickyBookingPanel className="bg-white rounded-2xl border border-gray-200 shadow-lg px-4 py-5 sm:px-5">
-              <VillaCardPrice display={cardPriceDisplay} className="mb-1" />
-              <p className="flex items-center gap-2 text-lg text-gray-900 font-medium mb-2">
-                <UserGroupIcon className="h-5 w-5" />
-                {room.max_guests} guests included in base price
+          <aside className="w-full lg:w-[400px] lg:shrink-0">
+            <VillaDetailBookingCard
+              room={room}
+              checkIn={checkIn}
+              checkOut={checkOut}
+              guestInput={guestInput}
+              onCheckInChange={setCheckIn}
+              onCheckOutChange={setCheckOut}
+              onGuestChange={setGuestInput}
+              onBook={navigateToBooking}
+              priceDisplay={cardPriceDisplay}
+              extraPersonCharge={settings.extraPersonCharge ?? 1500}
+              pricingHolidays={settings.pricingHolidays}
+              onToggleCalendar={() => setShowCalendar(true)}
+            />
+
+            <ul className="mt-6 space-y-3 text-sm text-gray-700">
+              <li className="flex items-center gap-2">
+                <ArrowPathIcon className="h-5 w-5 shrink-0" />
+                Free cancellation
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckBadgeIcon className="h-5 w-5 shrink-0" />
+                40% advance required
+              </li>
+              <li className="flex items-center gap-2">
+                <ShieldCheckIcon className="h-5 w-5 shrink-0" />
+                Secure &amp; safe payments
+              </li>
+              <li className="flex items-center gap-2">
+                <ChatBubbleLeftRightIcon className="h-5 w-5 shrink-0" />
+                24×7 Host support
+              </li>
+            </ul>
+
+            {settings.houseRulesSections.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-gray-200 space-y-4">
+                <h3 className="text-lg font-bold text-gray-900">House rules</h3>
+                <PolicySections
+                  sections={settings.houseRulesSections.slice(0, 1)}
+                  checkInTime={settings.checkInTime}
+                  checkOutTime={settings.checkOutTime}
+                />
+                <p className="text-sm text-gray-700">
+                  Check-in {checkInLabel} · Check-out {checkOutLabel}
+                </p>
+                <Link to="/house-rules" className="text-sm font-semibold underline text-gray-900">
+                  Show all house rules
+                </Link>
+              </div>
+            )}
+
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Cancellation policy</h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Free cancellation up to 24 hours before check-in. After that, modifications are subject
+                to availability. Contact {settings.resortName} for assistance.
               </p>
-              <p className="text-base text-gray-900 mb-4">
-                Check-in {checkInLabel} · Check-out {checkOutLabel}
-              </p>
-              <AvailabilityCalendar
-                embedded
-                roomId={room.id}
-                selectedStartDate={checkIn || undefined}
-                selectedEndDate={checkOut && checkOut > checkIn ? checkOut : undefined}
-                onDateSelect={(start, end) => {
-                  setCheckIn(start);
-                  setCheckOut(end);
-                }}
-              />
-              <Button
-                fullWidth
-                size="lg"
-                className="rounded-full btn-primary-motion mb-3 mt-4"
-                disabled={!checkIn || !checkOut || checkOut <= checkIn}
-                onClick={() => {
-                  const params = new URLSearchParams({ checkIn, checkOut });
-                  const guests = searchParams.get('guests');
-                  if (guests) params.set('guests', guests);
-                  navigate(`/booking/${room.id}?${params.toString()}`);
-                }}
-              >
-                Reserve this villa
-              </Button>
-              <Link to="/contact">
-                <Button variant="outline" fullWidth size="lg" className="rounded-full">
-                  Ask a question
-                </Button>
+              <Link to="/terms-and-conditions" className="mt-2 inline-block text-sm font-semibold underline text-gray-900">
+                Learn more
               </Link>
-            </StickyBookingPanel>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Hosted by</p>
+              <p className="font-semibold text-gray-900">{settings.resortName}</p>
+              <p className="text-sm text-gray-600 mt-1">Curated villas across Lonavala · Responds within an hour</p>
+              <Link to="/contact" className="mt-3 inline-block text-sm font-semibold underline text-gray-900">
+                Contact host
+              </Link>
+            </div>
           </aside>
         </div>
       </div>
+
+      <VillaAvailabilityModal
+        open={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        title="Select dates"
+      >
+        <AvailabilityCalendar
+          embedded
+          roomId={room.id}
+          selectedStartDate={checkIn || undefined}
+          selectedEndDate={checkOut && checkOut > checkIn ? checkOut : undefined}
+          onDateSelect={(start, end) => {
+            setCheckIn(start);
+            setCheckOut(end);
+            if (end && end > start) setShowCalendar(false);
+          }}
+        />
+      </VillaAvailabilityModal>
+
+      <VillaDetailMobileBar
+        priceDisplay={cardPriceDisplay}
+        rating={room.rating}
+        total={pricing.total}
+        canBook={canBook}
+        onBook={navigateToBooking}
+        onContact={() => navigate('/contact')}
+      />
     </PublicLayout>
   );
 };

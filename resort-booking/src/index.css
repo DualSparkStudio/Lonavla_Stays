@@ -69,6 +69,11 @@
     letter-spacing: 0.04em;
   }
 
+  .villa-detail-date::-webkit-calendar-picker-indicator {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+
   .font-display {
     font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
     font-weight: 400;
