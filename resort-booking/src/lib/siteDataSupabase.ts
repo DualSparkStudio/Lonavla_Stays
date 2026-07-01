@@ -10,6 +10,7 @@ import type {
     SiteData,
     SiteSettings,
 } from '../types/site';
+import { repairMojibake, repairMojibakeDeep } from './repairMojibake';
 import { defaultSiteSettings } from './siteStorage';
 import { normalizeExploreTiles } from './exploreTileImages';
 import { supabase } from './supabase';
@@ -120,20 +121,20 @@ export function villaPublicId(row: { id: string; legacy_id?: string | null }): s
 function mapVillaToRoom(row: VillaRow): Room {
   return {
     id: villaPublicId(row),
-    name: row.name,
-    room_type: row.room_type,
-    description: row.description,
+    name: repairMojibake(row.name),
+    room_type: repairMojibake(row.room_type),
+    description: repairMojibake(row.description),
     price_per_night: Number(row.price_per_night),
     weekend_price_per_night:
       row.weekend_price_per_night != null ? Number(row.weekend_price_per_night) : undefined,
-    location: row.location,
-    address: row.address,
+    location: repairMojibake(row.location),
+    address: repairMojibake(row.address),
     max_guests: row.max_guests,
     room_number: row.room_number,
     rating: Number(row.rating),
     review_count: row.review_count,
     status: row.status as Room['status'],
-    amenities: row.amenities ?? [],
+    amenities: (row.amenities ?? []).map(repairMojibake),
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
     mapsLink: row.maps_link ?? undefined,
@@ -171,8 +172,8 @@ function mapBlockedRow(row: BlockedRow, villaLegacyByUuid: Map<string, string>):
     roomId: villaLegacyByUuid.get(row.villa_id) ?? row.villa_id,
     startDate: row.start_date,
     endDate: row.end_date,
-    reason: row.reason,
-    notes: row.notes ?? undefined,
+    reason: repairMojibake(row.reason),
+    notes: row.notes != null ? repairMojibake(row.notes) : undefined,
     source: 'manual',
     createdAt: row.created_at,
   };
@@ -181,8 +182,8 @@ function mapBlockedRow(row: BlockedRow, villaLegacyByUuid: Map<string, string>):
 function mapFacilityRow(row: FacilityRow): Facility {
   return {
     id: row.id,
-    name: row.name,
-    description: row.description,
+    name: repairMojibake(row.name),
+    description: repairMojibake(row.description),
     image: row.image ?? '',
     hours: row.hours ?? '',
   };
@@ -191,19 +192,19 @@ function mapFacilityRow(row: FacilityRow): Facility {
 function mapPropertyRow(row: PropertyRow): PropertyForSale {
   return {
     id: row.legacy_id?.trim() || row.id,
-    title: row.title,
+    title: repairMojibake(row.title),
     category: row.category,
-    description: row.description,
-    longDescription: row.long_description,
+    description: repairMojibake(row.description),
+    longDescription: repairMojibake(row.long_description),
     price: Number(row.price_amount),
     priceOnRequest: row.price_on_request,
-    location: row.location,
-    address: row.address ?? '',
-    areaLabel: row.area_label ?? '',
+    location: repairMojibake(row.location),
+    address: repairMojibake(row.address ?? ''),
+    areaLabel: repairMojibake(row.area_label ?? ''),
     bedrooms: row.bedrooms ?? undefined,
     bathrooms: row.bathrooms ?? undefined,
     status: row.status,
-    highlights: row.highlights ?? [],
+    highlights: (row.highlights ?? []).map(repairMojibake),
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
     mapsLink: row.maps_link ?? undefined,
@@ -213,11 +214,11 @@ function mapPropertyRow(row: PropertyRow): PropertyForSale {
 function mapContactRow(row: ContactRow): ContactMessage {
   return {
     id: row.id,
-    name: row.name,
+    name: repairMojibake(row.name),
     email: row.email,
-    phone: row.phone ?? '',
-    subject: row.subject,
-    message: row.message,
+    phone: repairMojibake(row.phone ?? ''),
+    subject: repairMojibake(row.subject),
+    message: repairMojibake(row.message),
     createdAt: row.created_at,
   };
 }
@@ -225,15 +226,16 @@ function mapContactRow(row: ContactRow): ContactMessage {
 function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
   const defaults = defaultSiteSettings();
   if (!data) return defaults;
+  const repaired = repairMojibakeDeep(data) as Partial<SiteSettings>;
   return {
     ...defaults,
-    ...(data as Partial<SiteSettings>),
-    aboutParagraphs: (data.aboutParagraphs as string[]) ?? defaults.aboutParagraphs,
-    aboutHighlights: (data.aboutHighlights as SiteSettings['aboutHighlights']) ?? defaults.aboutHighlights,
+    ...repaired,
+    aboutParagraphs: (repaired.aboutParagraphs as string[]) ?? defaults.aboutParagraphs,
+    aboutHighlights: (repaired.aboutHighlights as SiteSettings['aboutHighlights']) ?? defaults.aboutHighlights,
     exploreTiles: normalizeExploreTiles(
-      (data.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
+      (repaired.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
     ),
-    pricingHolidays: (data.pricingHolidays as string[]) ?? defaults.pricingHolidays,
+    pricingHolidays: (repaired.pricingHolidays as string[]) ?? defaults.pricingHolidays,
   };
 }
 

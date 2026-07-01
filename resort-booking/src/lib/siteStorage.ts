@@ -15,6 +15,7 @@ import {
   DEFAULT_EXTRA_PERSON_CHARGE,
 } from '../data/resort';
 import { EXPLORE_TILE_IMAGES } from './exploreTileImages';
+import { repairMojibakeDeep } from './repairMojibake';
 import { propertiesForSale as defaultPropertiesForSale } from '../data/propertiesForSale';
 import type { SiteData, SiteSettings, Room, PropertyForSale, Facility, AdminBooking, AdminUser, ContactMessage, BlockedDate } from '../types/site';
 
@@ -333,40 +334,41 @@ function pickArray<T>(parsed: T[] | undefined, defaults: T[]): T[] {
 }
 
 function mergeWithDefaults(parsed: Partial<SiteData>): SiteData {
+  const repaired = repairMojibakeDeep(parsed);
   const defaults = createDefaultSiteData();
-  const rawBookings = parsed.bookings ?? defaults.bookings;
+  const rawBookings = repaired.bookings ?? defaults.bookings;
   return {
     settings: {
       ...defaults.settings,
-      ...parsed.settings,
-      checkInTime: parsed.settings?.checkInTime ?? defaults.settings.checkInTime,
-      checkOutTime: parsed.settings?.checkOutTime ?? defaults.settings.checkOutTime,
-      gstPercent: parsed.settings?.gstPercent ?? defaults.settings.gstPercent,
-      extraPersonCharge: parsed.settings?.extraPersonCharge ?? defaults.settings.extraPersonCharge,
-      pricingHolidays: parsed.settings?.pricingHolidays ?? defaults.settings.pricingHolidays,
-      houseRulesSections: parsed.settings?.houseRulesSections?.length
-        ? parsed.settings.houseRulesSections
+      ...repaired.settings,
+      checkInTime: repaired.settings?.checkInTime ?? defaults.settings.checkInTime,
+      checkOutTime: repaired.settings?.checkOutTime ?? defaults.settings.checkOutTime,
+      gstPercent: repaired.settings?.gstPercent ?? defaults.settings.gstPercent,
+      extraPersonCharge: repaired.settings?.extraPersonCharge ?? defaults.settings.extraPersonCharge,
+      pricingHolidays: repaired.settings?.pricingHolidays ?? defaults.settings.pricingHolidays,
+      houseRulesSections: repaired.settings?.houseRulesSections?.length
+        ? repaired.settings.houseRulesSections
         : defaults.settings.houseRulesSections,
       termsAndConditionsSections:
-        parsed.settings?.termsAndConditionsSections?.length
-          ? parsed.settings.termsAndConditionsSections
-          : parsed.settings?.importantInfoSections?.length
-            ? parsed.settings.importantInfoSections
+        repaired.settings?.termsAndConditionsSections?.length
+          ? repaired.settings.termsAndConditionsSections
+          : repaired.settings?.importantInfoSections?.length
+            ? repaired.settings.importantInfoSections
             : defaults.settings.termsAndConditionsSections,
       importantInfoSections:
-        parsed.settings?.termsAndConditionsSections?.length
-          ? parsed.settings.termsAndConditionsSections
-          : parsed.settings?.importantInfoSections?.length
-            ? parsed.settings.importantInfoSections
+        repaired.settings?.termsAndConditionsSections?.length
+          ? repaired.settings.termsAndConditionsSections
+          : repaired.settings?.importantInfoSections?.length
+            ? repaired.settings.importantInfoSections
             : defaults.settings.importantInfoSections,
     },
-    rooms: pickArray(parsed.rooms, defaults.rooms),
-    propertiesForSale: pickArray(parsed.propertiesForSale, defaults.propertiesForSale),
-    facilities: pickArray(parsed.facilities, defaults.facilities),
+    rooms: pickArray(repaired.rooms, defaults.rooms),
+    propertiesForSale: pickArray(repaired.propertiesForSale, defaults.propertiesForSale),
+    facilities: pickArray(repaired.facilities, defaults.facilities),
     bookings: dedupeBookings(rawBookings),
-    blockedDates: parsed.blockedDates ?? defaults.blockedDates,
-    users: pickArray(parsed.users, defaults.users),
-    contactMessages: parsed.contactMessages ?? defaults.contactMessages,
+    blockedDates: repaired.blockedDates ?? defaults.blockedDates,
+    users: pickArray(repaired.users, defaults.users),
+    contactMessages: repaired.contactMessages ?? defaults.contactMessages,
   };
 }
 
