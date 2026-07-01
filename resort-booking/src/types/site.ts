@@ -44,7 +44,7 @@ export type SiteSettings = {
   gstPercent: number;
   /** Per-night charge for each guest above the villa's included guest count */
   extraPersonCharge: number;
-  /** YYYY-MM-DD dates charged at the weekend villa rate (in addition to Saturdays). */
+  /** YYYY-MM-DD dates charged at the weekend villa rate (in addition to Sat–Sun). */
   pricingHolidays: string[];
   heroTitle: string;
   heroSubtitle: string;

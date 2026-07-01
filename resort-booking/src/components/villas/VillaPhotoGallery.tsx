@@ -65,9 +65,6 @@ const VillaPhotoGallery: React.FC<VillaPhotoGalleryProps> = ({ images, originals
             onError={(e) => handleImageError(e, originals[0] || '')}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
-          <span className="absolute top-4 left-4 rounded-md bg-white/95 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-gray-900 shadow">
-            Superhost
-          </span>
         </button>
         {slots.slice(1, 5).map((img, idx) => (
           <button
@@ -109,9 +106,6 @@ const VillaPhotoGallery: React.FC<VillaPhotoGalleryProps> = ({ images, originals
           onError={(e) => handleImageError(e, originals[0] || '')}
           className="h-full w-full object-cover"
         />
-        <span className="absolute top-3 left-3 rounded-md bg-white/95 px-2 py-0.5 text-xs font-bold uppercase text-gray-900">
-          Superhost
-        </span>
         {displayImages.length > 1 && (
           <span className="absolute bottom-3 right-3 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold shadow">
             1 / {displayImages.length}

@@ -3,10 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import PublicLayout from '../components/layout/PublicLayout';
 import HeroExplorer from '../components/home/HeroExplorer';
+import FeaturedVillasSection from '../components/home/FeaturedVillasSection';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import { formatSalePrice } from '../data/propertiesForSale';
-import { getVillaCardPriceDisplay, getBrowseRateMode } from '../lib/bookingPricing';
-import VillaCardPrice from '../components/villas/VillaCardPrice';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
 import { resolveExploreTileImage } from '../lib/exploreTileImages';
 import { isForSaleEnabled } from '../lib/featureFlags';
@@ -15,11 +14,6 @@ const PublicHomePage: React.FC = () => {
   const navigate = useNavigate();
   const settings = useSiteSettings();
   const { rooms, propertiesForSale } = useSiteCatalog();
-
-  const browseRateMode = useMemo(
-    () => getBrowseRateMode(settings.pricingHolidays),
-    [settings.pricingHolidays],
-  );
 
   const featuredRooms = useMemo(
     () => rooms.filter((room) => room.status === 'available'),
@@ -48,63 +42,7 @@ const PublicHomePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <AnimatedSection>
-          <h2 className="font-heading text-4xl font-normal tracking-wide mb-2">Featured villas</h2>
-          <p className="section-lead text-2xl mb-8 max-w-2xl">
-            {settings.brandTagline}. Every card is a separate villa we manage—tap to see location, amenities, and rates.
-          </p>
-        </AnimatedSection>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {featuredRooms.map((room, index) => (
-            <AnimatedSection key={room.id} delay={index * 120} variant="fade-up">
-              <div
-                className="room-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer border border-gray-100 h-full"
-                onClick={() => navigate(`/villas/${room.id}`)}
-              >
-                <div className="relative overflow-hidden">
-                  <NormalizedImage
-                    urls={room.images}
-                    fallback="https://via.placeholder.com/800x600?text=Villa"
-                    alt={room.name}
-                    loading={index < 2 ? 'eager' : 'lazy'}
-                    decoding="async"
-                    className="room-card-image w-full h-56 object-cover"
-                  />
-                  <span className="villa-card-tag absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-base font-bold">
-                    {room.room_type}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <h3 className="font-heading text-lg text-airbnb-red leading-snug uppercase tracking-wide">{room.name}</h3>
-                  <p className="villa-card-meta text-lg mb-2 mt-2">
-                    {room.location} · {room.max_guests} guests included
-                  </p>
-                  <p className="villa-card-body text-lg mb-3 line-clamp-2">{room.description}</p>
-                  <div className="flex justify-between items-center">
-                    <VillaCardPrice
-                      display={getVillaCardPriceDisplay(
-                        room.price_per_night,
-                        room.weekend_price_per_night,
-                        browseRateMode,
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            </AnimatedSection>
-          ))}
-        </div>
-        <AnimatedSection delay={200} className="text-center mt-10">
-          <button
-            type="button"
-            onClick={() => navigate('/villas')}
-            className="inline-flex items-center rounded-full bg-airbnb-red px-6 py-3 text-white font-bold hover:bg-airbnb-red-dark btn-primary-motion"
-          >
-            View all villas
-          </button>
-        </AnimatedSection>
-      </div>
+      <FeaturedVillasSection rooms={featuredRooms} settings={settings} />
 
       {isForSaleEnabled && featuredForSale.length > 0 && (
       <div className="bg-white border-t border-gray-200 py-12">

@@ -39,6 +39,7 @@
   h4,
   h5,
   h6 {
+    @apply text-airbnb-red;
     font-family: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
     font-weight: 400;
     letter-spacing: 0.04em;
@@ -213,6 +214,15 @@
 
   .room-card .villa-card-suffix {
     @apply font-ui text-xl font-normal text-gray-900;
+  }
+
+  .villa-carousel {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .villa-carousel::-webkit-scrollbar {
+    display: none;
   }
 
   .explore-tile {

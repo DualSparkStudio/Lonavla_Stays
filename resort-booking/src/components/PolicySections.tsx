@@ -5,6 +5,7 @@ import type { InfoSection } from '../types/site';
 type PolicySectionsProps = {
   sections: InfoSection[];
   className?: string;
+  itemsClassName?: string;
   /** When set, check-in/out lines in house rules use admin booking defaults. */
   checkInTime?: string;
   checkOutTime?: string;
@@ -13,6 +14,7 @@ type PolicySectionsProps = {
 const PolicySections: React.FC<PolicySectionsProps> = ({
   sections,
   className = '',
+  itemsClassName = 'text-base',
   checkInTime,
   checkOutTime,
 }) => {
@@ -28,7 +30,7 @@ const PolicySections: React.FC<PolicySectionsProps> = ({
       {resolvedSections.map((section) => (
         <section key={section.title}>
           <h2 className="font-heading text-xl mb-3">{section.title}</h2>
-          <ul className="list-disc pl-5 space-y-2 text-base text-gray-800 leading-relaxed">
+          <ul className={`list-disc pl-5 space-y-2 ${itemsClassName} text-gray-800 leading-relaxed`}>
             {section.items.filter(Boolean).map((item) => (
               <li key={item}>{item}</li>
             ))}

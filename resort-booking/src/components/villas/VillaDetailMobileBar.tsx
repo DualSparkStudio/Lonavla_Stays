@@ -1,5 +1,4 @@
 import React from 'react';
-import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import Button from '../ui/Button';
 import VillaCardPrice from './VillaCardPrice';
 import { BOOKING_ADVANCE_PAYMENT_PERCENT, calcAmountDueNow, type VillaCardPriceDisplay } from '../../lib/bookingPricing';
@@ -7,7 +6,6 @@ import { formatPrice } from '../../data/resort';
 
 type VillaDetailMobileBarProps = {
   priceDisplay: VillaCardPriceDisplay;
-  rating: number;
   total: number;
   canBook: boolean;
   onBook: () => void;
@@ -16,7 +14,6 @@ type VillaDetailMobileBarProps = {
 
 const VillaDetailMobileBar: React.FC<VillaDetailMobileBarProps> = ({
   priceDisplay,
-  rating,
   total,
   canBook,
   onBook,
@@ -31,15 +28,11 @@ const VillaDetailMobileBar: React.FC<VillaDetailMobileBarProps> = ({
           <div className="flex items-baseline gap-1">
             <VillaCardPrice display={priceDisplay} compact />
           </div>
-          <p className="flex items-center gap-1 text-xs text-gray-600">
-            <StarSolid className="h-3.5 w-3.5" />
-            {rating}
-            {canBook && (
-              <span className="ml-1">
-                · {BOOKING_ADVANCE_PAYMENT_PERCENT}% advance ({formatPrice(advance)})
-              </span>
-            )}
-          </p>
+          {canBook && (
+            <p className="text-xs text-gray-600 mt-0.5">
+              {BOOKING_ADVANCE_PAYMENT_PERCENT}% advance ({formatPrice(advance)})
+            </p>
+          )}
         </div>
         <div className="flex gap-2 shrink-0">
           <Button variant="outline" size="sm" className="rounded-lg !px-3" onClick={onContact}>

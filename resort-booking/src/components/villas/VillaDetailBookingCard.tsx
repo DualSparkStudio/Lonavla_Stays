@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import React, { useMemo, useState } from 'react';
+import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import Button from '../ui/Button';
 import VillaCardPrice from './VillaCardPrice';
 import {
@@ -12,6 +11,15 @@ import {
 } from '../../lib/bookingPricing';
 import { formatPrice } from '../../data/resort';
 import type { Room } from '../../data/resort';
+import { useSiteBookings } from '../../context/SiteDataContext';
+import { notify } from '../../lib/notify';
+import {
+  checkRoomAvailability,
+  getTodayIso,
+  isStayRangeAvailable,
+  validateCheckInInput,
+  validateCheckOutInput,
+} from '../../lib/availability';
 
 type VillaDetailBookingCardProps = {
   room: Room;
@@ -42,6 +50,9 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
   pricingHolidays,
   onToggleCalendar,
 }) => {
+  const { bookings, blockedDates } = useSiteBookings();
+  const [dateError, setDateError] = useState('');
+
   const nights = useMemo(() => {
     if (!checkIn || !checkOut || checkOut <= checkIn) return 0;
     return differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn));
@@ -68,21 +79,64 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
     [room, checkIn, nights, guestCount, extraPersonCharge, pricingHolidays, checkOut],
   );
 
-  const canBook = nights >= 1 && checkOut > checkIn;
+  const stayAvailable = useMemo(
+    () => isStayRangeAvailable(room.id, checkIn, checkOut, bookings, blockedDates),
+    [room.id, checkIn, checkOut, bookings, blockedDates],
+  );
+
+  const availabilityMessage = useMemo(() => {
+    if (!checkIn || !checkOut || checkOut <= checkIn) return '';
+    if (!stayAvailable) {
+      return 'Selected dates overlap with existing bookings or blocked dates.';
+    }
+    return '';
+  }, [checkIn, checkOut, stayAvailable]);
+
+  const displayDateError = dateError || availabilityMessage;
+
+  const canBook = nights >= 1 && checkOut > checkIn && stayAvailable;
   const amountDueNow = canBook ? pricing.amountDueNow : calcAmountDueNow(0);
   const balanceDue = canBook ? pricing.balanceDue : 0;
 
   const maxGuestOptions = Math.max(room.max_guests + (room.extra_guest_limit ?? 10), 20);
+  const todayIso = getTodayIso();
+  const checkOutMin = checkIn ? format(addDays(parseISO(checkIn), 1), 'yyyy-MM-dd') : todayIso;
+
+  const handleCheckInChange = (value: string) => {
+    const result = validateCheckInInput(room.id, value, checkOut, bookings, blockedDates);
+    if (!result.valid) {
+      setDateError(result.reason);
+      notify.error(result.reason);
+      return;
+    }
+
+    setDateError('');
+    onCheckInChange(value);
+
+    if (checkOut && value && checkOut > value) {
+      const range = checkRoomAvailability(room.id, value, checkOut, bookings, blockedDates);
+      if (!range.available) {
+        onCheckOutChange('');
+      }
+    }
+  };
+
+  const handleCheckOutChange = (value: string) => {
+    const result = validateCheckOutInput(room.id, checkIn, value, bookings, blockedDates);
+    if (!result.valid) {
+      setDateError(result.reason);
+      notify.error(result.reason);
+      return;
+    }
+
+    setDateError('');
+    onCheckOutChange(value);
+  };
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
       <div className="mb-4">
         <VillaCardPrice display={priceDisplay} />
-        <p className="flex items-center gap-1 text-sm text-gray-700 mt-1">
-          <StarSolid className="h-4 w-4 text-gray-900" />
-          <span className="font-semibold text-gray-900">{room.rating}</span>
-          <span>· {room.review_count} reviews</span>
-        </p>
       </div>
 
       <div className="rounded-xl border border-gray-300 overflow-hidden mb-4">
@@ -92,7 +146,8 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
             <input
               type="date"
               value={checkIn}
-              onChange={(e) => onCheckInChange(e.target.value)}
+              min={todayIso}
+              onChange={(e) => handleCheckInChange(e.target.value)}
               className="w-full bg-transparent text-sm font-medium text-gray-900 focus:outline-none villa-detail-date"
             />
           </label>
@@ -101,8 +156,8 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
             <input
               type="date"
               value={checkOut}
-              min={checkIn || undefined}
-              onChange={(e) => onCheckOutChange(e.target.value)}
+              min={checkOutMin}
+              onChange={(e) => handleCheckOutChange(e.target.value)}
               className="w-full bg-transparent text-sm font-medium text-gray-900 focus:outline-none villa-detail-date"
             />
           </label>
@@ -122,6 +177,12 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
           </select>
         </div>
       </div>
+
+      {displayDateError && (
+        <p className="mb-3 text-sm text-red-600 font-medium" role="alert">
+          {displayDateError}
+        </p>
+      )}
 
       {onToggleCalendar && (
         <button
@@ -212,7 +273,7 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
       >
         Book now
       </Button>
-      <p className="text-center text-xs text-gray-500 mt-3">You won&apos;t be charged yet</p>
+      <p className="text-center text-base text-gray-600 mt-3">You won&apos;t be charged yet</p>
     </div>
   );
 };

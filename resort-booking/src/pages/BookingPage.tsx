@@ -15,8 +15,8 @@ import {
 import PublicLayout from '../components/layout/PublicLayout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import NormalizedImage from '../components/ui/NormalizedImage';
 import LocationMapSection from '../components/maps/LocationMapSection';
+import VillaPhotoGallery from '../components/villas/VillaPhotoGallery';
 import { notifyBookingByEmail } from '../lib/bookingEmail';
 import { saveBookingConfirmation } from '../lib/bookingConfirmation';
 import { checkRoomAvailability } from '../lib/availability';
@@ -30,7 +30,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 
 const AvailabilityCalendar = lazy(() => import('../components/AvailabilityCalendar'));
 import { buildBookingPriceBreakdown, computeStayPricing, BOOKING_ADVANCE_PAYMENT_PERCENT, getVillaCardPriceDisplay, resolveVillaCardRateMode } from '../lib/bookingPricing';
-import { getPrimaryImage } from '../lib/imageUrl';
+import { getPrimaryImage, normalizeImageUrls } from '../lib/imageUrl';
 import {
   createRazorpayOrder,
   getPaymentModeLabel,
@@ -69,6 +69,11 @@ const BookingPage: React.FC = () => {
   const { getRoomById, settings, addBooking } = useSiteData();
   const { bookings, blockedDates } = useSiteBookings();
   const villa = roomId ? getRoomById(roomId) : undefined;
+
+  const galleryImages = useMemo(
+    () => (villa ? normalizeImageUrls(villa.images) : []),
+    [villa],
+  );
 
   const initialCheckIn = searchParams.get('checkIn') ?? toDateInputValue(addDays(new Date(), 1));
   const initialCheckOut = searchParams.get('checkOut') ?? toDateInputValue(addDays(new Date(), 3));
@@ -359,22 +364,19 @@ const BookingPage: React.FC = () => {
             Back to villa
           </button>
 
-          <h1 className="font-heading text-3xl md:text-4xl mb-6">
+          <h1 className="font-heading text-3xl md:text-4xl mb-4">
             Book {villa.name}
           </h1>
+
+          <div className="mb-6">
+            <VillaPhotoGallery images={galleryImages} originals={villa.images} alt={villa.name} />
+          </div>
 
           <form onSubmit={form.handleSubmit(handleBooking)}>
             <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
               {/* Room summary */}
               <div className="p-6 md:p-8 border-b border-gray-100">
-                <div className="flex flex-col md:flex-row gap-6">
-                  <NormalizedImage
-                    urls={villa.images}
-                    fallback="https://via.placeholder.com/900x500?text=Villa"
-                    alt={villa.name}
-                    className="w-full md:w-56 h-44 md:h-40 object-cover rounded-xl shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
+                <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">{villa.name}</h2>
                     <p className="text-gray-900 text-base leading-relaxed mb-4 line-clamp-3">
                       {villa.description}
@@ -410,7 +412,6 @@ const BookingPage: React.FC = () => {
                         </span>
                       ))}
                     </div>
-                  </div>
                 </div>
               </div>
 

@@ -1,3 +1,11 @@
+/** Display label such as "4 BHK" from room type text. */
+export function formatBhkLabel(roomType: string): string | null {
+  const match = roomType.match(/(\d+(?:[½\u00BD]|\.5)?)\s*BHK/i);
+  if (!match) return null;
+  const num = match[1].replace('½', '.5').replace('\u00BD', '.5');
+  return `${num} BHK`;
+}
+
 /** Parse bedroom count from room type labels like "4 BHK Private Pool Villa". */
 export function parseBedroomsFromRoomType(roomType: string): number | null {
   const match = roomType.match(/(\d+(?:[½\u00BD])?)\s*BHK/i);

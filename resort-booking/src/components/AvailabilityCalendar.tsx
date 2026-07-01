@@ -10,7 +10,7 @@ import { useSiteBookings } from '../context/SiteDataContext';
 import {
   bookingEventEnd,
   checkRoomAvailability,
-  isDateInBlockedOrBookedRange,
+  isUnavailableForCheckIn,
 } from '../lib/availability';
 
 type AvailabilityCalendarProps = {
@@ -131,7 +131,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       // Check-out may fall on the first day of a booking/block (turnover day).
       if (
         !awaitingCheckOut &&
-        isDateInBlockedOrBookedRange(dateStr, roomBookings, roomBlocks, roomId)
+        isUnavailableForCheckIn(dateStr, roomBookings, roomBlocks, roomId)
       ) {
         notify.error('This date is not available.');
         return;
@@ -180,7 +180,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         return;
       }
 
-      if (isDateInBlockedOrBookedRange(start, roomBookings, roomBlocks, roomId)) {
+      if (isUnavailableForCheckIn(start, roomBookings, roomBlocks, roomId)) {
         notify.error('Check-in falls on an unavailable date.');
         return;
       }
@@ -201,7 +201,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
       const start = format(selectInfo.start, 'yyyy-MM-dd');
       const end = format(addDays(selectInfo.end, -1), 'yyyy-MM-dd');
       if (start < TODAY) return false;
-      if (isDateInBlockedOrBookedRange(start, roomBookings, roomBlocks, roomId)) return false;
+      if (isUnavailableForCheckIn(start, roomBookings, roomBlocks, roomId)) return false;
       if (end <= start) return true;
       return checkRoomAvailability(roomId, start, end, bookings, blockedDates).available;
     },
