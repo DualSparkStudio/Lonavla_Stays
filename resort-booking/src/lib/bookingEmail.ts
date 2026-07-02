@@ -146,7 +146,16 @@ export async function sendBookingConfirmationEmails(
 
 /** Fire-and-forget helper used after a successful booking. */
 export function notifyBookingByEmail(payload: BookingEmailRequest): void {
-  sendBookingConfirmationEmails(payload).catch((error) => {
-    console.warn('Booking confirmation email failed:', error);
-  });
+  sendBookingConfirmationEmails(payload)
+    .then((result) => {
+      if (result.skipped || !result.guestSent) {
+        console.warn(
+          'Booking confirmation email was not sent:',
+          result.message || result.error || result,
+        );
+      }
+    })
+    .catch((error) => {
+      console.warn('Booking confirmation email failed:', error);
+    });
 }
