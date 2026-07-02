@@ -24,7 +24,8 @@ import { verifyRoomAvailabilityRemote } from '../lib/availabilityApi';
 import PriceBreakdown from '../components/PriceBreakdown';
 import VillaCardPrice from '../components/villas/VillaCardPrice';
 import { formatPrice, checkInLabelFromTime, checkOutLabelFromTime, checkInOutSummaryFromTimes } from '../data/resort';
-import { applyBookingTimesToPolicyItem } from '../lib/policySections';
+import { applyBookingTimesToPolicyItem, getBookingTermsItems } from '../lib/policySections';
+import { clampGuestCount, getVillaFinalCapacity } from '../lib/villaCapacity';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -94,10 +95,9 @@ const BookingPage: React.FC = () => {
   useEffect(() => {
     const param = searchParams.get('guests');
     const parsed = Number(param);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      setGuestInput(String(Math.floor(parsed)));
-    }
-  }, [searchParams]);
+    if (!villa || !Number.isFinite(parsed) || parsed <= 0) return;
+    setGuestInput(String(clampGuestCount(villa, parsed)));
+  }, [searchParams, villa]);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -110,12 +110,12 @@ const BookingPage: React.FC = () => {
   }, [checkIn, checkOut]);
 
   const guestsIncluded = villa?.max_guests ?? 1;
+  const maxGuestCapacity = villa ? getVillaFinalCapacity(villa) : 20;
   const extraPersonCharge = settings.extraPersonCharge ?? 1500;
   const guestCount = useMemo(() => {
-    const parsed = Number(guestInput);
-    if (!Number.isFinite(parsed) || parsed < 1) return 1;
-    return Math.floor(parsed);
-  }, [guestInput]);
+    if (!villa) return 1;
+    return clampGuestCount(villa, Number(guestInput));
+  }, [guestInput, villa]);
 
   const pricing = useMemo(() => {
     if (!villa || nights < 1) {
@@ -285,6 +285,7 @@ const BookingPage: React.FC = () => {
         roomId: villa.id,
         roomName: villa.name,
         roomImage: getPrimaryImage(villa.images),
+        caretakerPhone: villa.caretaker_phone?.trim() || undefined,
         checkIn,
         checkOut,
         guests: guestCount,
@@ -305,6 +306,7 @@ const BookingPage: React.FC = () => {
         roomLocation: villa.location,
         mapEmbedUrl: villa.mapEmbedUrl,
         mapsLink: villa.mapsLink,
+        caretakerPhone: villa.caretaker_phone?.trim() || undefined,
         resortName: settings.resortName,
         resortPhone: settings.resortPhone,
         resortEmail: settings.resortEmail,
@@ -350,6 +352,7 @@ const BookingPage: React.FC = () => {
   const checkInLabel = checkInLabelFromTime(settings.checkInTime);
   const checkOutLabel = checkOutLabelFromTime(settings.checkOutTime);
   const checkInOutSummary = checkInOutSummaryFromTimes(settings.checkInTime, settings.checkOutTime);
+  const bookingTermsItems = useMemo(() => getBookingTermsItems(settings), [settings]);
 
   return (
     <PublicLayout currentPage="villas">
@@ -505,13 +508,17 @@ const BookingPage: React.FC = () => {
                     <label className="block text-base font-bold text-gray-900 mb-2">Guest count</label>
                     <p className="text-sm text-gray-600 mb-2">
                       {guestsIncluded} guest{guestsIncluded !== 1 ? 's' : ''} included in base price.
+                      Maximum {maxGuestCapacity} guest{maxGuestCapacity !== 1 ? 's' : ''} for this villa.
                       {pricing.extraGuests > 0
                         ? ` ${pricing.extraGuests} extra at ${formatPrice(extraPersonCharge)}/night each.`
-                        : ` Extra guests above ${guestsIncluded} are ${formatPrice(extraPersonCharge)}/night each.`}
+                        : guestsIncluded < maxGuestCapacity
+                          ? ` Extra guests above ${guestsIncluded} are ${formatPrice(extraPersonCharge)}/night each.`
+                          : ''}
                     </p>
                     <input
                       type="number"
                       min={1}
+                      max={maxGuestCapacity}
                       inputMode="numeric"
                       value={guestInput}
                       onChange={(e) => {
@@ -521,11 +528,16 @@ const BookingPage: React.FC = () => {
                           return;
                         }
                         if (!/^\d+$/.test(next)) return;
+                        const parsed = Number(next);
+                        if (villa && parsed > maxGuestCapacity) {
+                          setGuestInput(String(maxGuestCapacity));
+                          return;
+                        }
                         setGuestInput(next);
                       }}
                       onBlur={() => {
-                        if (!guestInput) return;
-                        setGuestInput(String(guestCount));
+                        if (!guestInput || !villa) return;
+                        setGuestInput(String(clampGuestCount(villa, Number(guestInput))));
                       }}
                       className="w-full max-w-xs px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-airbnb-red font-medium"
                     />
@@ -535,10 +547,9 @@ const BookingPage: React.FC = () => {
                     <p className="font-bold mb-2">Booking terms</p>
                     <ul className="list-disc pl-5 space-y-1 text-amber-900">
                       <li>{checkInOutSummary}</li>
-                      <li>Valid government ID required at check-in</li>
-                      <li>No smoking inside the villa</li>
-                      <li>Modifications subject to availability — contact us 24h before arrival</li>
-                      <li>Free cancellation up to 24 hours before check-in</li>
+                      {bookingTermsItems.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
                     </ul>
                   </div>
                 </div>

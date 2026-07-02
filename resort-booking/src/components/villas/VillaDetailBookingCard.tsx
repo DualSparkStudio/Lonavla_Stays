@@ -20,6 +20,7 @@ import {
   validateCheckInInput,
   validateCheckOutInput,
 } from '../../lib/availability';
+import { clampGuestCount, getVillaFinalCapacity } from '../../lib/villaCapacity';
 
 type VillaDetailBookingCardProps = {
   room: Room;
@@ -58,11 +59,9 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
     return differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn));
   }, [checkIn, checkOut]);
 
-  const guestCount = useMemo(() => {
-    const parsed = Number(guestInput);
-    if (!Number.isFinite(parsed) || parsed < 1) return 1;
-    return Math.floor(parsed);
-  }, [guestInput]);
+  const guestCount = useMemo(() => clampGuestCount(room, Number(guestInput)), [room, guestInput]);
+
+  const maxGuestCapacity = getVillaFinalCapacity(room);
 
   const pricing = useMemo(
     () =>
@@ -98,7 +97,7 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
   const amountDueNow = canBook ? pricing.amountDueNow : calcAmountDueNow(0);
   const balanceDue = canBook ? pricing.balanceDue : 0;
 
-  const maxGuestOptions = Math.max(room.max_guests + (room.extra_guest_limit ?? 10), 20);
+  const maxGuestOptions = maxGuestCapacity;
   const todayIso = getTodayIso();
   const checkOutMin = checkIn ? format(addDays(parseISO(checkIn), 1), 'yyyy-MM-dd') : todayIso;
 
@@ -175,6 +174,7 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-gray-500">Maximum {maxGuestCapacity} guest{maxGuestCapacity !== 1 ? 's' : ''} for this villa</p>
         </div>
       </div>
 

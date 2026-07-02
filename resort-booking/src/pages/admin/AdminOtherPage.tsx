@@ -155,7 +155,9 @@ const AdminOtherPage: React.FC = () => {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Terms &amp; conditions</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Shown on the public terms page and linked from the site footer.
+              Shown on the public terms page, villa pages, checkout, and booking confirmation. Use
+              &quot;Cancellation&quot; in a section title to target the cancellation block on villa
+              and booking pages.
             </p>
           </div>
           <InfoSectionsEditor

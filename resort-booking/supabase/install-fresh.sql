@@ -68,6 +68,8 @@ CREATE TABLE IF NOT EXISTS public.villas (
   images TEXT[] NOT NULL DEFAULT '{}',
   map_embed_url TEXT,
   maps_link TEXT,
+  caretaker_phone TEXT,
+  final_capacity INTEGER,
   check_in_time TEXT NOT NULL DEFAULT '14:00',
   check_out_time TEXT NOT NULL DEFAULT '11:00',
   -- Matches app localStorage villa ids: 1, 2, 3, 4

@@ -17,6 +17,8 @@ const emptyRoom = (): Omit<Room, 'id'> => ({
   location: '',
   address: '',
   max_guests: 2,
+  final_capacity: 10,
+  caretaker_phone: '',
   room_number: '',
   rating: 4.5,
   review_count: 0,
@@ -71,6 +73,11 @@ const AdminRoomsPage: React.FC = () => {
       images: draft.images.filter((img) => img.trim()),
       mapEmbedUrl: draft.mapEmbedUrl?.trim() || undefined,
       mapsLink: draft.mapsLink?.trim() || undefined,
+      caretaker_phone: draft.caretaker_phone?.trim() || undefined,
+      final_capacity: Math.max(
+        draft.max_guests,
+        Math.floor(Number(draft.final_capacity) || draft.max_guests),
+      ),
     };
     if (isNew) addRoom(payload);
     else if (editing) updateRoom(editing.id, payload);
@@ -123,7 +130,10 @@ const AdminRoomsPage: React.FC = () => {
                   Weekend: ₹{room.weekend_price_per_night.toLocaleString('en-IN')} / night
                 </p>
               )}
-              <p className="text-sm text-gray-600 mb-3">{room.max_guests} guests included in base price</p>
+              <p className="text-sm text-gray-600 mb-3">
+                {room.max_guests} guests in base price
+                {room.final_capacity ? ` · max ${room.final_capacity} guests` : ''}
+              </p>
               <AdminCardActions
                 onView={() => setViewing(room)}
                 onEdit={() => openEdit(room)}
@@ -168,6 +178,30 @@ const AdminRoomsPage: React.FC = () => {
             </AdminFormField>
             <AdminFormField label="Guests included in base price" hint="Extra guests above this count are charged at the site-wide extra person rate">
               <input type="number" min={1} value={draft.max_guests || ''} onChange={(e) => setDraft({ ...draft, max_guests: Number(e.target.value) })} className={adminInputClass} />
+            </AdminFormField>
+            <AdminFormField
+              label="Villa final capacity"
+              hint="Maximum total guests allowed for bookings on the website (hard cap)"
+            >
+              <input
+                type="number"
+                min={1}
+                value={draft.final_capacity || ''}
+                onChange={(e) => setDraft({ ...draft, final_capacity: Number(e.target.value) })}
+                className={adminInputClass}
+              />
+            </AdminFormField>
+            <AdminFormField
+              label="Caretaker phone"
+              hint="Shown on booking confirmation and the guest confirmation email"
+            >
+              <input
+                type="tel"
+                value={draft.caretaker_phone ?? ''}
+                onChange={(e) => setDraft({ ...draft, caretaker_phone: e.target.value })}
+                placeholder="+91 98765 43210"
+                className={`${adminInputClass} phone-number`}
+              />
             </AdminFormField>
             <AdminFormField label="Villa code" hint="Internal reference, e.g. GW-02">
               <input value={draft.room_number} onChange={(e) => setDraft({ ...draft, room_number: e.target.value })} className={adminInputClass} />

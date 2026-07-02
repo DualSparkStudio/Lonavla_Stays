@@ -1,14 +1,12 @@
 import React from 'react';
 import PublicLayout from '../components/layout/PublicLayout';
 import PolicySections from '../components/PolicySections';
+import { getTermsSections } from '../lib/policySections';
 import { useSiteSettings } from '../context/SiteDataContext';
 
 const TermsAndConditionsPage: React.FC = () => {
   const settings = useSiteSettings();
-  const sections =
-    settings.termsAndConditionsSections?.length
-      ? settings.termsAndConditionsSections
-      : settings.importantInfoSections;
+  const sections = getTermsSections(settings);
 
   return (
     <PublicLayout currentPage="terms">

@@ -49,6 +49,7 @@ export type BookingEmailPayload = {
   checkOutTime?: string;
   siteUrl?: string;
   houseRuleHighlights?: string[];
+  caretakerPhone?: string;
   adminEmail?: string;
   sendGuest?: boolean;
   sendAdmin?: boolean;
@@ -269,6 +270,9 @@ function buildVillaCard(payload: BookingEmailPayload, resortName: string, resort
       <td valign="middle">
         <p style="margin:0 0 4px;font-size:20px;font-weight:700;color:#111827;">${escapeHtml(payload.roomName)}</p>
         <p style="margin:0;font-size:16px;line-height:1.5;color:#111827;">${escapeHtml(subtitle)}</p>
+        ${payload.caretakerPhone?.trim()
+          ? `<p style="margin:12px 0 0;font-size:15px;line-height:1.5;color:#111827;"><strong>Caretaker:</strong> ${escapeHtml(payload.caretakerPhone.trim())}</p>`
+          : ''}
       </td>
     </tr>
   </table>`;
@@ -344,6 +348,9 @@ function buildImportantInfoCard(payload: BookingEmailPayload, resortName: string
   const bullets = [
     escapeHtml(checkInOutSummary),
     ...highlights.map((item) => escapeHtml(item)),
+    payload.caretakerPhone?.trim()
+      ? `On-site caretaker: <strong style="color:#ffffff;">${escapeHtml(payload.caretakerPhone.trim())}</strong>`
+      : '',
     phone
       ? `For changes or cancellations, contact us at least 24 hours before check-in: <strong style="color:#ffffff;">${escapeHtml(phone)}</strong>`
       : 'For changes or cancellations, contact us at least 24 hours before check-in.',

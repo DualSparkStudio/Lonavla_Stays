@@ -39,6 +39,10 @@ export type Room = {
   refundable_security_deposit?: number;
   /** Number of additional guests allowed beyond max_guests */
   extra_guest_limit?: number;
+  /** Maximum total guests allowed for this villa (hard cap on booking) */
+  final_capacity?: number;
+  /** On-site caretaker phone — shown on booking confirmation and guest emails */
+  caretaker_phone?: string;
   /** Extra guest cost in INR per guest per night */
   extra_guest_cost?: number;
   /** Google Maps embed iframe src, embed URL, or share link */

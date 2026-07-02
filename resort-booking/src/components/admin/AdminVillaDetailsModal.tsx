@@ -68,6 +68,14 @@ const AdminVillaDetailsModal: React.FC<AdminVillaDetailsModalProps> = ({ villa, 
           <AdminDetailField label="Status" value={<StatusPill status={villa.status} />} />
           <AdminDetailField label="Guests in base price" value={villa.max_guests} />
           <AdminDetailField
+            label="Final capacity"
+            value={villa.final_capacity ?? 'Not set (uses legacy limit)'}
+          />
+          <AdminDetailField
+            label="Caretaker phone"
+            value={villa.caretaker_phone?.trim() || 'Not set'}
+          />
+          <AdminDetailField
             label="Price per night"
             value={formatPrice(villa.price_per_night)}
           />

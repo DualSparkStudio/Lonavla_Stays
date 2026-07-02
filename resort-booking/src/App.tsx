@@ -63,6 +63,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/terms" element={<TermsAndConditionsPage />} />
+          <Route path="/terms-and-conditions" element={<Navigate to="/terms" replace />} />
           <Route path="/house-rules" element={<HouseRulesPage />} />
           <Route path="/booking/confirmation/:bookingRef" element={<BookingConfirmationPage />} />
           <Route path="/booking/:roomId" element={<BookingPage />} />

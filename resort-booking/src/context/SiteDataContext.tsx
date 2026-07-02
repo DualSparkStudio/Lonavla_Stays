@@ -238,11 +238,15 @@ const ConnectedSiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     (patch: Partial<SiteSettings>) => {
       patchData((prev) => {
         const settings = { ...prev.settings, ...patch };
-        upsertSiteSettingsToSupabase(settings).catch((e) => logRemoteError('updateSettings', e));
+        upsertSiteSettingsToSupabase(settings)
+          .then(() => {
+            void queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] });
+          })
+          .catch((e) => logRemoteError('updateSettings', e));
         return { ...prev, settings };
       });
     },
-    [patchData],
+    [patchData, queryClient],
   );
 
   const setRooms = useCallback(

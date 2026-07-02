@@ -12,6 +12,7 @@ export type BookingEmailRequest = {
   roomLocation?: string;
   mapEmbedUrl?: string;
   mapsLink?: string;
+  caretakerPhone?: string;
   checkIn: string;
   checkOut: string;
   guests: number;

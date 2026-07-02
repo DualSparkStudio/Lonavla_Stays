@@ -42,6 +42,8 @@ type VillaRow = {
   maps_link: string | null;
   check_in_time?: string | null;
   check_out_time?: string | null;
+  caretaker_phone?: string | null;
+  final_capacity?: number | null;
 };
 
 type BookingRow = {
@@ -138,6 +140,8 @@ function mapVillaToRoom(row: VillaRow): Room {
     images: row.images ?? [],
     mapEmbedUrl: row.map_embed_url ?? undefined,
     mapsLink: row.maps_link ?? undefined,
+    caretaker_phone: row.caretaker_phone?.trim() ? repairMojibake(row.caretaker_phone.trim()) : undefined,
+    final_capacity: row.final_capacity != null && row.final_capacity > 0 ? Number(row.final_capacity) : undefined,
   };
 }
 
@@ -236,11 +240,27 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
       (repaired.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
     ),
     pricingHolidays: (repaired.pricingHolidays as string[]) ?? defaults.pricingHolidays,
+    houseRulesSections:
+      (repaired.houseRulesSections as SiteSettings['houseRulesSections'])?.length
+        ? (repaired.houseRulesSections as SiteSettings['houseRulesSections'])
+        : defaults.houseRulesSections,
+    termsAndConditionsSections:
+      (repaired.termsAndConditionsSections as SiteSettings['termsAndConditionsSections'])?.length
+        ? (repaired.termsAndConditionsSections as SiteSettings['termsAndConditionsSections'])
+        : (repaired.importantInfoSections as SiteSettings['importantInfoSections'])?.length
+          ? (repaired.importantInfoSections as SiteSettings['importantInfoSections'])
+          : defaults.termsAndConditionsSections,
+    importantInfoSections:
+      (repaired.termsAndConditionsSections as SiteSettings['termsAndConditionsSections'])?.length
+        ? (repaired.termsAndConditionsSections as SiteSettings['termsAndConditionsSections'])
+        : (repaired.importantInfoSections as SiteSettings['importantInfoSections'])?.length
+          ? (repaired.importantInfoSections as SiteSettings['importantInfoSections'])
+          : defaults.importantInfoSections,
   };
 }
 
 const VILLA_COLUMNS =
-  'id, legacy_id, name, room_type, description, price_per_night, weekend_price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url, maps_link';
+  'id, legacy_id, name, room_type, description, price_per_night, weekend_price_per_night, location, address, max_guests, room_number, rating, review_count, status, amenities, images, map_embed_url, maps_link, caretaker_phone, final_capacity';
 const BOOKING_COLUMNS =
   'id, villa_id, booking_ref, check_in, check_out, adults, children, total_amount, status, guest_name, guest_email, created_at, villas(name, legacy_id)';
 const BLOCKED_COLUMNS = 'id, villa_id, start_date, end_date, reason, notes, source, created_at';
@@ -411,6 +431,8 @@ export async function upsertVillaToSupabase(room: Room): Promise<void> {
     check_out_time: room.check_out_time?.trim() || DEFAULT_CHECK_OUT_TIME,
     map_embed_url: room.mapEmbedUrl ?? null,
     maps_link: room.mapsLink ?? null,
+    caretaker_phone: room.caretaker_phone?.trim() || null,
+    final_capacity: room.final_capacity != null && room.final_capacity > 0 ? room.final_capacity : null,
     is_active: true,
   };
 

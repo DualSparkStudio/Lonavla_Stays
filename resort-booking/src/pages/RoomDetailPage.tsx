@@ -25,13 +25,23 @@ import {
   getVillaCardPriceDisplay,
   resolveVillaCardRateMode,
 } from '../lib/bookingPricing';
-import { isStayRangeAvailable, validateCheckInInput, validateCheckOutInput } from '../lib/availability';
+import {
+  getCancellationPolicyItems,
+  getCancellationSection,
+  getCancellationSummaryLabel,
+} from '../lib/policySections';
+import {
+  isStayRangeAvailable,
+  validateCheckInInput,
+  validateCheckOutInput,
+} from '../lib/availability';
 import {
   hasPrivatePool,
   parseBathroomsFromAmenities,
   parseBedroomsFromRoomType,
   truncateText,
 } from '../lib/villaDetailHelpers';
+import { clampGuestCount, getVillaFinalCapacity } from '../lib/villaCapacity';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
 
 const AMENITY_PREVIEW_COUNT = 9;
@@ -73,8 +83,8 @@ const RoomDetailPage: React.FC = () => {
       if (checkInResult.valid) setCheckIn(fromCheckIn);
     }
 
-    if (fromGuests && Number(fromGuests) > 0) {
-      setGuestInput(String(Math.floor(Number(fromGuests))));
+    if (fromGuests && Number(fromGuests) > 0 && room) {
+      setGuestInput(String(clampGuestCount(room, Number(fromGuests))));
     }
   }, [searchParams, room, bookings, blockedDates]);
 
@@ -127,11 +137,14 @@ const RoomDetailPage: React.FC = () => {
     );
   }, [room, stayRateMode]);
 
+  const cancellationSection = useMemo(() => getCancellationSection(settings), [settings]);
+  const cancellationItems = useMemo(() => getCancellationPolicyItems(settings), [settings]);
+  const cancellationSummary = useMemo(() => getCancellationSummaryLabel(settings), [settings]);
+
   const guestCount = useMemo(() => {
-    const parsed = Number(guestInput);
-    if (!Number.isFinite(parsed) || parsed < 1) return 1;
-    return Math.floor(parsed);
-  }, [guestInput]);
+    if (!room) return 1;
+    return clampGuestCount(room, Number(guestInput));
+  }, [guestInput, room]);
 
   const nights = useMemo(() => {
     if (!checkIn || !checkOut || checkOut <= checkIn) return 0;
@@ -241,10 +254,12 @@ const RoomDetailPage: React.FC = () => {
   const policySidebar = (
     <>
       <ul className="mt-6 space-y-3 text-base text-gray-700">
-        <li className="flex items-center gap-2">
-          <ArrowPathIcon className="h-6 w-6 shrink-0" />
-          Free cancellation
-        </li>
+        {cancellationSummary ? (
+          <li className="flex items-center gap-2">
+            <ArrowPathIcon className="h-6 w-6 shrink-0" />
+            {cancellationSummary}
+          </li>
+        ) : null}
         <li className="flex items-center gap-2">
           <CheckBadgeIcon className="h-6 w-6 shrink-0" />
           40% advance required
@@ -278,12 +293,21 @@ const RoomDetailPage: React.FC = () => {
       )}
 
       <div className="mt-8 pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-bold mb-2">Cancellation policy</h3>
-        <p className="text-base text-gray-700 leading-relaxed">
-          Free cancellation up to 24 hours before check-in. After that, modifications are subject
-          to availability. Contact {settings.resortName} for assistance.
-        </p>
-        <Link to="/terms-and-conditions" className="mt-2 inline-block text-base font-semibold underline text-gray-900">
+        <h3 className="text-lg font-bold mb-2">
+          {cancellationSection?.title ?? 'Cancellation policy'}
+        </h3>
+        {cancellationItems.length > 0 ? (
+          <ul className="list-disc pl-5 space-y-2 text-base text-gray-700 leading-relaxed">
+            {cancellationItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-base text-gray-700 leading-relaxed">
+            See our terms for cancellation and rescheduling details.
+          </p>
+        )}
+        <Link to="/terms" className="mt-2 inline-block text-base font-semibold underline text-gray-900">
           Learn more
         </Link>
       </div>
@@ -337,7 +361,7 @@ const RoomDetailPage: React.FC = () => {
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-gray-900 pb-6 mb-6 border-b border-gray-200">
               <span className="inline-flex items-center gap-2">
                 <UserGroupIcon className="h-5 w-5" />
-                {room.max_guests} guests
+                Up to {getVillaFinalCapacity(room)} guests
               </span>
               {bedrooms != null && (
                 <span className="inline-flex items-center gap-2">

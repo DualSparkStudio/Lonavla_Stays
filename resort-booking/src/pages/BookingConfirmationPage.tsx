@@ -16,7 +16,7 @@ import LocationMapSection from '../components/maps/LocationMapSection';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { useSiteData } from '../context/SiteDataContext';
 import { checkInOutSummaryFromTimes } from '../data/resort';
-import { applyBookingTimesToPolicyItem } from '../lib/policySections';
+import { applyBookingTimesToPolicyItem, getCancellationPolicyItems } from '../lib/policySections';
 import { getPrimaryImage } from '../lib/imageUrl';
 import {
   loadBookingConfirmation,
@@ -58,6 +58,7 @@ const BookingConfirmationPage: React.FC = () => {
       roomId: stored.roomId,
       roomName: stored.roomName,
       roomImage: getPrimaryImage(room?.images),
+      caretakerPhone: room?.caretaker_phone?.trim() || undefined,
       checkIn: stored.checkIn,
       checkOut: stored.checkOut,
       guests: stored.guests,
@@ -83,6 +84,7 @@ const BookingConfirmationPage: React.FC = () => {
     .flatMap((s) => s.items)
     .slice(0, 3)
     .map((item) => applyBookingTimesToPolicyItem(item, settings.checkInTime, settings.checkOutTime));
+  const cancellationItems = getCancellationPolicyItems(settings);
 
   if (!data) {
     return (
@@ -104,6 +106,7 @@ const BookingConfirmationPage: React.FC = () => {
 
   const room = getRoomById(data.roomId);
   const villaImage = data.roomImage || getPrimaryImage(room?.images);
+  const caretakerPhone = data.caretakerPhone?.trim() || room?.caretaker_phone?.trim() || '';
   const displayId = data.bookingRef.replace(/^LON/i, '') || data.bookingRef;
   return (
     <PublicLayout currentPage="villas">
@@ -208,6 +211,17 @@ const BookingConfirmationPage: React.FC = () => {
                     <p className="text-base text-gray-900 mt-1">
                       {settings.resortName} — private villa stay in {settings.resortLocation}
                     </p>
+                    {caretakerPhone ? (
+                      <p className="text-base text-gray-900 mt-2">
+                        <span className="font-semibold">Caretaker:</span>{' '}
+                        <a
+                          href={`tel:${caretakerPhone.replace(/\s/g, '')}`}
+                          className="phone-number text-sky-700 font-semibold hover:underline"
+                        >
+                          {caretakerPhone}
+                        </a>
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </section>
@@ -269,8 +283,22 @@ const BookingConfirmationPage: React.FC = () => {
                       {houseRuleHighlights.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
+                      {cancellationItems.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                      {caretakerPhone ? (
+                        <li>
+                          On-site caretaker:{' '}
+                          <a
+                            href={`tel:${caretakerPhone.replace(/\s/g, '')}`}
+                            className="phone-number font-semibold text-white hover:underline"
+                          >
+                            {caretakerPhone}
+                          </a>
+                        </li>
+                      ) : null}
                       <li>
-                        For changes or cancellations, contact us at least 24 hours before check-in:{' '}
+                        Questions? Call{' '}
                         <span className="phone-number font-semibold text-white">{settings.resortPhone}</span>
                       </li>
                       <li>

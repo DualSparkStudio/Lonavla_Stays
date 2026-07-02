@@ -17,6 +17,8 @@ import PublicLayout from '../components/layout/PublicLayout';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import { cn } from '../utils/cn';
 import { demoRooms, formatPrice } from '../data/resort';
+import { useSiteSettings } from '../context/SiteDataContext';
+import { getCancellationPolicyItems } from '../lib/policySections';
 
 interface BookingData {
   id: string;
@@ -39,6 +41,8 @@ interface BookingData {
 }
 
 const UserBookingsPage: React.FC = () => {
+  const settings = useSiteSettings();
+  const cancellationItems = getCancellationPolicyItems(settings);
   const [selectedTab, setSelectedTab] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
   const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -450,9 +454,21 @@ const UserBookingsPage: React.FC = () => {
               </p>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-medium text-yellow-800 mb-2">Cancellation Policy</h4>
-                <p className="text-base text-yellow-700">
-                  Free cancellation until 24 hours before check-in. After that, you'll receive a 50% refund.
-                </p>
+                {cancellationItems.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1 text-base text-yellow-700">
+                    {cancellationItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-base text-yellow-700">
+                    See our{' '}
+                    <Link to="/terms" className="font-semibold underline">
+                      terms &amp; conditions
+                    </Link>{' '}
+                    for cancellation details.
+                  </p>
+                )}
               </div>
               <div className="flex space-x-3 pt-4">
                 <Button

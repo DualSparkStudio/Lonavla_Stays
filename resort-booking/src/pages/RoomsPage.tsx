@@ -10,6 +10,7 @@ import {
   getVillaCardPriceDisplay,
   resolveVillaCardRateMode,
 } from '../lib/bookingPricing';
+import { getVillaFinalCapacity } from '../lib/villaCapacity';
 import VillaCardPrice from '../components/villas/VillaCardPrice';
 
 const formatSearchDate = (value: string) => {
@@ -71,7 +72,7 @@ const RoomsPage: React.FC = () => {
     }
     const guestCount = Number(guestsParam);
     if (guestCount > 0) {
-      list = list.filter((r) => r.max_guests >= guestCount);
+      list = list.filter((r) => getVillaFinalCapacity(r) >= guestCount);
     }
     if (dateSearchActive) {
       list = list.filter(

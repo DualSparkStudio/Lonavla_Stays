@@ -7,6 +7,7 @@ export type BookingConfirmationData = {
   roomId: string;
   roomName: string;
   roomImage?: string;
+  caretakerPhone?: string;
   checkIn: string;
   checkOut: string;
   guests: number;
