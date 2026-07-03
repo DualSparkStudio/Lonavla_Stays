@@ -4,6 +4,7 @@ import AnimatedSection from '../components/ui/AnimatedSection';
 import PublicLayout from '../components/layout/PublicLayout';
 import HeroExplorer from '../components/home/HeroExplorer';
 import FeaturedVillasSection from '../components/home/FeaturedVillasSection';
+import WhyBookWithUsSection from '../components/home/WhyBookWithUsSection';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import { formatSalePrice } from '../data/propertiesForSale';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
@@ -43,6 +44,8 @@ const PublicHomePage: React.FC = () => {
       </div>
 
       <FeaturedVillasSection rooms={featuredRooms} settings={settings} />
+
+      <WhyBookWithUsSection />
 
       {isForSaleEnabled && featuredForSale.length > 0 && (
       <div className="bg-white border-t border-gray-200 py-12">
