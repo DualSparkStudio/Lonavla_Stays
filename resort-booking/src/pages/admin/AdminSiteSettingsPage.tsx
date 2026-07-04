@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import AdminCustomDatePricing from '../../components/admin/AdminCustomDatePricing';
 import { useSiteData } from '../../context/SiteDataContext';
 import { isForSaleEnabled } from '../../lib/featureFlags';
 import type { SiteSettings } from '../../types/site';
@@ -33,7 +32,7 @@ const field = (
 );
 
 export default function AdminSiteSettingsPage() {
-  const { settings, rooms, updateSettings, resetAllData } = useSiteData();
+  const { settings, updateSettings, resetAllData } = useSiteData();
   const [draft, setDraft] = useState<SiteSettings>(settings);
   const [saved, setSaved] = useState(false);
 
@@ -118,15 +117,6 @@ export default function AdminSiteSettingsPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
             />
           </div>
-        </section>
-
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900">Custom date prices</h2>
-          <AdminCustomDatePricing
-            rules={draft.customDatePrices}
-            rooms={rooms}
-            onChange={(customDatePrices) => setDraft((prev) => ({ ...prev, customDatePrices }))}
-          />
         </section>
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">

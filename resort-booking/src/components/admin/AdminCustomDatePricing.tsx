@@ -1,26 +1,26 @@
 import React from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import type { CustomDatePrice } from '../../types/site';
-import type { Room } from '../../data/resort';
 
 type Props = {
   rules: CustomDatePrice[];
-  rooms: Room[];
   onChange: (rules: CustomDatePrice[]) => void;
+  /** When set, rules apply to this villa only (no villa picker). */
+  roomId: string;
 };
 
-const newRule = (): CustomDatePrice => ({
+const newRule = (roomId: string): CustomDatePrice => ({
   id: `cdp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-  roomId: '',
+  roomId,
   startDate: '',
   endDate: '',
   pricePerNight: 0,
   label: '',
 });
 
-const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => {
+const AdminCustomDatePricing: React.FC<Props> = ({ rules, onChange, roomId }) => {
   const updateRule = (id: string, patch: Partial<CustomDatePrice>) => {
-    onChange(rules.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
+    onChange(rules.map((rule) => (rule.id === id ? { ...rule, ...patch, roomId } : rule)));
   };
 
   const removeRule = (id: string) => {
@@ -28,38 +28,21 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <p className="text-sm text-gray-600">
-        Set a custom nightly rate for holidays, long weekends, or peak dates. These override weekday
-        and weekend rates for the selected nights. Leave villa as &quot;All villas&quot; to apply
-        site-wide, or pick one villa for a property-specific rate.
+        Override weekday and weekend rates for holidays or peak dates on this villa only.
       </p>
 
       {rules.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">No custom date prices yet.</p>
+        <p className="text-sm text-gray-500 italic">No custom date prices for this villa.</p>
       ) : (
         <div className="space-y-3">
           {rules.map((rule) => (
             <div
               key={rule.id}
-              className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50"
             >
-              <div className="md:col-span-3">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Villa</label>
-                <select
-                  value={rule.roomId}
-                  onChange={(e) => updateRule(rule.id, { roomId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="">All villas</option>
-                  {rooms.map((room) => (
-                    <option key={room.id} value={room.id}>
-                      {room.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="md:col-span-2">
+              <div className="sm:col-span-3">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">From</label>
                 <input
                   type="date"
@@ -68,7 +51,7 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 />
               </div>
-              <div className="md:col-span-2">
+              <div className="sm:col-span-3">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">To</label>
                 <input
                   type="date"
@@ -77,7 +60,7 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 />
               </div>
-              <div className="md:col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Price / night (₹)</label>
                 <input
                   type="number"
@@ -89,7 +72,7 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 />
               </div>
-              <div className="md:col-span-2">
+              <div className="sm:col-span-3">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Label (optional)</label>
                 <input
                   type="text"
@@ -99,7 +82,7 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 />
               </div>
-              <div className="md:col-span-1 flex items-end">
+              <div className="sm:col-span-1 flex items-end">
                 <button
                   type="button"
                   onClick={() => removeRule(rule.id)}
@@ -116,7 +99,7 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
 
       <button
         type="button"
-        onClick={() => onChange([...rules, newRule()])}
+        onClick={() => onChange([...rules, newRule(roomId)])}
         className="text-sm font-semibold text-red-600 hover:text-red-700"
       >
         + Add custom date price
@@ -126,3 +109,17 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, rooms, onChange }) => 
 };
 
 export default AdminCustomDatePricing;
+
+export function customPricesForVilla(all: CustomDatePrice[], villaId: string): CustomDatePrice[] {
+  return all.filter((rule) => rule.roomId === villaId);
+}
+
+export function mergeVillaCustomPrices(
+  all: CustomDatePrice[],
+  villaId: string,
+  villaRules: CustomDatePrice[],
+): CustomDatePrice[] {
+  const others = all.filter((rule) => rule.roomId !== villaId);
+  const stamped = villaRules.map((rule) => ({ ...rule, roomId: villaId }));
+  return [...others, ...stamped];
+}

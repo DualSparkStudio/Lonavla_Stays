@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AdminCardActions from '../../components/admin/AdminCardActions';
 import { StatusPill } from '../../components/admin/AdminDetailModal';
+import AdminCustomDatePricing, {
+  customPricesForVilla,
+  mergeVillaCustomPrices,
+} from '../../components/admin/AdminCustomDatePricing';
 import AdminFormField, { adminInputClass } from '../../components/admin/AdminFormField';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminVillaDetailsModal from '../../components/admin/AdminVillaDetailsModal';
 import NormalizedImage from '../../components/ui/NormalizedImage';
 import { useSiteData } from '../../context/SiteDataContext';
-import type { Room } from '../../types/site';
+import type { CustomDatePrice, Room } from '../../types/site';
 
 const emptyRoom = (): Omit<Room, 'id'> => ({
   name: '',
@@ -30,9 +34,11 @@ const emptyRoom = (): Omit<Room, 'id'> => ({
 });
 
 const AdminRoomsPage: React.FC = () => {
-  const { rooms, addRoom, updateRoom, deleteRoom } = useSiteData();
+  const { rooms, settings, addRoom, updateRoom, deleteRoom, updateSettings } = useSiteData();
   const [editing, setEditing] = useState<Room | null>(null);
   const [draft, setDraft] = useState<Omit<Room, 'id'>>(emptyRoom());
+  const [customPriceDraft, setCustomPriceDraft] = useState<CustomDatePrice[]>([]);
+  const [editingVillaId, setEditingVillaId] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saved, setSaved] = useState(false);
   const [viewing, setViewing] = useState<Room | null>(null);
@@ -48,6 +54,8 @@ const AdminRoomsPage: React.FC = () => {
 
   const openNew = () => {
     setDraft(emptyRoom());
+    setCustomPriceDraft([]);
+    setEditingVillaId(`${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
     setIsNew(true);
     setEditing(null);
   };
@@ -55,6 +63,8 @@ const AdminRoomsPage: React.FC = () => {
   const openEdit = (room: Room) => {
     const { id: _id, ...rest } = room;
     setDraft(rest);
+    setCustomPriceDraft(customPricesForVilla(settings.customDatePrices, room.id));
+    setEditingVillaId(room.id);
     setEditing(room);
     setIsNew(false);
   };
@@ -62,7 +72,22 @@ const AdminRoomsPage: React.FC = () => {
   const closeForm = () => {
     setIsNew(false);
     setEditing(null);
+    setEditingVillaId(null);
+    setCustomPriceDraft([]);
     setDraft(emptyRoom());
+  };
+
+  const saveCustomPrices = (villaId: string) => {
+    const validRules = customPriceDraft.filter(
+      (rule) =>
+        rule.startDate &&
+        rule.endDate &&
+        rule.endDate >= rule.startDate &&
+        rule.pricePerNight > 0,
+    );
+    updateSettings({
+      customDatePrices: mergeVillaCustomPrices(settings.customDatePrices, villaId, validRules),
+    });
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -79,8 +104,14 @@ const AdminRoomsPage: React.FC = () => {
         Math.floor(Number(draft.final_capacity) || draft.max_guests),
       ),
     };
-    if (isNew) addRoom(payload);
-    else if (editing) updateRoom(editing.id, payload);
+    if (isNew) {
+      const id = editingVillaId ?? `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      addRoom({ ...payload, id });
+      saveCustomPrices(id);
+    } else if (editing) {
+      updateRoom(editing.id, payload);
+      saveCustomPrices(editing.id);
+    }
     setIsNew(false);
     setEditing(null);
     setDraft(emptyRoom());
@@ -137,7 +168,13 @@ const AdminRoomsPage: React.FC = () => {
               <AdminCardActions
                 onView={() => setViewing(room)}
                 onEdit={() => openEdit(room)}
-                onDelete={() => window.confirm('Delete villa?') && deleteRoom(room.id)}
+                onDelete={() => {
+                  if (!window.confirm('Delete villa?')) return;
+                  updateSettings({
+                    customDatePrices: settings.customDatePrices.filter((r) => r.roomId !== room.id),
+                  });
+                  deleteRoom(room.id);
+                }}
               />
             </div>
           </div>
@@ -176,6 +213,23 @@ const AdminRoomsPage: React.FC = () => {
                 className={adminInputClass}
               />
             </AdminFormField>
+          </div>
+
+          {editingVillaId && (
+            <AdminFormField
+              label="Custom date prices"
+              hint="Special nightly rates for holidays or peak dates on this villa"
+              className="border-t border-gray-100 pt-4"
+            >
+              <AdminCustomDatePricing
+                roomId={editingVillaId}
+                rules={customPriceDraft}
+                onChange={setCustomPriceDraft}
+              />
+            </AdminFormField>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AdminFormField label="Guests included in base price" hint="Extra guests above this count are charged at the site-wide extra person rate">
               <input type="number" min={1} value={draft.max_guests || ''} onChange={(e) => setDraft({ ...draft, max_guests: Number(e.target.value) })} className={adminInputClass} />
             </AdminFormField>
