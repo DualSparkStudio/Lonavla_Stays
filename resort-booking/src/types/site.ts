@@ -20,6 +20,17 @@ export type AboutHighlight = {
   text: string;
 };
 
+/** Override nightly rate for a villa (or all villas) between start and end dates (inclusive). */
+export type CustomDatePrice = {
+  id: string;
+  /** Villa id from listings; empty string = applies to all villas */
+  roomId: string;
+  startDate: string;
+  endDate: string;
+  pricePerNight: number;
+  label?: string;
+};
+
 export type InfoSection = {
   title: string;
   items: string[];
@@ -46,6 +57,8 @@ export type SiteSettings = {
   extraPersonCharge: number;
   /** YYYY-MM-DD dates charged at the weekend villa rate (in addition to Sat–Sun). */
   pricingHolidays: string[];
+  /** Custom nightly rates for specific date ranges (holidays, events, peak dates). */
+  customDatePrices: CustomDatePrice[];
   heroTitle: string;
   heroSubtitle: string;
   aboutImage: string;

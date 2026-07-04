@@ -1,6 +1,7 @@
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { formatPrice } from '../data/resort';
 import type { BookingConfirmationData } from './bookingConfirmation';
+import type { CustomDatePrice } from '../types/site';
 
 /** Percentage of booking total collected online at checkout (deposit). */
 export const BOOKING_ADVANCE_PAYMENT_PERCENT = 40;
@@ -24,6 +25,10 @@ export type StayPricingInput = {
   nights: number;
   /** YYYY-MM-DD dates charged at the weekend rate (in addition to Saturdays). */
   pricingHolidays?: string[];
+  /** Custom date-range prices from admin (override weekday/weekend for matching nights). */
+  customDatePrices?: CustomDatePrice[];
+  /** Villa listing id — required when customDatePrices may apply */
+  roomId?: string;
   guestCount: number;
   /** Villa `max_guests` — guests covered by the base nightly rate */
   guestsIncluded: number;
@@ -34,6 +39,10 @@ export type StayPricingResult = {
   nights: number;
   weekdayNights: number;
   weekendNights: number;
+  /** Nights billed at a custom admin rate */
+  specialRateNights: number;
+  /** Subtotal for special-rate nights only */
+  specialRateSubtotal: number;
   basePrice: number;
   guestCount: number;
   guestsIncluded: number;
@@ -54,6 +63,85 @@ export function normalizePricingHolidays(dates?: string[]): Set<string> {
     if (ISO_DATE.test(d)) set.add(d);
   }
   return set;
+}
+
+/** Best matching custom price for one stay night (villa-specific beats site-wide). */
+export function findCustomPriceForNight(
+  dateStr: string,
+  roomId: string,
+  rules: CustomDatePrice[] | undefined,
+): CustomDatePrice | null {
+  if (!rules?.length || !ISO_DATE.test(dateStr)) return null;
+
+  const matching = rules.filter(
+    (rule) =>
+      dateStr >= rule.startDate &&
+      dateStr <= rule.endDate &&
+      rule.pricePerNight > 0 &&
+      (!rule.roomId || rule.roomId === roomId),
+  );
+  if (!matching.length) return null;
+
+  const villaSpecific = matching.filter((rule) => rule.roomId === roomId);
+  const pool = villaSpecific.length ? villaSpecific : matching.filter((rule) => !rule.roomId);
+  return pool[pool.length - 1] ?? null;
+}
+
+function splitStayNightsByRateWithCustom(
+  checkInDate: string,
+  nights: number,
+  roomId: string,
+  pricePerNight: number,
+  weekendPricePerNight: number | undefined,
+  holidays: Set<string>,
+  customDatePrices: CustomDatePrice[] | undefined,
+): {
+  weekdayNights: number;
+  weekendNights: number;
+  specialRateNights: number;
+  specialRateSubtotal: number;
+  basePrice: number;
+} {
+  let weekdayNights = 0;
+  let weekendNights = 0;
+  let specialRateNights = 0;
+  let specialRateSubtotal = 0;
+  let basePrice = 0;
+
+  const weekendRate =
+    weekendPricePerNight && weekendPricePerNight > 0 ? weekendPricePerNight : pricePerNight;
+
+  const start = parseISO(`${checkInDate}T12:00:00`);
+  if (Number.isNaN(start.getTime())) {
+    return {
+      weekdayNights: nights,
+      weekendNights: 0,
+      specialRateNights: 0,
+      specialRateSubtotal: 0,
+      basePrice: pricePerNight * nights,
+    };
+  }
+
+  for (let i = 0; i < nights; i += 1) {
+    const current = new Date(start);
+    current.setDate(start.getDate() + i);
+    const dateStr = format(current, 'yyyy-MM-dd');
+    const custom = roomId ? findCustomPriceForNight(dateStr, roomId, customDatePrices) : null;
+
+    if (custom) {
+      specialRateNights += 1;
+      specialRateSubtotal += custom.pricePerNight;
+      basePrice += custom.pricePerNight;
+    } else if (isWeekendRateNight(current, holidays)) {
+      weekendNights += 1;
+      basePrice += weekendRate;
+    } else {
+      weekdayNights += 1;
+      basePrice += pricePerNight;
+    }
+  }
+
+  return { weekdayNights, weekendNights, specialRateNights, specialRateSubtotal, basePrice };
 }
 
 function isWeekendDay(date: Date): boolean {
@@ -163,19 +251,29 @@ export function getVillaCardPriceDisplay(
 export function computeStayPricing(input: StayPricingInput): StayPricingResult {
   const nights = Math.max(1, input.nights);
   const extraPersonCharge = input.extraPersonCharge;
-  const weekendRate =
-    input.weekendPricePerNight && input.weekendPricePerNight > 0
-      ? input.weekendPricePerNight
-      : input.pricePerNight;
-  const { weekdayNights, weekendNights } =
-    input.checkInDate && input.weekendPricePerNight && input.weekendPricePerNight > 0
-      ? splitStayNightsByRate(
+  const roomId = input.roomId ?? '';
+
+  const nightSplit =
+    input.checkInDate
+      ? splitStayNightsByRateWithCustom(
           input.checkInDate,
           nights,
+          roomId,
+          input.pricePerNight,
+          input.weekendPricePerNight,
           normalizePricingHolidays(input.pricingHolidays),
+          input.customDatePrices,
         )
-      : { weekdayNights: nights, weekendNights: 0 };
-  const basePrice = input.pricePerNight * weekdayNights + weekendRate * weekendNights;
+      : {
+          weekdayNights: nights,
+          weekendNights: 0,
+          specialRateNights: 0,
+          specialRateSubtotal: 0,
+          basePrice: input.pricePerNight * nights,
+        };
+
+  const { weekdayNights, weekendNights, specialRateNights, specialRateSubtotal, basePrice } =
+    nightSplit;
   const extraGuests = calcExtraGuests(input.guestCount, input.guestsIncluded);
   const extraGuestsCharge = extraGuests * extraPersonCharge * nights;
   const total = basePrice + extraGuestsCharge;
@@ -186,6 +284,8 @@ export function computeStayPricing(input: StayPricingInput): StayPricingResult {
     nights,
     weekdayNights,
     weekendNights,
+    specialRateNights,
+    specialRateSubtotal,
     basePrice,
     guestCount: input.guestCount,
     guestsIncluded: input.guestsIncluded,

@@ -20,7 +20,7 @@ import {
   validateCheckInInput,
   validateCheckOutInput,
 } from '../../lib/availability';
-import { clampGuestCount, getVillaFinalCapacity } from '../../lib/villaCapacity';
+import type { CustomDatePrice } from '../../types/site';
 
 type VillaDetailBookingCardProps = {
   room: Room;
@@ -34,6 +34,7 @@ type VillaDetailBookingCardProps = {
   priceDisplay: VillaCardPriceDisplay;
   extraPersonCharge: number;
   pricingHolidays?: string[];
+  customDatePrices?: CustomDatePrice[];
   onToggleCalendar?: () => void;
 };
 
@@ -49,6 +50,7 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
   priceDisplay,
   extraPersonCharge,
   pricingHolidays,
+  customDatePrices,
   onToggleCalendar,
 }) => {
   const { bookings, blockedDates } = useSiteBookings();
@@ -70,12 +72,14 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
         weekendPricePerNight: room.weekend_price_per_night,
         checkInDate: checkIn,
         pricingHolidays,
+        customDatePrices,
+        roomId: room.id,
         nights: Math.max(nights, 0),
         guestCount,
         guestsIncluded: room.max_guests,
         extraPersonCharge,
       }),
-    [room, checkIn, nights, guestCount, extraPersonCharge, pricingHolidays, checkOut],
+    [room, checkIn, nights, guestCount, extraPersonCharge, pricingHolidays, customDatePrices, checkOut],
   );
 
   const stayAvailable = useMemo(

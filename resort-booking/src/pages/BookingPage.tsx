@@ -124,6 +124,8 @@ const BookingPage: React.FC = () => {
         weekendPricePerNight: 0,
         checkInDate: checkIn,
         pricingHolidays: settings.pricingHolidays,
+        customDatePrices: settings.customDatePrices,
+        roomId: villa?.id,
         nights: 0,
         guestCount: 1,
         guestsIncluded: 1,
@@ -135,12 +137,14 @@ const BookingPage: React.FC = () => {
       weekendPricePerNight: villa.weekend_price_per_night,
       checkInDate: checkIn,
       pricingHolidays: settings.pricingHolidays,
+      customDatePrices: settings.customDatePrices,
+      roomId: villa.id,
       nights,
       guestCount,
       guestsIncluded: villa.max_guests,
       extraPersonCharge,
     });
-  }, [villa, nights, guestCount, extraPersonCharge, checkIn, settings.pricingHolidays]);
+  }, [villa, nights, guestCount, extraPersonCharge, checkIn, settings.pricingHolidays, settings.customDatePrices]);
 
   const stayRateMode = useMemo(
     () => resolveVillaCardRateMode(checkIn, checkOut, settings.pricingHolidays),
@@ -488,11 +492,25 @@ const BookingPage: React.FC = () => {
                         >
                           Weekend (Sat & holidays): {formatPrice(villa.weekend_price_per_night!)} / night
                         </p>
-                        {canPay && (
+                        {canPay && pricing.specialRateNights > 0 && (
+                          <p className="text-xs text-amber-800 mt-2 font-medium">
+                            Includes {pricing.specialRateNights} night
+                            {pricing.specialRateNights !== 1 ? 's' : ''} at a special date rate (
+                            {formatPrice(pricing.specialRateSubtotal)} subtotal).
+                          </p>
+                        )}
+                        {canPay && pricing.specialRateNights === 0 && (
                           <p className="text-xs text-gray-600 mt-2">
                             Selected stay includes {pricing.weekendNights} weekend/holiday night
                             {pricing.weekendNights !== 1 ? 's' : ''} and {pricing.weekdayNights}{' '}
                             weekday night{pricing.weekdayNights !== 1 ? 's' : ''}.
+                          </p>
+                        )}
+                        {canPay && pricing.specialRateNights > 0 && pricing.weekdayNights + pricing.weekendNights > 0 && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            Plus {pricing.weekdayNights} weekday and {pricing.weekendNights} weekend
+                            night{pricing.weekendNights + pricing.weekdayNights !== 1 ? 's' : ''} at
+                            standard rates.
                           </p>
                         )}
                       </>

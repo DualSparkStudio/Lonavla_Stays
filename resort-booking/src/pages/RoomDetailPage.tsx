@@ -172,12 +172,14 @@ const RoomDetailPage: React.FC = () => {
       weekendPricePerNight: room.weekend_price_per_night,
       checkInDate: checkIn,
       pricingHolidays: settings.pricingHolidays,
+      customDatePrices: settings.customDatePrices,
+      roomId: room.id,
       nights,
       guestCount,
       guestsIncluded: room.max_guests,
       extraPersonCharge: settings.extraPersonCharge ?? 1500,
     });
-  }, [room, checkIn, nights, guestCount, settings.pricingHolidays, settings.extraPersonCharge, checkOut]);
+  }, [room, checkIn, nights, guestCount, settings.pricingHolidays, settings.customDatePrices, settings.extraPersonCharge, checkOut]);
 
   const canBook = useMemo(
     () => isStayRangeAvailable(room?.id ?? '', checkIn, checkOut, bookings, blockedDates),
@@ -247,6 +249,7 @@ const RoomDetailPage: React.FC = () => {
       priceDisplay={cardPriceDisplay}
       extraPersonCharge={settings.extraPersonCharge ?? 1500}
       pricingHolidays={settings.pricingHolidays}
+      customDatePrices={settings.customDatePrices}
       onToggleCalendar={() => setShowCalendar(true)}
     />
   );
