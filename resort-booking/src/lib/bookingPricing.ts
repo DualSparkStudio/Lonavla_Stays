@@ -2,6 +2,7 @@ import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { formatPrice } from '../data/resort';
 import type { BookingConfirmationData } from './bookingConfirmation';
 import type { CustomDatePrice } from '../types/site';
+import { getVillaUuidFromCache, isUuid } from './villaUuidCache';
 
 /** Percentage of booking total collected online at checkout (deposit). */
 export const BOOKING_ADVANCE_PAYMENT_PERCENT = 40;
@@ -56,6 +57,56 @@ export type StayPricingResult = {
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Accept YYYY-MM-DD or DD-MM-YYYY from admin inputs / legacy data. */
+export function normalizeIsoDate(raw: string | undefined | null): string {
+  const s = (raw ?? '').trim();
+  if (!s) return '';
+  if (ISO_DATE.test(s)) return s;
+  const dmy = /^(\d{2})-(\d{2})-(\d{4})$/.exec(s);
+  if (dmy) return `${dmy[3]}-${dmy[2]}-${dmy[1]}`;
+  return s;
+}
+
+function normalizeCustomDatePrice(raw: unknown): CustomDatePrice | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const rule = raw as Record<string, unknown>;
+  const startDate = normalizeIsoDate(String(rule.startDate ?? rule.start_date ?? ''));
+  const endDate = normalizeIsoDate(String(rule.endDate ?? rule.end_date ?? ''));
+  const pricePerNight = Number(rule.pricePerNight ?? rule.price_per_night ?? 0);
+  if (!startDate || !endDate || !Number.isFinite(pricePerNight) || pricePerNight <= 0) return null;
+
+  return {
+    id: String(rule.id ?? `cdp-${startDate}-${endDate}`),
+    roomId: String(rule.roomId ?? rule.room_id ?? ''),
+    startDate,
+    endDate,
+    pricePerNight,
+    label: rule.label != null ? String(rule.label) : undefined,
+  };
+}
+
+/** Normalize rules loaded from Supabase / localStorage (camelCase or snake_case). */
+export function normalizeCustomDatePrices(rules: unknown): CustomDatePrice[] {
+  if (!Array.isArray(rules)) return [];
+  return rules
+    .map(normalizeCustomDatePrice)
+    .filter((rule): rule is CustomDatePrice => rule != null);
+}
+
+/** Match villa listing ids across legacy_id, UUID, and cached Supabase ids. */
+export function villaIdsMatch(storedRoomId: string | undefined | null, roomId: string): boolean {
+  const a = (storedRoomId ?? '').trim();
+  const b = roomId.trim();
+  if (!a) return true;
+  if (a === b) return true;
+
+  const uuidA = isUuid(a) ? a : getVillaUuidFromCache(a);
+  const uuidB = isUuid(b) ? b : getVillaUuidFromCache(b);
+  if (uuidA && uuidB) return uuidA === uuidB;
+
+  return false;
+}
+
 export function normalizePricingHolidays(dates?: string[]): Set<string> {
   const set = new Set<string>();
   for (const raw of dates ?? []) {
@@ -71,18 +122,20 @@ export function findCustomPriceForNight(
   roomId: string,
   rules: CustomDatePrice[] | undefined,
 ): CustomDatePrice | null {
-  if (!rules?.length || !ISO_DATE.test(dateStr)) return null;
+  const night = normalizeIsoDate(dateStr);
+  const normalizedRules = normalizeCustomDatePrices(rules);
+  if (!normalizedRules.length || !ISO_DATE.test(night) || !roomId.trim()) return null;
 
-  const matching = rules.filter(
+  const matching = normalizedRules.filter(
     (rule) =>
-      dateStr >= rule.startDate &&
-      dateStr <= rule.endDate &&
+      night >= rule.startDate &&
+      night <= rule.endDate &&
       rule.pricePerNight > 0 &&
-      (!rule.roomId || rule.roomId === roomId),
+      villaIdsMatch(rule.roomId, roomId),
   );
   if (!matching.length) return null;
 
-  const villaSpecific = matching.filter((rule) => rule.roomId === roomId);
+  const villaSpecific = matching.filter((rule) => rule.roomId && villaIdsMatch(rule.roomId, roomId));
   const pool = villaSpecific.length ? villaSpecific : matching.filter((rule) => !rule.roomId);
   return pool[pool.length - 1] ?? null;
 }
@@ -111,7 +164,7 @@ function splitStayNightsByRateWithCustom(
   const weekendRate =
     weekendPricePerNight && weekendPricePerNight > 0 ? weekendPricePerNight : pricePerNight;
 
-  const start = parseISO(`${checkInDate}T12:00:00`);
+  const start = parseISO(`${normalizeIsoDate(checkInDate)}T12:00:00`);
   if (Number.isNaN(start.getTime())) {
     return {
       weekdayNights: nights,
@@ -252,6 +305,7 @@ export function computeStayPricing(input: StayPricingInput): StayPricingResult {
   const nights = Math.max(1, input.nights);
   const extraPersonCharge = input.extraPersonCharge;
   const roomId = input.roomId ?? '';
+  const normalizedCustomPrices = normalizeCustomDatePrices(input.customDatePrices);
 
   const nightSplit =
     input.checkInDate
@@ -262,7 +316,7 @@ export function computeStayPricing(input: StayPricingInput): StayPricingResult {
           input.pricePerNight,
           input.weekendPricePerNight,
           normalizePricingHolidays(input.pricingHolidays),
-          input.customDatePrices,
+          normalizedCustomPrices,
         )
       : {
           weekdayNights: nights,

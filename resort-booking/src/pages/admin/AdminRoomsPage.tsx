@@ -10,6 +10,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminVillaDetailsModal from '../../components/admin/AdminVillaDetailsModal';
 import NormalizedImage from '../../components/ui/NormalizedImage';
 import { useSiteData } from '../../context/SiteDataContext';
+import { villaIdsMatch } from '../../lib/bookingPricing';
 import type { CustomDatePrice, Room } from '../../types/site';
 
 const emptyRoom = (): Omit<Room, 'id'> => ({
@@ -85,9 +86,9 @@ const AdminRoomsPage: React.FC = () => {
         rule.endDate >= rule.startDate &&
         rule.pricePerNight > 0,
     );
-    updateSettings({
-      customDatePrices: mergeVillaCustomPrices(settings.customDatePrices, villaId, validRules),
-    });
+    updateSettings((prev) => ({
+      customDatePrices: mergeVillaCustomPrices(prev.customDatePrices, villaId, validRules),
+    }));
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -170,9 +171,11 @@ const AdminRoomsPage: React.FC = () => {
                 onEdit={() => openEdit(room)}
                 onDelete={() => {
                   if (!window.confirm('Delete villa?')) return;
-                  updateSettings({
-                    customDatePrices: settings.customDatePrices.filter((r) => r.roomId !== room.id),
-                  });
+                  updateSettings((prev) => ({
+                    customDatePrices: prev.customDatePrices.filter(
+                      (rule) => !villaIdsMatch(rule.roomId, room.id),
+                    ),
+                  }));
                   deleteRoom(room.id);
                 }}
               />

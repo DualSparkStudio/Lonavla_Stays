@@ -42,7 +42,9 @@ import {
 type PaymentMeta = { orderId?: string; paymentId?: string };
 
 export type SiteDataActions = {
-  updateSettings: (patch: Partial<SiteSettings>) => void;
+  updateSettings: (
+    patch: Partial<SiteSettings> | ((prev: SiteSettings) => Partial<SiteSettings>),
+  ) => void;
   setRooms: (rooms: Room[]) => void;
   addRoom: (room: Omit<Room, 'id'> & { id?: string }) => void;
   updateRoom: (id: string, patch: Partial<Room>) => void;
@@ -235,9 +237,10 @@ const ConnectedSiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   );
 
   const updateSettings = useCallback(
-    (patch: Partial<SiteSettings>) => {
+    (patch: Partial<SiteSettings> | ((prev: SiteSettings) => Partial<SiteSettings>)) => {
       patchData((prev) => {
-        const settings = { ...prev.settings, ...patch };
+        const partial = typeof patch === 'function' ? patch(prev.settings) : patch;
+        const settings = { ...prev.settings, ...partial };
         upsertSiteSettingsToSupabase(settings)
           .then(() => {
             void queryClient.invalidateQueries({ queryKey: ['site-data', 'public'] });

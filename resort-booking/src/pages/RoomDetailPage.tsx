@@ -49,7 +49,7 @@ const AMENITY_PREVIEW_COUNT = 9;
 const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guestInput, setGuestInput] = useState('2');
@@ -117,6 +117,20 @@ const RoomDetailPage: React.FC = () => {
       if (!checkOutResult.valid) setCheckOut('');
     }
   }, [bookings, blockedDates, room, checkIn, checkOut]);
+
+  const resetSelectedDates = useCallback(() => {
+    setCheckIn('');
+    setCheckOut('');
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('checkIn');
+        next.delete('checkOut');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   const galleryImages = useMemo(
     () => (room ? normalizeImageUrls(room.images) : []),
@@ -251,6 +265,7 @@ const RoomDetailPage: React.FC = () => {
       pricingHolidays={settings.pricingHolidays}
       customDatePrices={settings.customDatePrices}
       onToggleCalendar={() => setShowCalendar(true)}
+      onResetDates={resetSelectedDates}
     />
   );
 

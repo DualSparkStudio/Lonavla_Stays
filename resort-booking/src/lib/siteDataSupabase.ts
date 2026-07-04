@@ -13,6 +13,7 @@ import type {
 import { repairMojibake, repairMojibakeDeep } from './repairMojibake';
 import { defaultSiteSettings } from './siteStorage';
 import { normalizeExploreTiles } from './exploreTileImages';
+import { normalizeCustomDatePrices } from './bookingPricing';
 import { supabase } from './supabase';
 import {
     buildVillaUuidCache,
@@ -240,7 +241,12 @@ function parseSiteSettings(data: Record<string, unknown> | null): SiteSettings {
       (repaired.exploreTiles as SiteSettings['exploreTiles']) ?? defaults.exploreTiles,
     ),
     pricingHolidays: (repaired.pricingHolidays as string[]) ?? defaults.pricingHolidays,
-    customDatePrices: (repaired.customDatePrices as SiteSettings['customDatePrices']) ?? defaults.customDatePrices,
+    customDatePrices: (() => {
+      const raw =
+        repaired.customDatePrices ??
+        (repaired as { custom_date_prices?: unknown }).custom_date_prices;
+      return raw != null ? normalizeCustomDatePrices(raw) : defaults.customDatePrices;
+    })(),
     houseRulesSections:
       (repaired.houseRulesSections as SiteSettings['houseRulesSections'])?.length
         ? (repaired.houseRulesSections as SiteSettings['houseRulesSections'])

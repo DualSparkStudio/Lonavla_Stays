@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { villaIdsMatch } from '../../lib/bookingPricing';
 import type { CustomDatePrice } from '../../types/site';
 
 type Props = {
@@ -111,7 +112,7 @@ const AdminCustomDatePricing: React.FC<Props> = ({ rules, onChange, roomId }) =>
 export default AdminCustomDatePricing;
 
 export function customPricesForVilla(all: CustomDatePrice[], villaId: string): CustomDatePrice[] {
-  return all.filter((rule) => rule.roomId === villaId);
+  return all.filter((rule) => villaIdsMatch(rule.roomId, villaId));
 }
 
 export function mergeVillaCustomPrices(
@@ -119,7 +120,7 @@ export function mergeVillaCustomPrices(
   villaId: string,
   villaRules: CustomDatePrice[],
 ): CustomDatePrice[] {
-  const others = all.filter((rule) => rule.roomId !== villaId);
+  const others = all.filter((rule) => !villaIdsMatch(rule.roomId, villaId));
   const stamped = villaRules.map((rule) => ({ ...rule, roomId: villaId }));
   return [...others, ...stamped];
 }

@@ -20,6 +20,7 @@ import {
   validateCheckInInput,
   validateCheckOutInput,
 } from '../../lib/availability';
+import { clampGuestCount, getVillaFinalCapacity } from '../../lib/villaCapacity';
 import type { CustomDatePrice } from '../../types/site';
 
 type VillaDetailBookingCardProps = {
@@ -36,6 +37,7 @@ type VillaDetailBookingCardProps = {
   pricingHolidays?: string[];
   customDatePrices?: CustomDatePrice[];
   onToggleCalendar?: () => void;
+  onResetDates?: () => void;
 };
 
 const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
@@ -52,6 +54,7 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
   pricingHolidays,
   customDatePrices,
   onToggleCalendar,
+  onResetDates,
 }) => {
   const { bookings, blockedDates } = useSiteBookings();
   const [dateError, setDateError] = useState('');
@@ -136,6 +139,18 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
     onCheckOutChange(value);
   };
 
+  const handleResetDates = () => {
+    setDateError('');
+    if (onResetDates) {
+      onResetDates();
+      return;
+    }
+    onCheckInChange('');
+    onCheckOutChange('');
+  };
+
+  const hasSelectedDates = Boolean(checkIn || checkOut);
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
       <div className="mb-4">
@@ -182,6 +197,16 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
         </div>
       </div>
 
+      {hasSelectedDates && (
+        <button
+          type="button"
+          onClick={handleResetDates}
+          className="mb-4 w-full rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+        >
+          Clear dates
+        </button>
+      )}
+
       {displayDateError && (
         <p className="mb-3 text-sm text-red-600 font-medium" role="alert">
           {displayDateError}
@@ -205,6 +230,15 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
             Base price includes {room.max_guests} guest{room.max_guests !== 1 ? 's' : ''}
           </p>
 
+          {pricing.specialRateNights > 0 && (
+            <div className="flex justify-between text-sm text-amber-900">
+              <span>
+                Special date rate × {pricing.specialRateNights} night
+                {pricing.specialRateNights !== 1 ? 's' : ''}
+              </span>
+              <span className="font-medium">{formatPrice(pricing.specialRateSubtotal)}</span>
+            </div>
+          )}
           {pricing.weekdayNights > 0 && (
             <div className="flex justify-between text-sm text-gray-900">
               <span>
@@ -227,7 +261,10 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
               </span>
             </div>
           )}
-          {pricing.weekdayNights === 0 && pricing.weekendNights === 0 && nights > 0 && (
+          {pricing.weekdayNights === 0 &&
+            pricing.weekendNights === 0 &&
+            pricing.specialRateNights === 0 &&
+            nights > 0 && (
             <div className="flex justify-between text-sm text-gray-900">
               <span>
                 {formatPrice(Math.round(pricing.basePrice / nights))} × {nights} night
@@ -244,10 +281,6 @@ const VillaDetailBookingCard: React.FC<VillaDetailBookingCardProps> = ({
               <span className="font-medium">{formatPrice(pricing.extraGuestsCharge)}</span>
             </div>
           )}
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Taxes &amp; fees</span>
-            <span>Included</span>
-          </div>
           <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-200">
             <span>Total</span>
             <span>{formatPrice(pricing.total)}</span>
