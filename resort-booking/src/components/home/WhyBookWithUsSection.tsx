@@ -11,22 +11,22 @@ const HIGHLIGHTS = [
   {
     title: 'Curated Villas',
     description:
-      'Handpicked luxury villas across Lonavala with stunning views, private pools, and modern amenities.',
+      'Handpicked private pool villas with verified amenities, prime locations, and comfortable stays.',
     Icon: BuildingOffice2Icon,
   },
   {
     title: 'Best Price Guarantee',
-    description: 'Get the best rates on every villa booking—transparent pricing with no hidden surprises.',
+    description: 'Book directly with us for transparent pricing and the best available rates.',
     Icon: CurrencyRupeeIcon,
   },
   {
     title: 'Instant Confirmation',
-    description: 'Book now and receive instant booking confirmation so you can plan your trip with confidence.',
+    description: 'Receive instant booking confirmation and quick assistance after payment.',
     Icon: BoltIcon,
   },
   {
-    title: '24x7 Support',
-    description: 'Round-the-clock support for all your booking needs—from enquiry to check-out.',
+    title: '24×7 Support',
+    description: 'Our team is available throughout your stay—from enquiry to check-out.',
     Icon: PhoneIcon,
   },
 ] as const;

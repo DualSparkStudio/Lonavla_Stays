@@ -63,7 +63,7 @@ const FeaturedVillasSection: React.FC<FeaturedVillasSectionProps> = ({ rooms, se
           <div>
             <h2 className="font-heading text-4xl font-normal tracking-wide mb-2">Featured villas</h2>
             <p className="section-lead text-2xl max-w-2xl">
-              {settings.brandTagline}. Every card is a separate villa we manage—tap to see location, amenities, and rates.
+              Explore our collection of private pool villas in Lonavala. Compare amenities, locations, photos, and rates to find the perfect stay.
             </p>
           </div>
           <Link
