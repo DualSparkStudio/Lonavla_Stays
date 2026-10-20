@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "dev:netlify": "netlify dev",
-    "build": "vite build",
-    "build:netlify": "npm run build",
+    "build": "node scripts/build.js",
+    "build:vite": "vite build",
+    "prerender": "node scripts/prerender.js",
+    "build:netlify": "node scripts/build.js",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview"

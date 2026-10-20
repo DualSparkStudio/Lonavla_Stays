@@ -43,8 +43,16 @@ import {
 } from '../lib/villaDetailHelpers';
 import { clampGuestCount, getVillaFinalCapacity } from '../lib/villaCapacity';
 import { useSiteBookings, useSiteData } from '../context/SiteDataContext';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const AMENITY_PREVIEW_COUNT = 9;
+
+const VILLA_DESCRIPTIONS: Record<string, string> = {
+  '1': 'Stay at Valley View Villa in Tiger Valley, Lonavala. Standalone hill villa with misty Sahyadri views, private deck, AC, Wi-Fi, and breakfast for up to 3 guests.',
+  '2': 'Rent Garden Wing Villa in Tungarli, Lonavala. Spacious family villa with landscaped gardens, living area, BBQ patio, AC, and Wi-Fi for up to 5 guests.',
+  '3': 'Rent Hillside Premium Villa in Khandala Hills, Lonavala. Flagship luxury villa with panoramic hill views, private pool, king bed, and AC for up to 4 guests.',
+  '4': 'Book Garden Cottage Villa in Kurvande, Lonavala. Intimate hill cottage in greenery with private entry, garden patio, AC, and breakfast for up to 2 guests.',
+};
 
 const RoomDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,6 +68,20 @@ const RoomDetailPage: React.FC = () => {
   const { bookings, blockedDates } = useSiteBookings();
 
   const room = id ? getRoomById(id) : undefined;
+
+  usePageSEO({
+    title: room
+      ? `${room.name} — ${room.room_type} Rental in Lonavala | Lonavala Stays`
+      : 'Villa Details | Lonavala Stays',
+    description: room
+      ? (VILLA_DESCRIPTIONS[room.id] ||
+          `Book ${room.name} in ${room.location || 'Lonavala'}. Standalone villa with private amenities, AC, Wi-Fi, and scenic hill views for ${room.max_guests} guests.`)
+      : 'View details of our luxury villas for rent in Lonavala, Maharashtra.',
+    canonical: room
+      ? `https://lonavalastays.in/villas/${room.id}`
+      : 'https://lonavalastays.in/villas',
+    image: room?.images?.[0],
+  });
 
   useEffect(() => {
     const fromCheckIn = searchParams.get('checkIn') ?? '';

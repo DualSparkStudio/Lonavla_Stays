@@ -12,6 +12,7 @@ import {
 } from '../lib/bookingPricing';
 import { getVillaFinalCapacity } from '../lib/villaCapacity';
 import VillaCardPrice from '../components/villas/VillaCardPrice';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const formatSearchDate = (value: string) => {
   try {
@@ -22,6 +23,13 @@ const formatSearchDate = (value: string) => {
 };
 
 const RoomsPage: React.FC = () => {
+  usePageSEO({
+    title: 'Private Villas for Rent in Lonavala | Lonavala Stays',
+    description:
+      'Explore our collection of private hill villas in Lonavala. Compare Valley View, Garden Wing, Hillside Premium & Garden Cottage for your weekend getaway.',
+    canonical: 'https://lonavalastays.in/villas',
+  });
+
   const { rooms, settings, bookings, blockedDates } = useSiteData();
   const [searchParams] = useSearchParams();
   const [typeFilter, setTypeFilter] = useState('all');

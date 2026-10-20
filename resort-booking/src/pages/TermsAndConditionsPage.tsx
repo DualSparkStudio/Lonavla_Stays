@@ -3,8 +3,16 @@ import PublicLayout from '../components/layout/PublicLayout';
 import PolicySections from '../components/PolicySections';
 import { getTermsSections } from '../lib/policySections';
 import { useSiteSettings } from '../context/SiteDataContext';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const TermsAndConditionsPage: React.FC = () => {
+  usePageSEO({
+    title: 'Terms & Conditions | Lonavala Stays',
+    description:
+      'Read booking terms, payment policies, cancellation guidelines, safety rules, and local regulations for staying at private villas managed by Lonavala Stays.',
+    canonical: 'https://lonavalastays.in/terms',
+  });
+
   const settings = useSiteSettings();
   const sections = getTermsSections(settings);
 

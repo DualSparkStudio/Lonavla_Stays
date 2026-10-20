@@ -75,7 +75,7 @@ const VillaPhotoGallery: React.FC<VillaPhotoGalleryProps> = ({ images, originals
           >
             <img
               src={img}
-              alt=""
+              alt={`${alt} view ${idx + 2}`}
               referrerPolicy="no-referrer"
               onError={(e) => handleImageError(e, originals[idx + 1] || originals[0] || '')}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
@@ -178,7 +178,7 @@ const VillaPhotoGallery: React.FC<VillaPhotoGalleryProps> = ({ images, originals
                 >
                   <img
                     src={thumbSrc}
-                    alt=""
+                    alt={`${alt} thumbnail ${idx + 1}`}
                     referrerPolicy="no-referrer"
                     loading="lazy"
                     onError={(e) => handleImageError(e, original)}

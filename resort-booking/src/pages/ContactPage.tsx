@@ -8,8 +8,16 @@ import { sendContactMessageEmail } from '../lib/bookingEmail';
 import { loadSmtpNotificationSettings } from '../lib/smtpSettings';
 import { useSiteSettings } from '../context/SiteDataContext';
 import { cn } from '../utils/cn';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const ContactPage: React.FC = () => {
+  usePageSEO({
+    title: 'Contact Us — Villa Reservations & Enquiries | Lonavala Stays',
+    description:
+      'Contact Lonavala Stays for villa bookings and enquiries in Lonavala. Reach our reservations team via phone, WhatsApp at +91 98765 43210, or send an email.',
+    canonical: 'https://lonavalastays.in/contact',
+  });
+
   const [searchParams] = useSearchParams();
   const settings = useSiteSettings();
   const [submitted, setSubmitted] = useState(false);

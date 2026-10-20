@@ -5,8 +5,16 @@ import AnimatedSection from '../components/ui/AnimatedSection';
 import NormalizedImage from '../components/ui/NormalizedImage';
 import Button from '../components/ui/Button';
 import { useSiteData } from '../context/SiteDataContext';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const AboutPage: React.FC = () => {
+  usePageSEO({
+    title: 'About Us — Handpicked Hill Escapes | Lonavala Stays',
+    description:
+      'Learn about Lonavala Stays. We curate, operate, and manage standalone luxury villas across Lonavala, Maharashtra with dedicated local on-ground guest care.',
+    canonical: 'https://lonavalastays.in/about',
+  });
+
   const { settings } = useSiteData();
 
   return (

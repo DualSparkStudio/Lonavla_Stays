@@ -7,8 +7,16 @@ import NormalizedImage from '../components/ui/NormalizedImage';
 import Button from '../components/ui/Button';
 import { resortFacilities } from '../data/resort';
 import { useSiteSettings } from '../context/SiteDataContext';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const FacilitiesPage: React.FC = () => {
+  usePageSEO({
+    title: 'Villa Amenities & Facilities in Lonavala | Lonavala Stays',
+    description:
+      'Discover amenities across our Lonavala villas: private swimming pool, carrom, badminton setup, BBQ grill, portable Bluetooth speaker, and high-speed Wi-Fi.',
+    canonical: 'https://lonavalastays.in/facilities',
+  });
+
   const settings = useSiteSettings();
   return (
     <PublicLayout currentPage="facilities">

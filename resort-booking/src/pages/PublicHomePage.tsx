@@ -10,11 +10,19 @@ import { formatSalePrice } from '../data/propertiesForSale';
 import { useSiteCatalog, useSiteSettings } from '../context/SiteDataContext';
 import { resolveExploreTileImage } from '../lib/exploreTileImages';
 import { isForSaleEnabled } from '../lib/featureFlags';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const PublicHomePage: React.FC = () => {
   const navigate = useNavigate();
   const settings = useSiteSettings();
   const { rooms, propertiesForSale } = useSiteCatalog();
+
+  usePageSEO({
+    title: 'Lonavala Stays — Curated Luxury Villas for Rent in Lonavala',
+    description:
+      'Book curated private luxury villas across Lonavala with private pools, scenic decks, and mountain views. Best rate guarantee with 24x7 local on-ground support.',
+    canonical: 'https://lonavalastays.in/',
+  });
 
   const featuredRooms = useMemo(
     () => rooms.filter((room) => room.status === 'available'),

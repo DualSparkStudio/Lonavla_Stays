@@ -2,8 +2,16 @@ import React from 'react';
 import PublicLayout from '../components/layout/PublicLayout';
 import PolicySections from '../components/PolicySections';
 import { useSiteSettings } from '../context/SiteDataContext';
+import { usePageSEO } from '../hooks/usePageSEO';
 
 const HouseRulesPage: React.FC = () => {
+  usePageSEO({
+    title: 'House Rules & Guest Policies | Lonavala Stays',
+    description:
+      'Review house rules for Lonavala Stays: standard check-in at 1:00 PM, check-out by 11:00 AM, occupancy limits, quiet hours, and property care guidelines.',
+    canonical: 'https://lonavalastays.in/house-rules',
+  });
+
   const settings = useSiteSettings();
 
   return (
