@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import PublicHeader from './PublicHeader';
 import PublicFooter from './PublicFooter';
+import FloatingWhatsAppButton from './FloatingWhatsAppButton';
 
 function resolveCurrentPage(pathname: string): string {
   if (pathname === '/') return 'home';
@@ -28,6 +29,7 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children, currentPage }) =>
       <PublicHeader currentPage={page} />
       <main className="flex-1 min-w-0">{children}</main>
       <PublicFooter />
+      <FloatingWhatsAppButton />
     </div>
   );
 };

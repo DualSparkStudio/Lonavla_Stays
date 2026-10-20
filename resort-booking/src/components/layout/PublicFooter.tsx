@@ -31,7 +31,7 @@ const PublicFooter: React.FC = () => {
               />
             </Link>
             <p className="text-gray-900 mb-4 mt-3 max-w-md">
-              We manage and book a collection of private luxury villas across Lonavala—each property with its own address and character.
+              Lonavala Stays offers handpicked private pool villas across Lonavala for family vacations, celebrations, and weekend getaways. Book directly for the best prices and reliable service.
             </p>
           </div>
 
@@ -64,7 +64,7 @@ const PublicFooter: React.FC = () => {
               {settings.resortPhone.trim() ? (
                 <p>
                   <span className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                    Phone / WhatsApp
+                    Call / WhatsApp
                   </span>
                   <a href={`tel:${settings.resortPhone.replace(/\s/g, '')}`} className="phone-number hover:text-airbnb-red transition-colors">
                     {settings.resortPhone}
